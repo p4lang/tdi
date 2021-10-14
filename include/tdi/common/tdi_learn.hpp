@@ -35,7 +35,7 @@ namespace tdi {
 
 /**
  * @brief Only the below functions in comments are supported for tdi::LearnData.
- * \n Use of anything else will return a BF_NOT_SUPPORTED error
+ * \n Use of anything else will return a TDI_NOT_SUPPORTED error
  * \n tdi::TableData::getValue(const tdi_id_t &field_id, uint64_t *val) const;
  * \n tdi::TableData::getValue(const tdi_id_t &field_id, const size_t &size,
  *                     uint8_t *val) const;
@@ -50,7 +50,7 @@ class LearnInfo;
  *time.
  * If a session already has registered, then another session cannot overwrite
  *
- * @param[in] tdi_tgt Bf Rt target associated with the learn data
+ * @param[in] tdi_tgt TDI target associated with the learn data
  * @param[in] session @c std::shared_ptr to the session
  * @param[in] learnData Vector of learn data objs
  * @param[in] learn_msg_hdl Handle for the msg which can be used to notify ack

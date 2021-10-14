@@ -1,21 +1,21 @@
 # TDI
 ## Introduction
 
-TDI (Table Driven Interface) is a Target Abstraction Interface. It is a set of APIs that enable configuration and management of programmable P4 and fixed functions of a backend device in a uniform and dynamic way.
+TDI (Table Driven Interface) is a Target Abstraction Interface. It is a set of APIs that enable configuration and management of P4 programmable and fixed functions of a backend device in a uniform and dynamic way.
 
-Different targets like bmv2, P4-dpdk can choose to implement their own backends for different P4 and non-P4 objects. Configuring a P4 pipeline requires multiple artifacts to be consumed by TDI and the driver backend. TDI requires a json structure called `tdi.json`. This json defines multiple `Table` and `Learn` objects.
+Different targets like bmv2, P4-DPDK can choose to implement their own backends for different P4 and non-P4 objects but can share a common TDI. TDI uses JSON formatted data to describe the tables and other objects of the interface, TDI requires this to be present in a file named tdi.json. This json defines multiple `Table` and `Learn` objects.
 
 ## P4 Architecture and its role in TDI
 
 TDI code is divided into 3 layers
 
-* Core : This is the common layer. Code under src directly and code under include/common refers to core code. This includes anything which is not dependent on P4 architecture or target specifications. Match Types - Exact, Ternary, LPM are all part of core.
-* Arch : The Arch dependent code. This would contain any code which is dependent on architecture. Like any TNA specific code for example, IdleTime attribute, Counters, Registers etc. will have Key and Data handling structures here since the schema for these objects depend upon the arch specifications. Targets may choose to use this code or not to use this code by choice of C++ polymorphism and directly inheriting from Top level `tdi::Table` class
-* Target : This code is target dependent. The code in this repository will be present solely as either example in dummy targets.
+* Core : This is the common layer. Code under src directly and code under include/common refers to core code. This includes anything that is not dependent on P4 architecture or target specifications. Match Types - Exact, Ternary, and LPM are all part of the core layer since they are defined by the P4-16 language.
+* Arch : The Arch dependent code. This would contain any code that is dependent on the P4 target's architecture. For example, Tofino Native Architecture (TNA) specific code for Idletime attributes, Counters, Registers, etc will have Key and Data handling structures here since the schema for these objects depend upon the arch specifications. Targets may choose to use this code or not to use this code by choice of C++ polymorphism or directly inherit from the top level `tdi::Table` class.
+* Target : This code is target dependent. The code under target in this repository will be present solely as an example through a dummy target. Device implementors are expected to have their own backends just like the dummy_target.
 
 ## Properties of TDI
 
-All P4 and non-p4 objects can be realized via "table" structures. A table consists of the below
+All P4 programmable objects and non-P4 programmable objects are realized via "table" structures. A table consists of the below
 * Key
 * Actions
 * Data
@@ -47,16 +47,12 @@ For a P4 match table
       "id" : 37882547,
       "table_type" : "MatchAction_Direct",
       "size" : 1024,
-      "annotations" : [],
-      "depends_on" : [],
       "has_const_default_action" : true,
       "key" : [
         {
           "id" : 1,
           "name" : "hdr.ethernet.dst_addr",
-          "repeated" : false,
-          "annotations" : [],
-          "mandatory" : false,
+          "repeated" : false,,
           "match_type" : "Exact",
           "type" : {
             "type" : "bytes",
@@ -68,16 +64,11 @@ For a P4 match table
         {
           "id" : 32848556,
           "name" : "SwitchIngress.hit",
-          "action_scope" : "TableAndDefault",
-          "annotations" : [],
           "data" : [
             {
               "id" : 1,
               "name" : "port",
               "repeated" : false,
-              "mandatory" : true,
-              "read_only" : false,
-              "annotations" : [],
               "type" : {
                 "type" : "bytes",
                 "width" : 9
@@ -88,20 +79,11 @@ For a P4 match table
         {
           "id" : 17988458,
           "name" : "SwitchIngress.miss",
-          "action_scope" : "DefaultOnly",
-          "annotations" : [
-            {
-              "name" : "@defaultonly"
-            }
-          ],
           "data" : [
             {
               "id" : 1,
               "name" : "drop",
               "repeated" : false,
-              "mandatory" : true,
-              "read_only" : false,
-              "annotations" : [],
               "type" : {
                 "type" : "bytes",
                 "width" : 3
@@ -115,6 +97,20 @@ For a P4 match table
       "attributes" : ["EntryScope"]
     },
 ```
+### Key
+Key uniquely defines an entry in the table. A key comprises of several "fields". Tables can be present without any Key in their schema. In such a case, only one entry can reside in the table called as the Default entry and the table is called a Keyless table.
+
+### Action
+An Action groups together related sets of data fields. At one time, only one action can be active. Tables can be present without any actions too.
+
+### Data
+Data fields present outside of any actions are called "common" data. They belong to all actions. 
+
+### Attributes
+Attributes are table-wide properties of tables. These define a stateful property of a table, for example, using entry scope attribute in TNA, users can set tables as symmetric or asymmetric and defines the way entries would be programmed in multiple pipeline profiles of a device.
+
+### Operations
+Operations are also like Attributes. The only difference is that they are one shot and don't change the properties of a table. For example, counter-sync operation in TNA would sync counter values from hardware to software.
 
 ## TDI APIs Overview
 
@@ -130,7 +126,24 @@ CRUD APIs for tables like
 * tableEntryDel
 * tableEntryMod
 * tableClear
-* 
+* tableEntryGet
+* tableEntryGetNext_n
+* tableEntryGetFirst
+* tableDefaultEntrySet
+* tableDefaultEntryGet
+* tableUsageGet
+
+Object allocate/reset APIs like
+* keyAllocate
+* dataAllocate
+* attributeAllocate
+* keyReset
+
+attribute and operations set/get/execute
+* tableAttributeSet
+* tableAttributeGet
+* tableOperationsGet
+
 
 ### Session
 Session management API to support batching, transactions
@@ -163,4 +176,3 @@ C --> E(libtdi_dpdk)
 mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=../install .. && make install -j8
 ```
-

@@ -131,9 +131,6 @@ tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t &dev_id) {
           __func__,
           __LINE__,
           dev_id);
-  // removeItemFromMap(&bfRtInfoObjMap, dev_id);
-  // removeItemFromMap(&bfRtDeviceStateMap, dev_id);
-
   return TDI_SUCCESS;
 }
 
