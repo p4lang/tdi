@@ -19,7 +19,11 @@ set(TDI_C_FRONTEND_SRCS
 add_library(tdi_o OBJECT ${TDI_SRCS} ${TDI_C_FRONTEND_SRCS})
 add_library(tdi SHARED $<TARGET_OBJECTS:tdi_o>)
 
-target_link_libraries(tdi PUBLIC target_utils targetsys)
+if (STANDALONE)
+  target_link_libraries(tdi PUBLIC target_utils target_sys)
+else()
+  target_link_libraries(tdi PUBLIC bfutils bfsys)
+endif()
 
 add_subdirectory(arch/tna)
 add_subdirectory(targets/dummy)

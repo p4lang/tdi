@@ -172,7 +172,7 @@ class DevMgr {
 class Init {
  public:
   /**
-   * @brief TDI Module Init API. This function needs to be called to
+   * @brief Bf Rt Module Init API. This function needs to be called to
    * initialize TDI. Some specific managers can be specified to be skipped
    * TDI initialization. This allows TDI session layer to not know about these
    * managers. By default, no mgr initialization is skipped if empty vector is

@@ -23,99 +23,10 @@
 #include <exception>
 #include <regex>
 
-#include <tdi/common/tdi_table_info.hpp>
+#include "tdi_table_info.hpp"
 
 namespace tdi {
 
-class KeyFieldInfo {
-  tdiId field_id;
-  size_t size_bits;
-  std::string match_type;
-  std::string data_type;
-  std::string name;
-  std::vector<std::string> enum_choices;
-  std::set<std::string> annotations;
-  // Default value for this data field
-  uint64_t default_value;
-  float default_fl_value;
-  std::string default_str_value;
-  size_t field_offset;
-  size_t start_bit{0};
-  // Flag to indicate if this is a field slice or not
-  bool is_field_slice{false};
-  // This might vary from the 'size_bits' in case of
-  // field slices when the field slice width does not
-  // equal the size of the entire key field
-  size_t parent_field_full_byte_size{0};
-  bool is_ptr;
-  // flag to indicate whether it is a priority index or not
-  bool is_partition;
-  // A flag to indicate this is a match priority field
-  bool match_priority;
-};
-
-class DataFieldInfo {
-  std::string name;
-  tdiId field_id;
-  tdiId action_id;
-  bool  ptr_valid;
-  size_t size;
-  size_t field_offset;
-  std::string field_type;
-  std::string data_type;
-  // Vector of allowed choices for this field
-  std::vector<std::string> enum_choices;
-  // Default value for this data field
-  uint64_t default_value;
-  float default_fl_value;
-  std::string default_str_value;
-  bool mandatory;
-  bool read_only;
-  bool container_valid{false};
-  /* Map of Objects within container */
-  std::map<tdiId, std::unique_ptr<DataFieldInfo>> container;
-  std::map<std::string, tdiId> container_names;
-  std::set<std::string> annotations;
-  std::set<tdiId> oneof_siblings_;
-};
-
-/* Structure to keep action info */
-class ActionInfo {
-  tdiId action_id;
-  std::string name;
-  // Map of table_data_fields
-  std::map<tdiId, std::unique_ptr<DataFieldInfo>> data_fields;
-  // Map of table_data_fields with names
-  std::map<std::string, tdiId> data_fields_names;
-  // Size of the action data in bytes
-  size_t dataSz;
-  // Size of the action data in bits (not including byte padding)
-  size_t dataSzbits;
-  std::set<std::string> annotations;
-};
-
-/* The meta structure to keep info on the table, generated from _tdi_parse logic */
-class TableInfo {
-  std::string table_name;
-  std::string table_type;
-  std::map<tdiId, std::unique_ptr<KeyFieldInfo>>  table_key_map;
-  std::map<tdiId, std::unique_ptr<DataFieldInfo>> table_data_map;
-  std::map<tdiId, std::unique_ptr<ActionInfo>>    table_action_map;
-  std::map<tdiId, std::unique_ptr<TableRefInfo>>  table_ref_map;
-  std::set<std::string> table_attribute_set;
-  std::set<std::string> table_operation_set;
-  std::set<std::string> table_api_set; // lookup tm fixed json
-};
-
-/* class to keep info regarding a reference to another tableInfo */
-class TableRefInfo {
-  tdiId id;
-  std::string name;
-  pipe_tbl_hdl_t tbl_hdl;
-  // A flag to indicate if the reference is indirect. TRUE when it is, FALSE
-  // when the refernece is direct
-  bool indirect_ref;
-};
 
 bool Annotation::operator<(const Annotation &other) const {
   return (this->full_name_ < other.full_name_);
@@ -139,7 +50,7 @@ tdi_status_t TableInfo::tableNameGet(std::string *name) const {
               table_name_get().c_str());
     return TDI_INVALID_ARG;
   }
-  *name = object_name;
+  *name = table_name_;
   return TDI_SUCCESS;
 }
 
@@ -151,7 +62,7 @@ tdi_status_t TableInfo::tableIdGet(tdi_id_t *id) const {
               table_name_get().c_str());
     return TDI_INVALID_ARG;
   }
-  *id = object_id;
+  *id = table_id_;
   return TDI_SUCCESS;
 }
 
@@ -160,7 +71,7 @@ tdi_status_t TableInfo::tableTypeGet(tdi_table_type_e *table_type) const {
     LOG_ERROR("%s:%d Outparam passed is nullptr", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
-  *table_type = object_type;
+  *table_type = table_type_;
   return TDI_SUCCESS;
 }
 
@@ -198,6 +109,18 @@ tdi_status_t TableInfo::tableApiSupportedGet(TableApiSet *tableApis) const {
   return TDI_SUCCESS;
 }
 
+tdi_status_t TableInfo::tableAttributesSupported(
+    std::set<tdi_attributes_type_e> *type_set) const {
+  *type_set = attributes_type_set_;
+  return TDI_SUCCESS;
+}
+
+tdi_status_t TableInfo::tableOperationsSupported(
+    std::set<tdi_operations_type_e> *op_type_set) const {
+  *op_type_set = operations_type_set_;
+  return TDI_SUCCESS;
+}
+
 tdi_status_t TableInfo::keyFieldIdListGet(std::vector<tdi_id_t> *id_vec) const {
   if (id_vec == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
@@ -206,25 +129,125 @@ tdi_status_t TableInfo::keyFieldIdListGet(std::vector<tdi_id_t> *id_vec) const {
               table_name_get().c_str());
     return TDI_INVALID_ARG;
   }
-  for (const auto &kv : key_field_info_map_) {
+  for (const auto &kv : table_key_map_) {
     id_vec->push_back(kv.first);
   }
   std::sort(id_vec->begin(), id_vec->end());
   return TDI_SUCCESS;
 }
-tdi_status_t TableInfo::tableAttributesSupported(
-    std::set<tdi_attributes_type_e> *type_set) const {
-  *type_set = attributes_type_set;
+
+tdi_status_t TableInfo::keyFieldIdGet(const std::string &name,
+                                        tdi_id_t *field_id) const {
+  if (field_id == nullptr) {
+    LOG_ERROR("%s:%d %s Please pass mem allocated out param",
+              __func__,
+              __LINE__,
+              table_name_get().c_str());
+    return TDI_INVALID_ARG;
+  }
+  auto found = std::find_if(
+      table_key_map_.begin(),
+      table_key_map_.end(),
+      [&name](const std::pair<const tdi_id_t,
+                              std::unique_ptr<TableKeyField>> &map_item) {
+        return (name == map_item.second->getName());
+      });
+  if (found != table_key_map_.end()) {
+    *field_id = (*found).second->getId();
+    return TDI_SUCCESS;
+  }
+
+  LOG_ERROR("%s:%d %s Field \"%s\" not found in key field list",
+            __func__,
+            __LINE__,
+            table_name_get().c_str(),
+            name.c_str());
+  return TDI_OBJECT_NOT_FOUND;
+}
+
+tdi_status_t TableInfo::keyFieldGet(const tdi_id_t &field_id, const KeyFieldInfo *key_field_info) const;
+  if (key_field_info == nullptr) {
+    LOG_ERROR("%s:%d %s Please pass mem allocated out param",
+              __func__,
+              __LINE__,
+              table_name_get().c_str());
+    return TDI_INVALID_ARG;
+  }
+  if (table_key_map_.find(field_id) == table_key_map_.end()) {
+    LOG_ERROR("%s:%d %s Field \"%d\" not found in key field list",
+            __func__,
+            __LINE__,
+            table_name_get().c_str(),
+            field_id);
+    return TDI_INVALID_ARG;
+  }
+  *key_field_info = table_key_map_.at(field_id);
   return TDI_SUCCESS;
 }
 
-tdi_status_t TableInfo::tableOperationsSupported(
-    std::set<tdi_operations_type_e> *op_type_set) const {
-  *op_type_set = operations_type_set;
+tdi_status_t TableInfo::dataFieldIdListGet(
+    const tdi_id_t &action_id, std::vector<tdi_id_t> *id_vec) const {
+  if (id_vec == nullptr) {
+    LOG_ERROR("%s:%d %s Please pass mem allocated out param",
+              __func__,
+              __LINE__,
+              table_name_get().c_str());
+    return TDI_INVALID_ARG;
+  }
+  if (action_id) {
+    if (table_action_map_.find(action_id) == table_action_map_.end()) {
+      LOG_ERROR("%s:%d %s Action Id %d Not Found",
+                __func__,
+                __LINE__,
+                table_name_get().c_str(),
+                action_id);
+      return TDI_OBJECT_NOT_FOUND;
+    }
+    for (const auto &kv : table_action_map_.at(action_id)->data_fields) {
+      id_vec->push_back(kv.first);
+    }
+  }
+  // Also include common data fields
+  for (const auto &kv : table_data_map_) {
+    id_vec->push_back(kv.first);
+  }
+  std::sort(id_vec->begin(), id_vec->end());
   return TDI_SUCCESS;
 }
 
-#if 0
+tdi_status_t TableInfo::dataFieldIdListGet(
+    std::vector<tdi_id_t> *id_vec) const {
+  return this->dataFieldIdListGet(0, id_vec);
+}
+
+tdi_status_t TableInfo::dataFieldIdGet(const std::string &name,
+                                         tdi_id_t *field_id) const {
+  return this->dataFieldIdGet(name, 0, field_id);
+}
+
+tdi_status_t TableInfo::dataFieldIdGet(const std::string &name,
+                                         const tdi_id_t &action_id,
+                                         tdi_id_t *field_id) const {
+  if (field_id == nullptr) {
+    LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  const TableDataField *field;
+  std::vector<tdi_id_t> empty;
+  auto status = getDataField(name, action_id, empty, &field);
+  if (status != TDI_SUCCESS) {
+    LOG_TRACE("%s:%d Field name %s Action ID %d not found",
+              __func__,
+              __LINE__,
+              name.c_str(),
+              action_id);
+    return status;
+  }
+  *field_id = field->getId();
+  return TDI_SUCCESS;
+}
+
+
 tdi_status_t KeyFieldInfo::keyFieldTypeGet(KeyFieldType *field_type) const {
   if (field_type == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
@@ -237,7 +260,7 @@ tdi_status_t KeyFieldInfo::keyFieldTypeGet(KeyFieldType *field_type) const {
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::keyFieldDataTypeGet(const tdi_id_t &field_id,
+tdi_status_t KeyFieldInfo::keyFieldDataTypeGet(const tdi_id_t &field_id,
                                               DataType *data_type) const {
   if (data_type == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
@@ -258,34 +281,6 @@ tdi_status_t Table::keyFieldDataTypeGet(const tdi_id_t &field_id,
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::keyFieldIdGet(const std::string &name,
-                                        tdi_id_t *field_id) const {
-  if (field_id == nullptr) {
-    LOG_ERROR("%s:%d %s Please pass mem allocated out param",
-              __func__,
-              __LINE__,
-              table_name_get().c_str());
-    return TDI_INVALID_ARG;
-  }
-  auto found = std::find_if(
-      key_fields.begin(),
-      key_fields.end(),
-      [&name](const std::pair<const tdi_id_t,
-                              std::unique_ptr<TableKeyField>> &map_item) {
-        return (name == map_item.second->getName());
-      });
-  if (found != key_fields.end()) {
-    *field_id = (*found).second->getId();
-    return TDI_SUCCESS;
-  }
-
-  LOG_ERROR("%s:%d %s Field \"%s\" not found in key field list",
-            __func__,
-            __LINE__,
-            table_name_get().c_str(),
-            name.c_str());
-  return TDI_OBJECT_NOT_FOUND;
-}
 
 tdi_status_t Table::keyFieldSizeGet(const tdi_id_t &field_id,
                                           size_t *size) const {
@@ -377,82 +372,6 @@ uint32_t Table::dataFieldListSize(const tdi_id_t &action_id) const {
   return common_data_fields.size();
 }
 
-tdi_status_t Table::dataFieldIdListGet(
-    const tdi_id_t &action_id, std::vector<tdi_id_t> *id_vec) const {
-  if (id_vec == nullptr) {
-    LOG_ERROR("%s:%d %s Please pass mem allocated out param",
-              __func__,
-              __LINE__,
-              table_name_get().c_str());
-    return TDI_INVALID_ARG;
-  }
-  if (action_id) {
-    if (action_info_list.find(action_id) == action_info_list.end()) {
-      LOG_ERROR("%s:%d %s Action Id %d Not Found",
-                __func__,
-                __LINE__,
-                table_name_get().c_str(),
-                action_id);
-      return TDI_OBJECT_NOT_FOUND;
-    }
-    for (const auto &kv : action_info_list.at(action_id)->data_fields) {
-      id_vec->push_back(kv.first);
-    }
-  }
-  // Also include common data fields
-  for (const auto &kv : common_data_fields) {
-    id_vec->push_back(kv.first);
-  }
-  std::sort(id_vec->begin(), id_vec->end());
-  return TDI_SUCCESS;
-}
-
-tdi_status_t Table::dataFieldIdListGet(
-    std::vector<tdi_id_t> *id_vec) const {
-  return this->dataFieldIdListGet(0, id_vec);
-}
-
-tdi_status_t Table::containerDataFieldIdListGet(
-    const tdi_id_t &field_id, std::vector<tdi_id_t> *id_vec) const {
-  if (id_vec == nullptr) {
-    LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
-    return TDI_INVALID_ARG;
-  }
-  const TableDataField *field;
-  auto status = getDataField(field_id, 0, &field);
-  if (status != TDI_SUCCESS) {
-    LOG_TRACE("%s:%d Field ID %d not found", __func__, __LINE__, field_id);
-    return status;
-  }
-  return field->containerFieldIdListGet(id_vec);
-}
-
-tdi_status_t Table::dataFieldIdGet(const std::string &name,
-                                         tdi_id_t *field_id) const {
-  return this->dataFieldIdGet(name, 0, field_id);
-}
-
-tdi_status_t Table::dataFieldIdGet(const std::string &name,
-                                         const tdi_id_t &action_id,
-                                         tdi_id_t *field_id) const {
-  if (field_id == nullptr) {
-    LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
-    return TDI_INVALID_ARG;
-  }
-  const TableDataField *field;
-  std::vector<tdi_id_t> empty;
-  auto status = getDataField(name, action_id, empty, &field);
-  if (status != TDI_SUCCESS) {
-    LOG_TRACE("%s:%d Field name %s Action ID %d not found",
-              __func__,
-              __LINE__,
-              name.c_str(),
-              action_id);
-    return status;
-  }
-  *field_id = field->getId();
-  return TDI_SUCCESS;
-}
 
 tdi_status_t Table::dataFieldSizeGet(const tdi_id_t &field_id,
                                            size_t *size) const {
@@ -1285,17 +1204,11 @@ tdi_status_t Table::getDataStringChoices(
 
   return status;
 }
-#endif
 
 } /* END of tdi namespace */
 
 std::map< std::string, std::unique_ptr<struct table_info> > tdi_info_map;
 static const std::string match_key_priority_field_name = "$MATCH_PRIORITY";
-
-/* the ID that is generated by the compiler, the users, or provided by the deivce specific code.
-   It is the id preseted in json schema file.
-   */
-typedef size_t tdiId;
 
 typedef struct key_size_ {
   size_t bytes;
@@ -1305,15 +1218,14 @@ typedef struct key_size_ {
 
 
 void _tdi_parse_getTableFieldWidth(
-    const bfrt::Cjson &node,
+    const tdi::Cjson &node,
     std::string &type,
     size_t &width,
     uint64_t &default_value,
     float &default_fl_value,
     std::string &default_str_value,
-    std::vector<std::string> &choices)
-{
-  //  bfrt::Cjson node_type = node["type"];
+    std::vector<std::string> &choices) {
+  //  tdi::Cjson node_type = node["type"];
   type = std::string(node["type"]["type"]);
   if (type == "bytes") {
     width = static_cast<unsigned int>(node["type"]["width"]);
@@ -1381,13 +1293,13 @@ void _tdi_parse_getTableFieldWidth(
 // This will be true when the key is a field slice. The compiler will
 // publish the name of the key with '[]' when the user does not use '@name'
 // p4 annotation for the field slice. If the p4 annotation is uses, then
-// the new name will be published in bfrt json and this field that will be
+// the new name will be published in tdi json and this field that will be
 // treated as an independent field and not as a field slice.
 // Refer P4C-1293 for more details on how the compiler will publish
 // different fields
-std::string _tdi_parse_getParentName(const bfrt::Cjson &key_field) {
+std::string _tdi_parse_getParentName(const tdi::Cjson &key_field) {
   const std::string key_name = key_field["name"];
-  bfrt::Cjson key_annotations = key_field["annotations"];
+  tdi::Cjson key_annotations = key_field["annotations"];
   for (const auto &annotation : key_annotations.getCjsonChildVec()) {
     std::string annotation_name = (*annotation)["name"];
     std::string annotation_value = (*annotation)["value"];
@@ -1400,7 +1312,7 @@ std::string _tdi_parse_getParentName(const bfrt::Cjson &key_field) {
             __func__,
             __LINE__,
             key_name.c_str());
-        BF_RT_DBGCHK(0);
+        TDI_DBGCHK(0);
         return key_name;
       }
       return std::string(key_name.begin(), key_name.begin() + offset);
@@ -1429,7 +1341,7 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
         __LINE__,
         table_name.c_str(),
         key_name.c_str());
-    // BF_RT_DBGCHK(0);
+    // TDI_DBGCHK(0);
     return BF_OBJECT_NOT_FOUND;
   }
   size_t position = iter_1->second;
@@ -1443,7 +1355,7 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
         table_name.c_str(),
         key_name.c_str(),
         position);
-    BF_RT_DBGCHK(0);
+    TDI_DBGCHK(0);
     return BF_OBJECT_NOT_FOUND;
   }
   *field_offset = iter_2->second;
@@ -1457,7 +1369,7 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
         __LINE__,
         table_name.c_str(),
         key_name.c_str());
-    BF_RT_DBGCHK(0);
+    TDI_DBGCHK(0);
     return BF_OBJECT_NOT_FOUND;
   }
   *parent_field_byte_size = iter_3->second;
@@ -1470,11 +1382,11 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
 // If the field is a name annotated field slice or not a field slice at all,
 // then the start bit is read from the context json node if present or set
 // to zero if the context json node is absent
-size_t _tdi_parse_getStartBit(const bfrt::Cjson *context_json_key_field,
-                              const bfrt::Cjson *bfrt_json_key_field,
-                              bfrt::BfRtTable::TableType table_type) {
-  const std::string key_name = (*bfrt_json_key_field)["name"];
-  bfrt::Cjson key_annotations = (*bfrt_json_key_field)["annotations"];
+size_t _tdi_parse_getStartBit(const tdi::Cjson *context_json_key_field,
+                              const tdi::Cjson *tdi_json_key_field,
+                              tdi::TdiTable::TableType table_type) {
+  const std::string key_name = (*tdi_json_key_field)["name"];
+  tdi::Cjson key_annotations = (*tdi_json_key_field)["annotations"];
   for (const auto &annotation : key_annotations.getCjsonChildVec()) {
     std::string annotation_name = (*annotation)["name"];
     std::string annotation_value = (*annotation)["value"];
@@ -1487,7 +1399,7 @@ size_t _tdi_parse_getStartBit(const bfrt::Cjson *context_json_key_field,
             __func__,
             __LINE__,
             key_name.c_str());
-        BF_RT_DBGCHK(0);
+        TDI_DBGCHK(0);
         return 0;
       }
       return std::stoi(key_name.substr(offset + 1), nullptr, 10);
@@ -1496,10 +1408,10 @@ size_t _tdi_parse_getStartBit(const bfrt::Cjson *context_json_key_field,
 
   bool is_context_json_node = false;
   switch(table_type) {
-    case bfrt::BfRtTableObj::TableType::MATCH_DIRECT:
-    case bfrt::BfRtTableObj::TableType::MATCH_INDIRECT:
-    case bfrt::BfRtTableObj::TableType::MATCH_INDIRECT_SELECTOR:
-    case bfrt::BfRtTableObj::TableType::PORT_METADATA:
+    case tdi::TdiTableObj::TableType::MATCH_DIRECT:
+    case tdi::TdiTableObj::TableType::MATCH_INDIRECT:
+    case tdi::TdiTableObj::TableType::MATCH_INDIRECT_SELECTOR:
+    case tdi::TdiTableObj::TableType::PORT_METADATA:
       is_context_json_node = true;
       break;
     default:
@@ -1530,7 +1442,7 @@ size_t _tdi_parse_getStartBit(const bfrt::Cjson *context_json_key_field,
         __func__,
         __LINE__,
         key_name.c_str());
-    // BF_RT_DBGCHK(0);
+    // TDI_DBGCHK(0);
     return 0;
   }
 
@@ -1542,11 +1454,11 @@ size_t _tdi_parse_getStartBit(const bfrt::Cjson *context_json_key_field,
 
 // This function returns if a key field is a field slice or not
 bool _tdi_parse_isFieldSlice(
-    const bfrt::Cjson &key_field,
+    const tdi::Cjson &key_field,
     const size_t &start_bit,
     const size_t &key_width_byte_size,
     const size_t &key_width_parent_byte_size) {
-  bfrt::Cjson key_annotations = key_field["annotations"];
+  tdi::Cjson key_annotations = key_field["annotations"];
   for (const auto &annotation : key_annotations.getCjsonChildVec()) {
     std::string annotation_name = (*annotation)["name"];
     std::string annotation_value = (*annotation)["value"];
@@ -1587,8 +1499,8 @@ bool _tdi_parse_isFieldSlice(
 }
 
 std::unique_ptr<KeyFieldInfo> _tdi_parse_keyParse(
-  bfrt::Cjson &key_json,
-  const tdiId &table_id,
+  tdi::Cjson &key_json,
+  const tdi_id_t &table_id,
   const size_t &field_offset,
   const size_t &start_bit,
   const size_t &parent_field_byte_size,
@@ -1599,7 +1511,7 @@ std::unique_ptr<KeyFieldInfo> _tdi_parse_keyParse(
   // - Gets the position (the order in which they appear in p4) of every match field
   // - Gets the full size of every match field in bytes
   // - Gets the offset (in the match spec byte buf) of every match field
-  bfrt::Cjson table_key_cjson = table_bfrt["key"];
+  tdi::Cjson table_key_cjson = table_tdi["key"];
   std::map<std::string, size_t> match_key_field_name_to_position_map;
   std::map<std::string, size_t> match_key_field_name_to_parent_field_byte_size_map;
   std::map<size_t, size_t> match_key_field_position_to_offset_map;
@@ -1607,9 +1519,9 @@ std::unique_ptr<KeyFieldInfo> _tdi_parse_keyParse(
   bool is_context_json_node = false;
   size_t cumulative_offset = 0;
   size_t cumulative_key_width_bits = 0;
-  // This uses the bfrt json key node
+  // This uses the tdi json key node
   size_t pos = 0;
-  // Since we don't support field slices for fixed objects, we use the bfrt
+  // Since we don't support field slices for fixed objects, we use the tdi
   // key json node to extract all the information. The position of the
   // fields will just be according to the order in which they are published
   // Hence simply increment the position as we iterate
@@ -1671,7 +1583,7 @@ std::unique_ptr<KeyFieldInfo> _tdi_parse_keyParse(
         __LINE__,
         table_name.c_str(),
         key_name.c_str());
-    BF_RT_DBGCHK(0);
+    TDI_DBGCHK(0);
     return nullptr;
   }
   std::string data_type;
@@ -1725,8 +1637,8 @@ std::unique_ptr<KeyFieldInfo> _tdi_parse_keyParse(
   return key_field;
 }
 
-std::set<bfrt::Annotation> _tdi_parse_parseAnnotations(bfrt::Cjson annotation_cjson) {
-  std::set<bfrt::Annotation> annotations;
+std::set<tdi::Annotation> _tdi_parse_parseAnnotations(tdi::Cjson annotation_cjson) {
+  std::set<tdi::Annotation> annotations;
   for (const auto &annotation : annotation_cjson.getCjsonChildVec()) {
     std::string annotation_name = (*annotation)["name"];
     std::string annotation_value = (*annotation)["value"];
@@ -1738,7 +1650,7 @@ std::set<bfrt::Annotation> _tdi_parse_parseAnnotations(bfrt::Cjson annotation_cj
 bool _tdi_parse_isActionParam_matchTbl(
     const std::string table_name,
     const std::map<std::string, std::vector<struct TableRefInfo>> table_ref_map;
-    tdiId action_handle,
+    tdi_id_t action_handle,
     std::string parameter_name)
 {
   std::string ref = "action_data_table_refs";
@@ -1752,7 +1664,7 @@ bool _tdi_parse_isActionParam_matchTbl(
                   action_table_res_pair.name.c_str());
         continue;
       }
-      bfrt::Cjson action_table_cjson = *(table_cjson_map.at(action_table_res_pair.name).second);
+      tdi::Cjson action_table_cjson = *(table_cjson_map.at(action_table_res_pair.name).second);
       auto action_table_name = action_table_res_pair.name;
       if (_tdi_parse_isActionParam(action_table_cjson, action_handle, action_table_name, parameter_name)) {
         return true;
@@ -1767,7 +1679,7 @@ bool _tdi_parse_isActionParam_matchTbl(
   // We are here because the parameter is not encoded in the action RAM. Next
   // check if its encoded as part of an immediate field
 
-  bfrt::Cjson match_table_cjson = *(table_cjson_map.at(bfrtTable->table_name_get()).second);
+  tdi::Cjson match_table_cjson = *(table_cjson_map.at(tdiTable->table_name_get()).second);
   // Find if it's an ATCAM table
   std::string atcam = match_table_cjson["match_attributes"]["match_type"];
   bool is_atcam = (atcam == "algorithmic_tcam") ? true : false;
@@ -1781,7 +1693,7 @@ bool _tdi_parse_isActionParam_matchTbl(
   // There will be as many "units" as the number of ATCAM logical tables for the
   // ALPM table. We just process the first one in order to find out about action
   // tables
-  bfrt::Cjson stage_table = match_table_cjson["match_attributes"]["stage_tables"];
+  tdi::Cjson stage_table = match_table_cjson["match_attributes"]["stage_tables"];
   if (is_alpm) {
     stage_table =
         match_table_cjson["match_attributes"]["atcam_table"]["match_attributes"]
@@ -1793,7 +1705,7 @@ bool _tdi_parse_isActionParam_matchTbl(
     stage_table = match_table_cjson["match_attributes"]["stage_tables"][0];
   }
 
-  bfrt::Cjson action_formats = stage_table["action_format"];
+  tdi::Cjson action_formats = stage_table["action_format"];
 
   if (stage_table["ternary_indirection_stage_table"].exists()) {
     action_formats =
@@ -1804,7 +1716,7 @@ bool _tdi_parse_isActionParam_matchTbl(
         static_cast<unsigned int>((*action_format)["action_handle"]);
     // We need to modify the raw handle parsed before comparing
     applyMaskOnContextJsonHandle(&json_action_handle,
-                                 bfrtTable->table_name_get());
+                                 tdiTable->table_name_get());
     if (json_action_handle != action_handle) {
       continue;
     }
@@ -1820,20 +1732,20 @@ bool _tdi_parse_isActionParam_matchTbl(
 }
 
 bool _tdi_parse_isParamActionParam(
-    bfrt::BfRtTable::TableType table_type,
+    tdi::TdiTable::TableType table_type,
     std::string table_name,
-    tdiId action_handle,
+    tdi_id_t action_handle,
     std::string parameter_name,
     bool use_p4_params_node)
 {
   // If the table is a Match-Action table call the matchTbl function to analyze
   // if this parameter belongs to the action spec or not
-  if (table_type == BfRtTable::TableType::MATCH_DIRECT) {
-    return _tdi_parse_isActionParam_matchTbl(bfrtTable, action_handle, parameter_name);
-  } else if (table_type == BfRtTable::TableType::ACTION_PROFILE) {
+  if (table_type == TdiTable::TableType::MATCH_DIRECT) {
+    return _tdi_parse_isActionParam_matchTbl(tdiTable, action_handle, parameter_name);
+  } else if (table_type == TdiTable::TableType::ACTION_PROFILE) {
     return _tdi_parse_isActionParam_actProf(
-        bfrtTable, action_handle, parameter_name, use_p4_params_node);
-  } else if (table_type == BfRtTable::TableType::PORT_METADATA) {
+        tdiTable, action_handle, parameter_name, use_p4_params_node);
+  } else if (table_type == TdiTable::TableType::PORT_METADATA) {
     // Phase0 can have only action params as data
     return true;
   }
@@ -1843,14 +1755,14 @@ bool _tdi_parse_isParamActionParam(
 // This funcion, given the parameter_name of a certain action figures out if the
 // parameter is part of the action spec based on the action table entry
 // formatting information
-bool _tdi_parse_isActionParam_actProf(const BfRtTableObj *bfrtTable,
-                                         tdiId action_handle,
+bool _tdi_parse_isActionParam_actProf(const TdiTableObj *tdiTable,
+                                         tdi_id_t action_handle,
                                          std::string parameter_name,
                                          bool use_p4_params_node) {
-  bfrt::Cjson action_table_cjson =
-      *(table_cjson_map.at(bfrtTable->object_name).second);
+  tdi::Cjson action_table_cjson =
+      *(table_cjson_map.at(tdiTable->table_name).second);
 
-  auto action_table_name = bfrtTable->table_name_get();
+  auto action_table_name = tdiTable->table_name_get();
 
   return _tdi_parse_isActionParam(action_table_cjson,
                        action_handle,
@@ -1859,8 +1771,8 @@ bool _tdi_parse_isActionParam_actProf(const BfRtTableObj *bfrtTable,
                        use_p4_params_node);
 }
 
-bool _tdi_parse_isActionParam(bfrt::Cjson action_table_cjson,
-                              tdiId action_handle,
+bool _tdi_parse_isActionParam(tdi::Cjson action_table_cjson,
+                              tdi_id_t action_handle,
                               std::string action_table_name,
                               std::string parameter_name,
                               bool use_p4_params_node) {
@@ -1894,10 +1806,10 @@ bool _tdi_parse_isActionParam(bfrt::Cjson action_table_cjson,
     // Using the p4_parameters node to figure out if its an action param instead
     // of using the pack format. This is because there can be instances where
     // the param might be optimized out by the compiler and hence not appear in
-    // pack format. However, the param always appears in bfrt json (optimized
+    // pack format. However, the param always appears in tdi json (optimized
     // out
     // or not). Hence if we use pack format to figure out if its an action param
-    // there is an inconsistency (as the param exists in the bfrt json but not
+    // there is an inconsistency (as the param exists in the tdi json but not
     // in pack format). So its better to use p4_parameters as the param is
     // guaranteed to be present there (optimized or not)
     for (const auto &action :
@@ -1919,16 +1831,16 @@ bool _tdi_parse_isActionParam(bfrt::Cjson action_table_cjson,
 }
 
 std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
-    bfrt::Cjson data_json,
-    bfrt::Cjson action_indirect_res,
+    tdi::Cjson data_json,
+    tdi::Cjson action_indirect_res,
     std::string this_table_type,
     std::string this_table_name,
-    const bfrt::BfRtTableObj *bfrtTable,
+    const tdi::TdiTableObj *tdiTable,
     const TableInfo *parent_tbl_info,
     pipe_act_fn_hdl_t action_handle,
-    tdiId table_id,
-    tdiId table_id,
-    tdiId action_id,
+    tdi_id_t table_id,
+    tdi_id_t table_id,
+    tdi_id_t action_id,
     uint32_t oneof_index,
     bool *is_register_data_field) {
   // first get mandatory and read_only
@@ -1940,16 +1852,16 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
   if (data_json["singleton"].exists()) {
     data_json = data_json["singleton"];
   }
-  std::set<tdiId> oneof_siblings;
+  std::set<tdi_id_t> oneof_siblings;
   if (data_json["oneof"].exists()) {
     // Create a set of all the oneof members IDs
     for (const auto &oneof_data : data_json["oneof"].getCjsonChildVec()) {
-      oneof_siblings.insert(static_cast<tdiId>((*oneof_data)["id"]));
+      oneof_siblings.insert(static_cast<tdi_id_t>((*oneof_data)["id"]));
     }
     data_json = data_json["oneof"][oneof_index];
     // remove this field's ID from the siblings. One
     // cannot be their own sibling now, can they?
-    oneof_siblings.erase(static_cast<tdiId>(data_json["id"]));
+    oneof_siblings.erase(static_cast<tdi_id_t>(data_json["id"]));
   }
   // get "name"
   std::string data_name = static_cast<std::string>(data_json["name"]);
@@ -1975,17 +1887,17 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
   // Get Annotations if any
   // We need to use "annotations" field to detect if a particular data_json field
   // is a register data_json field as unlike other resource parameters register
-  // fields have user defined names in bfrt json
+  // fields have user defined names in tdi json
   bool data_field_is_reg = false;
   std::set<Annotation> annotations = _tdi_parse_parseAnnotations(data_json["annotations"]);
-  if (annotations.find(Annotation("$bfrt_field_class", "register_data")) !=
+  if (annotations.find(Annotation("$tdi_field_class", "register_data")) !=
       annotations.end()) {
     data_field_is_reg = true;
     *is_register_data_field = data_field_is_reg;
   }
 
-  tdiId table_id = bfrtTable->table_id_get();
-  tdiId data_id = static_cast<tdiId>(data_json["id"]);
+  tdi_id_t table_id = tdiTable->table_id_get();
+  tdi_id_t data_id = static_cast<tdi_id_t>(data_json["id"]);
   // Parse the container if it exists
   bool container_valid = false;
   if (data_json["container"].exists()) {
@@ -2014,8 +1926,8 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
 
   // Parse the container if it exists
   if (container_valid) {
-    bfrt::Cjson c_table_data = data_json["container"];
-    parseContainer(c_table_data, bfrtTable, data_field.get());
+    tdi::Cjson c_table_data = data_json["container"];
+    parseContainer(c_table_data, tdiTable, data_field.get());
   }
   return data_field;
 }
@@ -2023,34 +1935,34 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
 // This variant of the function is to parse the action specs for all the tables
 // except phase0 table
 std::unique_ptr<ActionInfo> _tdi_parse_actionSpecsParse(
-    bfrt::Cjson &action_bfrt,
-    bfrt::Cjson &action_context,
-    bfrt::BfRtTable::TableType table_type,
-    const bfrt::BfRtTableObj *bfrtTable)
+    tdi::Cjson &action_tdi,
+    tdi::Cjson &action_context,
+    tdi::TdiTable::TableType table_type,
+    const tdi::TdiTableObj *tdiTable)
 {
   std::unique_ptr<ActionInfo> action_info(new ActionInfo());
-  action_info->name = static_cast<std::string>(action_bfrt["name"]);
-  action_info->action_id = static_cast<tdiId>(action_bfrt["id"]);
-  action_info->annotations = _tdi_parse_parseAnnotations(action_bfrt["annotations"]);
-  bfrt::Cjson action_indirect;  // dummy
+  action_info->name = static_cast<std::string>(action_tdi["name"]);
+  action_info->action_id = static_cast<tdi_id_t>(action_tdi["id"]);
+  action_info->annotations = _tdi_parse_parseAnnotations(action_tdi["annotations"]);
+  tdi::Cjson action_indirect;  // dummy
   if (action_context.exists()) {
     action_info->act_fn_hdl =
         static_cast<pipe_act_fn_hdl_t>(action_context["handle"]);
-    /* applyMaskOnContextJsonHandle(&action_info->act_fn_hdl, bfrtTable->table_name_get()); */
+    /* applyMaskOnContextJsonHandle(&action_info->act_fn_hdl, tdiTable->table_name_get()); */
     action_indirect = action_context["indirect_resources"];
   } else {
     action_info->act_fn_hdl = 0;
   }
   // get action profile data_json
-  bfrt::Cjson action_data_cjson = action_bfrt["data"];
+  tdi::Cjson action_data_cjson = action_tdi["data"];
   size_t offset = 0;
   size_t bitsize = 0;
   for (const auto &action_data : action_data_cjson.getCjsonChildVec()) {
     auto data_field = _tdi_parse_dataParse(*action_data,
                                 action_indirect,
-                                bfrtTable->table_name_get(),
+                                tdiTable->table_name_get(),
                                 table_type,
-                                bfrtTable,
+                                tdiTable,
                                 offset,
                                 bitsize,
                                 action_info->act_fn_hdl,
@@ -2077,7 +1989,7 @@ std::unique_ptr<ActionInfo> _tdi_parse_actionSpecsParse(
 /* The function pasrse the provided json schema file and return an tdi_info object that later can be used to
  * create a finalized tdi table obj, possible a derived class from tdi_table
  */
-std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt::Cjson> json_schema) {
+std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cjson> json_schema) {
   /* std::string prog_name = program_config.prog_name_; */
   // Name of the program to which this table obj belongs
   std::string prog_name;
@@ -2086,37 +1998,37 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
   uint64_t hash_bit_width = 0;
 
   // action_info map
-  std::map<tdiId, std::unique_ptr<ActionInfo>> table_action_map;
-  std::map<std::string, tdiId> table_action_map_from_str;
+  std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map;
+  std::map<std::string, tdi_id_t> table_action_map_from_str;
 
   mutable std::mutex state_lock;
   bf_status_t action_id_get_helper(const std::string &name,
-                                   tdiId *action_id) const;
+                                   tdi_id_t *action_id) const;
   // Whether this table has a const default action or not
   bool has_const_default_action_{false};
   // Whether this is a const table
   bool is_const_table_{false};
   // Table annotations
   std::set<Annotation> annotations_{};
-  const std::string object_name;
-  const TableType object_type;
+  const std::string table_name;
+  const TableType table_type;
   const std::set<TableApi> table_apis_{};
   // Map of reference_type -> vector of ref_info structs
   std::map<std::string, std::vector<struct TableRefInfo>> table_ref_map;
   // key-fields map
-  std::map<tdiId, std::unique_ptr<KeyFieldInfo>> table_key_map;
+  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map;
   // Map of common data-fields like TTL/Counter etc
-  std::map<tdiId, std::unique_ptr<DataFieldInfo>> table_data_map;
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map;
   // Map of common data-fields like TTL/Counter etc with names
   std::map<std::string, DataFieldInfo *> common_data_fields_names;
   std::set<TableOperationsType> operations_type_set;
   std::set<TableAttributesType> attributes_type_set;
 
-  bfrt::Cjson table_bfrt = *json_schema;
-  tdiId table_id = table_bfrt["id"];
-  std::string table_name = table_bfrt["name"];
-  std::string table_type = table_bfrt["table_type"];
-  size_t table_size = static_cast<unsigned int>(table_bfrt["size"]);
+  tdi::Cjson table_tdi = *json_schema;
+  tdi_id_t table_id = table_tdi["id"];
+  std::string table_name = table_tdi["name"];
+  std::string table_type = table_tdi["table_type"];
+  size_t table_size = static_cast<unsigned int>(table_tdi["size"]);
   key_size_t table_total_key_size;
 
   LOG_ERROR("Table : %s :: Type :: %s ID :: %d SIZE :: %lu", table_name.c_str(), tdi_table_type.c_str(), table_id, table_size);
@@ -2147,7 +2059,7 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
   ////////////////////
   // getting data   //
   ////////////////////
-  bfrt::Cjson table_data_cjson = table_bfrt["data"];
+  tdi::Cjson table_data_cjson = table_tdi["data"];
   for (const auto &data_json : table_data_cjson.getCjsonChildVec()) {
     std::string data_name;
     size_t offset = 0;
@@ -2160,7 +2072,7 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
     if ((*data_json)["oneof"].exists()) {
       oneof_size = (*data_json)["oneof"].array_size();
     }
-    bfrt::Cjson temp;
+    tdi::Cjson temp;
     for (int oneof_loop = 0; oneof_loop < oneof_size; oneof_loop++) {
       bool is_register_data_field = false;
       auto data_field = _tdi_parse_dataParse(*data_json,
@@ -2171,7 +2083,7 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
                                   0,
                                   oneof_loop,
                                   &is_register_data_field);
-      tdiId data_field_id = data_field->field_id;
+      tdi_id_t data_field_id = data_field->field_id;
       if (is_register_data_field) {
         // something is not right
         LOG_ERROR(
@@ -2200,7 +2112,7 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
   // getting attributes //
   ////////////////////////
   std::vector<std::string> attributes_v =
-    table_bfrt["attributes"].getCjsonChildStringVec();
+    table_tdi["attributes"].getCjsonChildStringVec();
   for (auto const &item : attributes_v) {
     table_attribute_set.insert(item);
   }
@@ -2208,11 +2120,11 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
   ////////////////////
   // getting action //
   ////////////////////
-  bfrt::Cjson table_action_spec_cjson = table_bfrt["action_specs"];
+  tdi::Cjson table_action_spec_cjson = table_tdi["action_specs"];
   for (const auto &action : table_action_spec_cjson.getCjsonChildVec()) {
     std::unique_ptr<ActionInfo> action_info;
-    bfrt::Cjson dummy;
-    action_info = _tdi_parse_actionSpecsParse(*action, dummy, table_type, bfrtTable.get());
+    tdi::Cjson dummy;
+    action_info = _tdi_parse_actionSpecsParse(*action, dummy, table_type, tdiTable.get());
     auto elem = table_action_map.find(action_info->action_id);
     if (elem == table_action_map.end()) {
       auto act_id = action_info->action_id;
@@ -2233,18 +2145,18 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
   //////////////////////////
   // getting dependencies //
   //////////////////////////
-  bfrt::Cjson depends_on_cjson = table_bfrt["depends_on"];
+  tdi::Cjson depends_on_cjson = table_tdi["depends_on"];
   std::string ref_name = "other";
   for (const auto &tbl_id : depends_on_cjson.getCjsonChildVec()) {
     struct TableRefInfo ref_info;
-    ref_info.id = static_cast<tdiId>(*tbl_id);
+    ref_info.id = static_cast<tdi_id_t>(*tbl_id);
     ref_info.name = "";
-    for (auto &tbl_bfrt_cjson : table_cjson_map) {
+    for (auto &tbl_tdi_cjson : table_cjson_map) {
       // Check if table present in bf-rt.json if so then verify if id match
-      if (tbl_bfrt_cjson.second.first != nullptr &&
-          static_cast<tdiId>((*tbl_bfrt_cjson.second.first)["id"]) ==
+      if (tbl_tdi_cjson.second.first != nullptr &&
+          static_cast<tdi_id_t>((*tbl_tdi_cjson.second.first)["id"]) ==
               ref_info.id) {
-        ref_info.name = tbl_bfrt_cjson.first;
+        ref_info.name = tbl_tdi_cjson.first;
       }
     }
     if (ref_info.name == "") {
@@ -2257,7 +2169,7 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
     auto context_cjson = table_cjson_map.at(ref_info.name).second;
     if (!context_cjson || !context_cjson->exists()) continue;
 
-    ref_info.tbl_hdl = static_cast<tdiId>((*context_cjson)["handle"]);
+    ref_info.tbl_hdl = static_cast<tdi_id_t>((*context_cjson)["handle"]);
     applyMaskOnContextJsonHandle(&ref_info.tbl_hdl, ref_info.name);
     ref_info.indirect_ref = true;
 
@@ -2266,8 +2178,8 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
             __LINE__,
             ref_info.name.c_str(),
             ref_name.c_str(),
-            bfrtTable->table_name_get().c_str());
-    bfrtTable->table_ref_map[ref_name].push_back(std::move(ref_info));
+            tdiTable->table_name_get().c_str());
+    tdiTable->table_ref_map[ref_name].push_back(std::move(ref_info));
   }
 
   //////////////////////////
@@ -2303,14 +2215,14 @@ std::unique_ptr<bfrt::BfRtTableObj> _tdi_parse_table(const std::shared_ptr<bfrt:
 //  3. in implementation, it need to consider the both tdi_info and context_info to make correct choices
 tdi_status tdi_info_obj_create(
     const bf_dev_id_t dev_id,
-    const bfrt::ProgramConfig program_config)
+    const tdi::ProgramConfig program_config)
 {
 /// A. read file form a list of schema files
- if (program_config.bfrtInfoFilePathVect_.empty()) {
+ if (program_config.tdiInfoFilePathVect_.empty()) {
    LOG_CRIT("Unable to find any TDI Json Schema File");
    return TDI_ERR;
  }
- for (auto const &tdiJsonFile : program_config.bfrtInfoFilePathVect_) {
+ for (auto const &tdiJsonFile : program_config.tdiInfoFilePathVect_) {
    std::ifstream file(tdiJsonFile);
    if (file.fail()) {
      LOG_CRIT("Unable to find TDI Json File %s", tdiJsonFile.c_str());
@@ -2318,8 +2230,8 @@ tdi_status tdi_info_obj_create(
    }
    std::string content((std::istreambuf_iterator<char>(file)),
                        std::istreambuf_iterator<char>());
-   bfrt::Cjson root_cjson = bfrt::Cjson::createCjsonFromFile(content);
-   bfrt::Cjson tables_cjson = root_cjson["tables"];
+   tdi::Cjson root_cjson = tdi::Cjson::createCjsonFromFile(content);
+   tdi::Cjson tables_cjson = root_cjson["tables"];
    for (const auto &table : tables_cjson.getCjsonChildVec()) {
 /// B. parse file to form tdi_table_info object
      tdi_info_map[tdiJsonFile] = _tdi_parse_table(table);

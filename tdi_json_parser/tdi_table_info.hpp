@@ -29,12 +29,13 @@
 #include <unordered_map>
 
 #include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_target.hpp>
-#include <tdi/common/tdi_session.hpp>
-#include <tdi/common/tdi_table_data.hpp>
-#include <tdi/common/tdi_table_key.hpp>
-#include <tdi/common/tdi_attributes.hpp>
-#include <tdi/common/tdi_operations.hpp>
+#include <../src/tdi_utils.hpp>
+//#include <tdi/common/tdi_target.hpp>
+//#include <tdi/common/tdi_session.hpp>
+//#include <tdi/common/tdi_table_data.hpp>
+//#include <tdi/common/tdi_table_key.hpp>
+//#include <tdi/common/tdi_attributes.hpp>
+//#include <tdi/common/tdi_operations.hpp>
 
 namespace tdi {
 
@@ -43,6 +44,7 @@ class TableInfo;
 class ActionInfo;
 class KeyFieldInfo;
 class DataFieldInfo;
+class TableRefInfo;
 
 /**
  * @brief Class for Annotations. Contains 2 strings to uniquely identify an
@@ -210,6 +212,17 @@ class TableInfo {
    * @return Status of the API call
    */
   tdi_status_t keyFieldIdGet(const std::string &name, tdi_id_t *field_id) const;
+
+  /**
+   * @brief Get Key Field
+   *
+   * @param[in] id Key Field ID
+   * @param[out] key_field_info KeyFieldInfo object
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t keyFieldGet(const tdi_id_t &field_id, const KeyFieldInfo *key_field_info) const;
+
   /**
    * @brief Get vector of DataField IDs. Only applicable for tables
    * without Action IDs
@@ -254,6 +267,30 @@ class TableInfo {
   tdi_status_t dataFieldIdGet(const std::string &name,
                               const tdi_id_t &action_id,
                               tdi_id_t *field_id) const;
+
+  /**
+   * @brief Get the data Field info object from tdi_id.
+   *
+   * @param[in] id id of a Data field
+   * @param[out] data_field_info DataFieldInfo object
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t dataFieldGet(const tdi_id_t field_id, const DataFieldInfo **data_field_info) const;
+
+  /**
+   * @brief Get the data Field info object from tdi_id.
+   *
+   * @param[in] id id of a Data field
+   * @param[in] action_id Action ID
+   * @param[out] data_field_info DataFieldInfo object
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t dataFieldGet(const tdi_id_t field_id,
+                            const tdi_id_t &action_id,
+                            const DataFieldInfo **data_field_info) const;
+
   /**
    * @brief Get Action ID from Name
    *
@@ -273,6 +310,16 @@ class TableInfo {
   tdi_status_t actionIdListGet(std::vector<tdi_id_t> *action_id) const;
 
   /**
+   * @brief Get ActionInfo object from tdi_id of action (action_id)
+   *
+   * @param[in] action_id tdi_id of Action
+   * @param[out] action_info ActionInfo object
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t actionGet(const tdi_id_t &action_id, const ActionInfo **action_info) const;
+
+  /**
    * @brief Are Action IDs applicable for this table
    *
    * @retval True : If Action ID applicable
@@ -280,26 +327,29 @@ class TableInfo {
    *
    */
   bool actionIdApplicable() const;
-  const std::string &table_name_get() const { return object_name; }
+  const std::string &table_name_get() const { return table_name_; }
 
  private:
-  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> key_field_info_map_;
-  std::map<tdi_id_t, std::unique_ptr<ActionInfo>> action_info_map_;
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_field_info_map_;
-
-  std::string object_name;
-  tdi_table_type_e object_type;
-  tdi_id_t object_id;
+  std::string table_name_;
+  tdi_table_type_e table_type_;
+  tdi_id_t table_id_;
   size_t table_size_;
   bool has_const_default_action_{false};
   bool is_const_table_{false};
-  std::set<Annotation> annotations_{};
+  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>>  table_key_map_;
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
+  std::map<tdi_id_t, std::unique_ptr<ActionInfo>>    table_action_map_;
+  std::map<tdi_id_t, std::unique_ptr<TableRefInfo>>  table_ref_map_;
   std::set<tdi_table_api_type_e> table_apis_{};
-  // Map of reference_type -> vector of ref_info structs
-  // std::map<std::string, std::vector<tdi_table_ref_info_t>> table_ref_map;
+  std::set<tdi_operations_type_e> operations_type_set_;
+  std::set<tdi_attributes_type_e> attributes_type_set_;
+  std::set<Annotation> annotations_{};
+};
 
-  std::set<tdi_operations_type_e> operations_type_set;
-  std::set<tdi_attributes_type_e> attributes_type_set;
+/* class to keep info regarding a reference to another tableInfo */
+class TableRefInfo {
+  tdi_id_t ref_id_;
+  std::string ref_name_;
 };
 
 class KeyFieldInfo {
@@ -325,7 +375,7 @@ class KeyFieldInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t keyFieldDataTypeGet(tdi_data_field_type_e *data_type) const;
+  tdi_status_t keyFieldDataTypeGet(tdi_field_data_type_e *data_type) const;
 
   /**
    * @brief Get field size
@@ -373,7 +423,24 @@ class KeyFieldInfo {
   /** @} */  // End of group Key
  private:
   // data for key field info
-
+  tdi_id_t field_id_;
+  size_t size_bits_;
+  tdi_match_type_e match_type_;
+  tdi_field_data_type_e data_type_;
+  std::string name_;
+  bool mandatory_;
+  bool read_only_;
+  std::vector<std::string> enum_choices_;
+  std::set<std::string> annotations_;
+  // Default value for this data field
+  uint64_t default_value_;
+  float default_fl_value_;
+  std::string default_str_value_;
+  // Flag to indicate if this is a field slice or not
+  bool is_field_slice_{false};
+  bool is_ptr_;
+  // A flag to indicate this is a match priority field
+  bool match_priority_;
 };  // class KeyFieldInfo
 
 class DataFieldInfo {
@@ -456,7 +523,7 @@ class DataFieldInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t dataFieldDataTypeGet(tdi_data_field_type_e *type) const;
+  tdi_status_t dataFieldDataTypeGet(tdi_field_data_type_e *type) const;
 
   /**
    * @brief Get a list of all the allowed values that a particular field can
@@ -483,8 +550,27 @@ class DataFieldInfo {
 
   /** @} */  // End of group Data
 private:
-
+  std::string name_;
+  tdi_id_t field_id_;
+  tdi_id_t action_id_;
+  size_t size_;
+  std::string data_type_;
+  // Vector of allowed choices for this field
+  std::vector<std::string> enum_choices_;
+  // Default value for this data field
+  uint64_t default_value_;
+  float default_fl_value_;
+  std::string default_str_value_;
+  bool mandatory_;
+  bool read_only_;
+  bool container_valid_{false};
+  /* Map of Objects within container */
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
+  std::map<std::string, tdi_id_t> container_names_;
+  std::set<std::string> annotations_;
+  std::set<tdi_id_t> oneof_siblings_;
 };
+
 // Action ID APIs
 class ActionInfo {
  public:
@@ -520,7 +606,13 @@ class ActionInfo {
   tdi_status_t actionAnnotationsGet(AnnotationSet *annotations) const;
   /** @} */  // End of group Action IDs
  private:
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_field_info_map_;
+  tdi_id_t action_id_;
+  std::string name_;
+  // Map of table_data_fields
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields_;
+  // Map of table_data_fields with names
+  std::map<std::string, tdi_id_t> data_fields_names_;
+  std::set<std::string> annotations_;
 };
 
 }  // tdi

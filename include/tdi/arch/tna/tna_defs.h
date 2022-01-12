@@ -37,7 +37,7 @@ typedef uint32_t tna_pipe_id_t;
 #define TNA_INVALID_PIPE 0xFFFFFFFF
 
 /** Identifies a pipeline on an ASIC.  Note dev_pipe_id can be set to
- *  TNA_DEV_PIPE_ALL as a special value to indicate "all pipelines". */
+ *  BF_DEV_PIPE_ALL as a special value to indicate "all pipelines". */
 #define TNA_DEV_PIPE_ALL 0xFFFF
 
 typedef enum {
