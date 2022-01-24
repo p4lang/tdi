@@ -14,19 +14,58 @@
  * limitations under the License.
  */
 
-#include <memory>
-#include <string>
-#include <map>
+#include <exception>
 #include <fstream>
 #include <iostream>
-#include <vector>
-#include <exception>
+#include <memory>
 #include <regex>
 
 #include "tdi_table_info.hpp"
 
 namespace tdi {
 
+namespace {
+
+  tdi_field_data_type_e stringToDataType(const std::string &type,
+                                         const bool &repeated) {
+  if (type == "bytes") {
+    return TDI_FIELD_DATA_TYPE_BYTE_STREAM;
+  } else if (type == "uint64" || type == "uint32" || type == "uint16" ||
+             type == "uint8") {
+    if (!repeated)
+      return TDI_FIELD_DATA_TYPE_UINT64;
+    else
+      return TDI_FIELD_DATA_TYPE_INT_ARR;
+  } else if (type == "bool") {
+    if (!repeated)
+      return TDI_FIELD_DATA_TYPE_BOOL;
+    else
+      return TDI_FIELD_DATA_TYPE_BOOL_ARR;
+  } else if (type == "float") {
+    return TDI_FIELD_DATA_TYPE_FLOAT;
+  } else if (type == "string") {
+    if (!repeated)
+      return TDI_FIELD_DATA_TYPE_STRING;
+    else
+      return TDI_FIELD_DATA_TYPE_STRING_ARR;
+  }
+  return TDI_FIELD_DATA_TYPE_UNKNOWN;
+}
+// This function returns if a key field is a field slice or not
+bool checkIsFieldSlice(const tdi::Cjson &key_field) {
+  tdi::Cjson key_annotations = key_field["annotations"];
+  for (const auto &annotation : key_annotations.getCjsonChildVec()) {
+    std::string annotation_name = (*annotation)["name"];
+    std::string annotation_value = (*annotation)["value"];
+    if ((annotation_name == "isFieldSlice") && (annotation_value == "true")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+} // anonymous namespace
 
 bool Annotation::operator<(const Annotation &other) const {
   return (this->full_name_ < other.full_name_);
@@ -137,7 +176,7 @@ tdi_status_t TableInfo::keyFieldIdListGet(std::vector<tdi_id_t> *id_vec) const {
 }
 
 tdi_status_t TableInfo::keyFieldIdGet(const std::string &name,
-                                        tdi_id_t *field_id) const {
+                                      tdi_id_t *field_id) const {
   if (field_id == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
               __func__,
@@ -148,10 +187,8 @@ tdi_status_t TableInfo::keyFieldIdGet(const std::string &name,
   auto found = std::find_if(
       table_key_map_.begin(),
       table_key_map_.end(),
-      [&name](const std::pair<const tdi_id_t,
-                              std::unique_ptr<TableKeyField>> &map_item) {
-        return (name == map_item.second->getName());
-      });
+      [&name](const std::pair<const tdi_id_t, std::unique_ptr<KeyFieldInfo>>
+                  &map_item) { return (name == map_item.second->getName()); });
   if (found != table_key_map_.end()) {
     *field_id = (*found).second->getId();
     return TDI_SUCCESS;
@@ -165,7 +202,8 @@ tdi_status_t TableInfo::keyFieldIdGet(const std::string &name,
   return TDI_OBJECT_NOT_FOUND;
 }
 
-tdi_status_t TableInfo::keyFieldGet(const tdi_id_t &field_id, const KeyFieldInfo *key_field_info) const;
+tdi_status_t TableInfo::keyFieldGet(const tdi_id_t &field_id,
+                                    const KeyFieldInfo **key_field_info) const {
   if (key_field_info == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
               __func__,
@@ -175,13 +213,13 @@ tdi_status_t TableInfo::keyFieldGet(const tdi_id_t &field_id, const KeyFieldInfo
   }
   if (table_key_map_.find(field_id) == table_key_map_.end()) {
     LOG_ERROR("%s:%d %s Field \"%d\" not found in key field list",
-            __func__,
-            __LINE__,
-            table_name_get().c_str(),
-            field_id);
+              __func__,
+              __LINE__,
+              table_name_get().c_str(),
+              field_id);
     return TDI_INVALID_ARG;
   }
-  *key_field_info = table_key_map_.at(field_id);
+  *key_field_info = table_key_map_.at(field_id).get();
   return TDI_SUCCESS;
 }
 
@@ -203,7 +241,7 @@ tdi_status_t TableInfo::dataFieldIdListGet(
                 action_id);
       return TDI_OBJECT_NOT_FOUND;
     }
-    for (const auto &kv : table_action_map_.at(action_id)->data_fields) {
+    for (const auto &kv : table_action_map_.at(action_id)->data_fields_) {
       id_vec->push_back(kv.first);
     }
   }
@@ -219,20 +257,21 @@ tdi_status_t TableInfo::dataFieldIdListGet(
     std::vector<tdi_id_t> *id_vec) const {
   return this->dataFieldIdListGet(0, id_vec);
 }
+#if 0
 
 tdi_status_t TableInfo::dataFieldIdGet(const std::string &name,
-                                         tdi_id_t *field_id) const {
+                                       tdi_id_t *field_id) const {
   return this->dataFieldIdGet(name, 0, field_id);
 }
 
 tdi_status_t TableInfo::dataFieldIdGet(const std::string &name,
-                                         const tdi_id_t &action_id,
-                                         tdi_id_t *field_id) const {
+                                       const tdi_id_t &action_id,
+                                       tdi_id_t *field_id) const {
   if (field_id == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
-  const TableDataField *field;
+  const DataFieldInfo *field;
   std::vector<tdi_id_t> empty;
   auto status = getDataField(name, action_id, empty, &field);
   if (status != TDI_SUCCESS) {
@@ -247,7 +286,6 @@ tdi_status_t TableInfo::dataFieldIdGet(const std::string &name,
   return TDI_SUCCESS;
 }
 
-
 tdi_status_t KeyFieldInfo::keyFieldTypeGet(KeyFieldType *field_type) const {
   if (field_type == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
@@ -261,7 +299,7 @@ tdi_status_t KeyFieldInfo::keyFieldTypeGet(KeyFieldType *field_type) const {
 }
 
 tdi_status_t KeyFieldInfo::keyFieldDataTypeGet(const tdi_id_t &field_id,
-                                              DataType *data_type) const {
+                                               DataType *data_type) const {
   if (data_type == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
               __func__,
@@ -281,9 +319,8 @@ tdi_status_t KeyFieldInfo::keyFieldDataTypeGet(const tdi_id_t &field_id,
   return TDI_SUCCESS;
 }
 
-
 tdi_status_t Table::keyFieldSizeGet(const tdi_id_t &field_id,
-                                          size_t *size) const {
+                                    size_t *size) const {
   if (size == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
               __func__,
@@ -304,7 +341,7 @@ tdi_status_t Table::keyFieldSizeGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::keyFieldIsPtrGet(const tdi_id_t &field_id,
-                                           bool *is_ptr) const {
+                                     bool *is_ptr) const {
   if (is_ptr == nullptr) {
     LOG_ERROR("%s:%d %s Please pass mem allocated out param",
               __func__,
@@ -325,7 +362,7 @@ tdi_status_t Table::keyFieldIsPtrGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::keyFieldNameGet(const tdi_id_t &field_id,
-                                          std::string *name) const {
+                                    std::string *name) const {
   if (key_fields.find(field_id) == key_fields.end()) {
     LOG_ERROR("%s:%d %s Field ID %d not found",
               __func__,
@@ -360,9 +397,7 @@ tdi_status_t Table::keyFieldAllowedChoicesGet(
   return TDI_SUCCESS;
 }
 
-uint32_t Table::dataFieldListSize() const {
-  return this->dataFieldListSize(0);
-}
+uint32_t Table::dataFieldListSize() const { return this->dataFieldListSize(0); }
 
 uint32_t Table::dataFieldListSize(const tdi_id_t &action_id) const {
   if (action_info_list.find(action_id) != action_info_list.end()) {
@@ -372,15 +407,14 @@ uint32_t Table::dataFieldListSize(const tdi_id_t &action_id) const {
   return common_data_fields.size();
 }
 
-
 tdi_status_t Table::dataFieldSizeGet(const tdi_id_t &field_id,
-                                           size_t *size) const {
+                                     size_t *size) const {
   return this->dataFieldSizeGet(field_id, 0, size);
 }
 
 tdi_status_t Table::dataFieldSizeGet(const tdi_id_t &field_id,
-                                           const tdi_id_t &action_id,
-                                           size_t *size) const {
+                                     const tdi_id_t &action_id,
+                                     size_t *size) const {
   if (size == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -404,13 +438,13 @@ tdi_status_t Table::dataFieldSizeGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::dataFieldIsPtrGet(const tdi_id_t &field_id,
-                                            bool *is_ptr) const {
+                                      bool *is_ptr) const {
   return this->dataFieldIsPtrGet(field_id, 0, is_ptr);
 }
 
 tdi_status_t Table::dataFieldIsPtrGet(const tdi_id_t &field_id,
-                                            const tdi_id_t &action_id,
-                                            bool *is_ptr) const {
+                                      const tdi_id_t &action_id,
+                                      bool *is_ptr) const {
   if (is_ptr == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -430,13 +464,13 @@ tdi_status_t Table::dataFieldIsPtrGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::dataFieldMandatoryGet(const tdi_id_t &field_id,
-                                                bool *is_mandatory) const {
+                                          bool *is_mandatory) const {
   return this->dataFieldMandatoryGet(field_id, 0, is_mandatory);
 }
 
 tdi_status_t Table::dataFieldMandatoryGet(const tdi_id_t &field_id,
-                                                const tdi_id_t &action_id,
-                                                bool *is_mandatory) const {
+                                          const tdi_id_t &action_id,
+                                          bool *is_mandatory) const {
   if (is_mandatory == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -456,13 +490,13 @@ tdi_status_t Table::dataFieldMandatoryGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::dataFieldReadOnlyGet(const tdi_id_t &field_id,
-                                               bool *is_read_only) const {
+                                         bool *is_read_only) const {
   return this->dataFieldReadOnlyGet(field_id, 0, is_read_only);
 }
 
 tdi_status_t Table::dataFieldReadOnlyGet(const tdi_id_t &field_id,
-                                               const tdi_id_t &action_id,
-                                               bool *is_read_only) const {
+                                         const tdi_id_t &action_id,
+                                         bool *is_read_only) const {
   if (is_read_only == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -509,13 +543,13 @@ tdi_status_t Table::dataFieldOneofSiblingsGet(
 }
 
 tdi_status_t Table::dataFieldNameGet(const tdi_id_t &field_id,
-                                           std::string *name) const {
+                                     std::string *name) const {
   return this->dataFieldNameGet(field_id, 0, name);
 }
 
 tdi_status_t Table::dataFieldNameGet(const tdi_id_t &field_id,
-                                           const tdi_id_t &action_id,
-                                           std::string *name) const {
+                                     const tdi_id_t &action_id,
+                                     std::string *name) const {
   if (name == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -535,13 +569,13 @@ tdi_status_t Table::dataFieldNameGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::dataFieldDataTypeGet(const tdi_id_t &field_id,
-                                               DataType *type) const {
+                                         DataType *type) const {
   return this->dataFieldDataTypeGet(field_id, 0, type);
 }
 
 tdi_status_t Table::dataFieldDataTypeGet(const tdi_id_t &field_id,
-                                               const tdi_id_t &action_id,
-                                               DataType *type) const {
+                                         const tdi_id_t &action_id,
+                                         DataType *type) const {
   if (type == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -600,15 +634,14 @@ tdi_status_t Table::dataFieldAllowedChoicesGet(
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::dataFieldAnnotationsGet(
-    const tdi_id_t &field_id, AnnotationSet *annotations) const {
+tdi_status_t Table::dataFieldAnnotationsGet(const tdi_id_t &field_id,
+                                            AnnotationSet *annotations) const {
   return this->dataFieldAnnotationsGet(field_id, 0, annotations);
 }
 
-tdi_status_t Table::dataFieldAnnotationsGet(
-    const tdi_id_t &field_id,
-    const tdi_id_t &action_id,
-    AnnotationSet *annotations) const {
+tdi_status_t Table::dataFieldAnnotationsGet(const tdi_id_t &field_id,
+                                            const tdi_id_t &action_id,
+                                            AnnotationSet *annotations) const {
   if (annotations == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -630,8 +663,8 @@ tdi_status_t Table::dataFieldAnnotationsGet(
 }
 
 tdi_status_t Table::defaultDataValueGet(const tdi_id_t &field_id,
-                                              const tdi_id_t action_id,
-                                              uint64_t *default_value) const {
+                                        const tdi_id_t action_id,
+                                        uint64_t *default_value) const {
   if (default_value == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -651,8 +684,8 @@ tdi_status_t Table::defaultDataValueGet(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::defaultDataValueGet(const tdi_id_t &field_id,
-                                              const tdi_id_t action_id,
-                                              float *default_value) const {
+                                        const tdi_id_t action_id,
+                                        float *default_value) const {
   if (default_value == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -676,10 +709,9 @@ tdi_status_t Table::defaultDataValueGet(const tdi_id_t &field_id,
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::defaultDataValueGet(
-    const tdi_id_t &field_id,
-    const tdi_id_t action_id,
-    std::string *default_value) const {
+tdi_status_t Table::defaultDataValueGet(const tdi_id_t &field_id,
+                                        const tdi_id_t action_id,
+                                        std::string *default_value) const {
   if (default_value == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -704,7 +736,7 @@ tdi_status_t Table::defaultDataValueGet(
 }
 
 tdi_status_t Table::actionIdGet(const std::string &name,
-                                      tdi_id_t *action_id) const {
+                                tdi_id_t *action_id) const {
   if (action_id == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -717,8 +749,8 @@ tdi_status_t Table::actionIdGet(const std::string &name,
       action_info_list.begin(),
       action_info_list.end(),
       [&name](const std::pair<const tdi_id_t,
-                              std::unique_ptr<tdi_info_action_info_t>> &
-                  action_map_pair) {
+                              std::unique_ptr<tdi_info_action_info_t>>
+                  &action_map_pair) {
         return action_map_pair.second->name == name;
       });
   if (action_found != action_info_list.end()) {
@@ -735,7 +767,7 @@ tdi_status_t Table::actionIdGet(const std::string &name,
 bool Table::actionIdApplicable() const { return false; }
 
 tdi_status_t Table::actionNameGet(const tdi_id_t &action_id,
-                                        std::string *name) const {
+                                  std::string *name) const {
   if (!this->actionIdApplicable()) {
     LOG_TRACE("%s:%d Not supported", __func__, __LINE__);
     return TDI_NOT_SUPPORTED;
@@ -748,8 +780,7 @@ tdi_status_t Table::actionNameGet(const tdi_id_t &action_id,
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::actionIdListGet(
-    std::vector<tdi_id_t> *id_vec) const {
+tdi_status_t Table::actionIdListGet(std::vector<tdi_id_t> *id_vec) const {
   if (!this->actionIdApplicable()) {
     LOG_TRACE("%s:%d Not supported", __func__, __LINE__);
     return TDI_NOT_SUPPORTED;
@@ -768,8 +799,8 @@ tdi_status_t Table::actionIdListGet(
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::actionAnnotationsGet(
-    const tdi_id_t &action_id, AnnotationSet *annotations) const {
+tdi_status_t Table::actionAnnotationsGet(const tdi_id_t &action_id,
+                                         AnnotationSet *annotations) const {
   // For the table to support actions, it needs to only override
   // actionIdApplicable() and all these action functions will remain
   // common
@@ -788,11 +819,9 @@ tdi_status_t Table::actionAnnotationsGet(
   return TDI_SUCCESS;
 }
 
-
 tdi_status_t Table::tableOperationsExecute(
     const TableOperations &table_ops) const {
-  auto table_ops_impl =
-      static_cast<const TableOperationsImpl *>(&table_ops);
+  auto table_ops_impl = static_cast<const TableOperationsImpl *>(&table_ops);
   if (table_ops_impl->tableGet()->table_id_get() != table_id_get()) {
     LOG_ERROR("%s:%d %s Table mismatch. Sent in %s expected %s",
               __func__,
@@ -818,15 +847,14 @@ tdi_status_t Table::tableOperationsExecute(
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::dataFieldTypeGet(
-    const tdi_id_t &field_id, std::set<DataFieldType> *ret_type) const {
+tdi_status_t Table::dataFieldTypeGet(const tdi_id_t &field_id,
+                                     std::set<DataFieldType> *ret_type) const {
   return this->dataFieldTypeGet(field_id, 0, ret_type);
 }
 
-tdi_status_t Table::dataFieldTypeGet(
-    const tdi_id_t &field_id,
-    const tdi_id_t &action_id,
-    std::set<DataFieldType> *ret_type) const {
+tdi_status_t Table::dataFieldTypeGet(const tdi_id_t &field_id,
+                                     const tdi_id_t &action_id,
+                                     std::set<DataFieldType> *ret_type) const {
   if (ret_type == nullptr) {
     LOG_ERROR("%s:%d Please pass mem allocated out param", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -846,7 +874,7 @@ tdi_status_t Table::dataFieldTypeGet(
 }
 
 tdi_status_t Table::getKeyField(const tdi_id_t &field_id,
-                                      const TableKeyField **field) const {
+                                const TableKeyField **field) const {
   if (key_fields.find(field_id) == key_fields.end()) {
     LOG_ERROR("%s:%d Field ID %d not found", __func__, __LINE__, field_id);
     return TDI_OBJECT_NOT_FOUND;
@@ -856,22 +884,21 @@ tdi_status_t Table::getKeyField(const tdi_id_t &field_id,
 }
 
 tdi_status_t Table::getDataField(const tdi_id_t &field_id,
-                                       const TableDataField **field) const {
+                                 const TableDataField **field) const {
   return this->getDataField(field_id, 0, field);
 }
 
 tdi_status_t Table::getDataField(const tdi_id_t &field_id,
-                                       const tdi_id_t &action_id,
-                                       const TableDataField **field) const {
+                                 const tdi_id_t &action_id,
+                                 const TableDataField **field) const {
   std::vector<tdi_id_t> empty;
   return this->getDataField(field_id, action_id, empty, field);
 }
 
-tdi_status_t Table::getDataField(
-    const tdi_id_t &field_id,
-    const tdi_id_t &action_id,
-    const std::vector<tdi_id_t> &container_id_vec,
-    const TableDataField **field) const {
+tdi_status_t Table::getDataField(const tdi_id_t &field_id,
+                                 const tdi_id_t &action_id,
+                                 const std::vector<tdi_id_t> &container_id_vec,
+                                 const TableDataField **field) const {
   *field = nullptr;
   if (action_info_list.find(action_id) != action_info_list.end()) {
     *field =
@@ -924,11 +951,10 @@ const TableDataField *Table::getDataFieldHelper(
   return nullptr;
 }
 
-tdi_status_t Table::getDataField(
-    const std::string &field_name,
-    const tdi_id_t &action_id,
-    const std::vector<tdi_id_t> &container_id_vec,
-    const TableDataField **field) const {
+tdi_status_t Table::getDataField(const std::string &field_name,
+                                 const tdi_id_t &action_id,
+                                 const std::vector<tdi_id_t> &container_id_vec,
+                                 const TableDataField **field) const {
   *field = nullptr;
   if (action_info_list.find(action_id) != action_info_list.end()) {
     *field = this->getDataFieldHelper(
@@ -981,9 +1007,8 @@ const TableDataField *Table::getDataFieldHelper(
   return nullptr;
 }
 
-
 void Table::addDataFieldType(const tdi_id_t &field_id,
-                                    const DataFieldType &type) {
+                             const DataFieldType &type) {
   // This method adds a dataField Type to the given field id
   auto dataField = common_data_fields.find(field_id);
   if (dataField == common_data_fields.end()) {
@@ -999,17 +1024,15 @@ void Table::addDataFieldType(const tdi_id_t &field_id,
   return;
 }
 
-
 tdi_id_t Table::table_id_get() const {
   tdi_id_t id;
-  auto bf_status = tableIdGet(&id);
-  if (bf_status == TDI_SUCCESS) {
+  auto tdi_status = tableIdGet(&id);
+  if (tdi_status == TDI_SUCCESS) {
     return id;
   }
   return 0;
 }
-const std::string &Table::key_field_name_get(
-    const tdi_id_t &field_id) const {
+const std::string &Table::key_field_name_get(const tdi_id_t &field_id) const {
   if (key_fields.find(field_id) == key_fields.end()) {
     LOG_ERROR("%s:%d %s Field ID %d not found",
               __func__,
@@ -1021,13 +1044,12 @@ const std::string &Table::key_field_name_get(
   return key_fields.at(field_id)->getName();
 }
 
-const std::string &Table::data_field_name_get(
-    const tdi_id_t &field_id) const {
+const std::string &Table::data_field_name_get(const tdi_id_t &field_id) const {
   return this->data_field_name_get(field_id, 0);
 }
 
-const std::string &Table::data_field_name_get(
-    const tdi_id_t &field_id, const tdi_id_t &action_id) const {
+const std::string &Table::data_field_name_get(const tdi_id_t &field_id,
+                                              const tdi_id_t &action_id) const {
   const TableDataField *field;
   auto status = getDataField(field_id, action_id, &field);
   if (status != TDI_SUCCESS) {
@@ -1041,8 +1063,7 @@ const std::string &Table::data_field_name_get(
   return field->getName();
 }
 
-const std::string &Table::action_name_get(
-    const tdi_id_t &action_id) const {
+const std::string &Table::action_name_get(const tdi_id_t &action_id) const {
   if (action_info_list.find(action_id) == action_info_list.end()) {
     LOG_ERROR("%s:%d %s Action Id %d Not Found",
               __func__,
@@ -1059,35 +1080,35 @@ bool Table::validateTable_from_keyObj(const TableKeyObj &key) const {
   tdi_id_t table_id_of_key_obj;
 
   const Table *table_from_key = nullptr;
-  tdi_status_t bf_status = this->tableIdGet(&table_id);
-  if (bf_status != TDI_SUCCESS) {
+  tdi_status_t tdi_status = this->tableIdGet(&table_id);
+  if (tdi_status != TDI_SUCCESS) {
     LOG_ERROR("%s:%d %s ERROR in getting table id, err %d",
               __func__,
               __LINE__,
               this->table_name_get().c_str(),
-              bf_status);
+              tdi_status);
     TDI_DBGCHK(0);
     return false;
   }
 
-  bf_status = key.tableGet(&table_from_key);
-  if (bf_status != TDI_SUCCESS) {
+  tdi_status = key.tableGet(&table_from_key);
+  if (tdi_status != TDI_SUCCESS) {
     LOG_ERROR("%s:%d %s ERROR in getting table object from key object, err %d",
               __func__,
               __LINE__,
               this->table_name_get().c_str(),
-              bf_status);
+              tdi_status);
     TDI_DBGCHK(0);
     return false;
   }
 
-  bf_status = table_from_key->tableIdGet(&table_id_of_key_obj);
-  if (bf_status != TDI_SUCCESS) {
+  tdi_status = table_from_key->tableIdGet(&table_id_of_key_obj);
+  if (tdi_status != TDI_SUCCESS) {
     LOG_ERROR("%s:%d %s ERROR in getting table id from key object, err %d",
               __func__,
               __LINE__,
               this->table_name_get().c_str(),
-              bf_status);
+              tdi_status);
     TDI_DBGCHK(0);
     return false;
   }
@@ -1098,41 +1119,40 @@ bool Table::validateTable_from_keyObj(const TableKeyObj &key) const {
   return false;
 }
 
-bool Table::validateTable_from_dataObj(
-    const TableDataObj &data) const {
+bool Table::validateTable_from_dataObj(const TableDataObj &data) const {
   tdi_id_t table_id;
   tdi_id_t table_id_of_data_obj;
 
-  tdi_status_t bf_status = this->tableIdGet(&table_id);
-  if (bf_status != TDI_SUCCESS) {
+  tdi_status_t tdi_status = this->tableIdGet(&table_id);
+  if (tdi_status != TDI_SUCCESS) {
     LOG_ERROR("%s:%d %s ERROR in getting table id, err %d",
               __func__,
               __LINE__,
               this->table_name_get().c_str(),
-              bf_status);
+              tdi_status);
     TDI_DBGCHK(0);
     return false;
   }
 
   const Table *table_from_data = nullptr;
-  bf_status = data.getParent(&table_from_data);
-  if (bf_status != TDI_SUCCESS) {
+  tdi_status = data.getParent(&table_from_data);
+  if (tdi_status != TDI_SUCCESS) {
     LOG_ERROR("%s:%d %s ERROR in getting table object from data object, err %d",
               __func__,
               __LINE__,
               this->table_name_get().c_str(),
-              bf_status);
+              tdi_status);
     TDI_DBGCHK(0);
     return false;
   }
 
-  bf_status = table_from_data->tableIdGet(&table_id_of_data_obj);
-  if (bf_status != TDI_SUCCESS) {
+  tdi_status = table_from_data->tableIdGet(&table_id_of_data_obj);
+  if (tdi_status != TDI_SUCCESS) {
     LOG_ERROR("%s:%d %s ERROR in getting table id from data object, err %d",
               __func__,
               __LINE__,
               this->table_name_get().c_str(),
-              bf_status);
+              tdi_status);
     TDI_DBGCHK(0);
     return false;
   }
@@ -1205,9 +1225,9 @@ tdi_status_t Table::getDataStringChoices(
   return status;
 }
 
-} /* END of tdi namespace */
+#endif
 
-std::map< std::string, std::unique_ptr<struct table_info> > tdi_info_map;
+
 static const std::string match_key_priority_field_name = "$MATCH_PRIORITY";
 
 typedef struct key_size_ {
@@ -1215,31 +1235,33 @@ typedef struct key_size_ {
   size_t bits;
 } key_size_t;
 
-
-
-void _tdi_parse_getTableFieldWidth(
-    const tdi::Cjson &node,
-    std::string &type,
-    size_t &width,
-    uint64_t &default_value,
-    float &default_fl_value,
-    std::string &default_str_value,
-    std::vector<std::string> &choices) {
-  //  tdi::Cjson node_type = node["type"];
-  type = std::string(node["type"]["type"]);
-  if (type == "bytes") {
+void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
+                                   tdi_field_data_type_e &type,
+                                   size_t &width,
+                                   uint64_t &default_value,
+                                   float &default_fl_value,
+                                   std::string &default_str_value,
+                                   std::vector<std::string> &choices) {
+  auto type_str = std::string(node["type"]["type"]);
+  bool repeated = false;
+  if (node["repeated"].exists()) {
+    repeated = node["repeated"];
+  }
+  type = stringToDataType(std::string(node["type"]["type"]),
+                          repeated);
+  if (type_str == "bytes") {
     width = static_cast<unsigned int>(node["type"]["width"]);
-  } else if (type == "uint64") {
+  } else if (type_str == "uint64") {
     width = 64;
-  } else if (type == "uint32") {
+  } else if (type_str == "uint32") {
     width = 32;
-  } else if (type == "uint16") {
+  } else if (type_str == "uint16") {
     width = 16;
-  } else if (type == "uint8") {
+  } else if (type_str == "uint8") {
     width = 8;
-  } else if (type == "bool") {
+  } else if (type_str == "bool") {
     width = 1;
-  } else if (type == "float") {
+  } else if (type_str == "float") {
     width = 0;
     // If default value is listed, populate it, else its zero
     if (node["type"]["default_value"].exists()) {
@@ -1247,24 +1269,21 @@ void _tdi_parse_getTableFieldWidth(
     } else {
       default_fl_value = 0.0;
     }
-  } else if (type == "string") {
+  } else if (type_str == "string") {
     width = 0;
     for (const auto &choice : node["type"]["choices"].getCjsonChildVec()) {
       choices.push_back(static_cast<std::string>(*choice));
     }
     // If string default value is listed populate it, else its empty
     if (node["type"]["default_value"].exists()) {
-      default_str_value = static_cast<std::string>(node["type"]["default_value"]);
+      default_str_value =
+          static_cast<std::string>(node["type"]["default_value"]);
     } else {
       default_str_value = std::string("INVALID");
     }
-    if (node["repeated"].exists()) {
-      bool repeated = node["repeated"];
-      if (repeated) type = "string_arr";
-    }
   } else if (node["container"].exists()) {
     width = 0;
-    type = "container";
+    type = TDI_FIELD_DATA_TYPE_CONTAINER;
   } else {
     width = 0;
   }
@@ -1274,17 +1293,6 @@ void _tdi_parse_getTableFieldWidth(
     default_value = static_cast<uint64_t>(node["type"]["default_value"]);
   } else {
     default_value = 0;
-  }
-
-  if (node["repeated"].exists()) {
-    bool repeated = node["repeated"];
-    if (repeated) {
-      if (width == 32 || width == 16 || width == 8) {
-        type = "int_arr";
-      } else if (width == 1) {
-        type = "bool_arr";
-      }
-    }
   }
 }
 
@@ -1322,12 +1330,12 @@ std::string _tdi_parse_getParentName(const tdi::Cjson &key_field) {
 }
 
 // This function determines the offset and the size(in bytes) of the field
-bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
+tdi_status_t _tdi_parse_keyByteSizeAndOffsetGet(
     const std::string &table_name,
     const std::string &key_name,
     const std::map<std::string, size_t> &match_key_field_name_to_position_map,
-    const std::map<std::string, size_t> &
-        match_key_field_name_to_parent_field_byte_size_map,
+    const std::map<std::string, size_t>
+        &match_key_field_name_to_parent_field_byte_size_map,
     const std::map<size_t, size_t> &match_key_field_position_to_offset_map,
     size_t *field_offset,
     size_t *parent_field_byte_size) {
@@ -1342,7 +1350,7 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
         table_name.c_str(),
         key_name.c_str());
     // TDI_DBGCHK(0);
-    return BF_OBJECT_NOT_FOUND;
+    return TDI_OBJECT_NOT_FOUND;
   }
   size_t position = iter_1->second;
   const auto iter_2 = match_key_field_position_to_offset_map.find(position);
@@ -1356,7 +1364,7 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
         key_name.c_str(),
         position);
     TDI_DBGCHK(0);
-    return BF_OBJECT_NOT_FOUND;
+    return TDI_OBJECT_NOT_FOUND;
   }
   *field_offset = iter_2->second;
   const auto iter_3 =
@@ -1370,10 +1378,10 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
         table_name.c_str(),
         key_name.c_str());
     TDI_DBGCHK(0);
-    return BF_OBJECT_NOT_FOUND;
+    return TDI_OBJECT_NOT_FOUND;
   }
   *parent_field_byte_size = iter_3->second;
-  return BF_SUCCESS;
+  return TDI_SUCCESS;
 }
 // This function returns the start bit of the field
 // If the field is a field slice then the start bit is derived from the name
@@ -1382,9 +1390,7 @@ bf_status_t _tdi_parse_keyByteSizeAndOffsetGet(
 // If the field is a name annotated field slice or not a field slice at all,
 // then the start bit is read from the context json node if present or set
 // to zero if the context json node is absent
-size_t _tdi_parse_getStartBit(const tdi::Cjson *context_json_key_field,
-                              const tdi::Cjson *tdi_json_key_field,
-                              tdi::TdiTable::TableType table_type) {
+size_t _tdi_parse_getStartBit(const tdi::Cjson *tdi_json_key_field) {
   const std::string key_name = (*tdi_json_key_field)["name"];
   tdi::Cjson key_annotations = (*tdi_json_key_field)["annotations"];
   for (const auto &annotation : key_annotations.getCjsonChildVec()) {
@@ -1406,238 +1412,64 @@ size_t _tdi_parse_getStartBit(const tdi::Cjson *context_json_key_field,
     }
   }
 
-  bool is_context_json_node = false;
-  switch(table_type) {
-    case tdi::TdiTableObj::TableType::MATCH_DIRECT:
-    case tdi::TdiTableObj::TableType::MATCH_INDIRECT:
-    case tdi::TdiTableObj::TableType::MATCH_INDIRECT_SELECTOR:
-    case tdi::TdiTableObj::TableType::PORT_METADATA:
-      is_context_json_node = true;
-      break;
-    default:
-      is_context_json_node = false;
-      break;
-  }
-  // Since we couldn't get the start bit from the name of the key field, get
-  // it from the context json if the context json node is present
-  if (is_context_json_node) {
-    if (key_name == match_key_priority_field_name) {
-      // $MATCH_PRIORITY key field is not published in context json. Just return
-      // zero in this case
-      return 0;
-    }
-
-    for (const auto &match_field : context_json_key_field->getCjsonChildVec()) {
-      if (static_cast<const std::string>((*match_field)["name"]) != key_name) {
-        continue;
-      } else {
-        return static_cast<size_t>((*match_field)["start_bit"]);
-      }
-    }
-    // This indicates that we weren't able to find the context json node of the
-    // key field
-    LOG_ERROR(
-        "%s:%d ERROR %s Context json node not found for the key field. Hence "
-        "unable to determine the start bit",
-        __func__,
-        __LINE__,
-        key_name.c_str());
-    // TDI_DBGCHK(0);
-    return 0;
-  }
-
-  // This indicates that the key field is not a field slice and it does not
-  // even have a context json node associated with it (this is true for fixed
-  // tables, resourse tables, etc.) Hence just return 0
+  // This indicates that the key field is not a field slice
   return 0;
 }
 
-// This function returns if a key field is a field slice or not
-bool _tdi_parse_isFieldSlice(
-    const tdi::Cjson &key_field,
-    const size_t &start_bit,
-    const size_t &key_width_byte_size,
-    const size_t &key_width_parent_byte_size) {
-  tdi::Cjson key_annotations = key_field["annotations"];
-  for (const auto &annotation : key_annotations.getCjsonChildVec()) {
-    std::string annotation_name = (*annotation)["name"];
-    std::string annotation_value = (*annotation)["value"];
-    if ((annotation_name == "isFieldSlice") && (annotation_value == "true")) {
-      return true;
-    }
-  }
-  /// The 2 invariants to determine if a key field is a slice or not are the
-  // following
-  // 1. the start bit published in the context json is not zero (soft
-  //    invariant)
-  // 2. the bit_witdth and bit_width_full published in the context json
-  //    are not equal (hard invariant)
-  // The #1 invariant is soft because there can be cases where-in the start
-  // bit is zero but the field is still a field slice. This can happen when
-  // the p4 is written such that we have a template for a table wherein the
-  // the match key field is templatized and then we instantiate it using a
-  // field slice. As a result, the front end compiler (bf-rt generator)
-  // doesn't know that the key field is actually a field slice and doesn't
-  // publish the "is_field_slice" annotation in bf-rt json. However, the
-  // the back-end compiler (context json generator) knows it's a field slice
-  // and hence makes the bit width and bit-width-full unequal
-  /// Test invariant #1
-  // Now check if the start bit of the key field. If the key field is not a
-  // field slice then the start bit has to be zero. If the start bit is not
-  // zero. then that indicates that this key field is a name aliased field
-  // slice. Return true in that case. We need to correctly distinguish if
-  // a key field is a field slice (name aliased or not) or not, so that we
-  // correctly and efficiently pack the field in the match spec byte buffer
-  if (start_bit != 0) {
-    return true;
-  }
-  /// Test invariant #2
-  if (key_width_byte_size != key_width_parent_byte_size) {
-    return true;
-  }
-  return false;
-}
-
-std::unique_ptr<KeyFieldInfo> _tdi_parse_keyParse(
-  tdi::Cjson &key_json,
-  const tdi_id_t &table_id,
-  const size_t &field_offset,
-  const size_t &start_bit,
-  const size_t &parent_field_byte_size,
-  const bool &is_atcam_partition_index) {
-
+std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
+    const tdi::Cjson &table_key_cjson) {
   // parses the table_key json node and extracts all the relevant
-  // information into the helper maps. It extracts the following things
-  // - Gets the position (the order in which they appear in p4) of every match field
-  // - Gets the full size of every match field in bytes
-  // - Gets the offset (in the match spec byte buf) of every match field
-  tdi::Cjson table_key_cjson = table_tdi["key"];
-  std::map<std::string, size_t> match_key_field_name_to_position_map;
-  std::map<std::string, size_t> match_key_field_name_to_parent_field_byte_size_map;
-  std::map<size_t, size_t> match_key_field_position_to_offset_map;
-  std::map<std::string, size_t> match_key_field_name_to_bit_size_map;
-  bool is_context_json_node = false;
-  size_t cumulative_offset = 0;
-  size_t cumulative_key_width_bits = 0;
-  // This uses the tdi json key node
-  size_t pos = 0;
-  // Since we don't support field slices for fixed objects, we use the tdi
-  // key json node to extract all the information. The position of the
-  // fields will just be according to the order in which they are published
-  // Hence simply increment the position as we iterate
-  for (const auto &key_json : table_key_cjson->getCjsonChildVec()) {
-    std::string key_name = (*key_json)["name"];
-    std::string key_type_str;
+    std::string key_name = table_key_cjson["name"];
+    tdi_field_data_type_e field_data_type;
     size_t width;
     uint64_t default_value;
     float default_fl_value;
     std::string default_str_value;
     std::vector<std::string> choices;
-    _tdi_parse_getTableFieldWidth(
-        *key_json,
-        key_type_str,
-        width,
-        default_value,
-        default_fl_value,
-        default_str_value,
-        choices);
-    (*match_key_field_name_to_position_map)[key_name] = pos;
-    (*match_key_field_position_to_offset_map)[pos] = (width + 7) / 8;
-    (*match_key_field_name_to_parent_field_byte_size_map)[key_name] =
-        (width + 7) / 8;
-    match_key_field_name_to_bit_size_map[key_name] = width;
-    pos++;
-  }
-  // Now that we have the position of each field with it's offset, get the
-  // cumulative offset of each field.
-  // Set the total offset and compute the cumulative bit size
-  cumulative_offset = 0;
-  cumulative_key_width_bits = 0;
-  size_t prev_cumulative_offset = 0;
-  for (auto &iter : (*match_key_field_position_to_offset_map)) {
-    cumulative_offset += iter.second;
-    iter.second = prev_cumulative_offset;
-    prev_cumulative_offset = cumulative_offset;
-  }
-  for (const auto &iter : match_key_field_name_to_bit_size_map) {
-    cumulative_key_width_bits += iter.second;
-  }
+    std::string data_type;
+    parseFieldWidth(table_key_cjson,
+                    field_data_type,
+                    width,
+                    default_value,
+                    default_fl_value,
+                    default_str_value,
+                    choices);
 
-  const std::string key_name = _tdi_parse_getParentName(key_json);
-  const size_t start_bit = _tdi_parse_getStartBit(nullptr /* context json node */, key.get(), table_type);
-  size_t field_offset = 0, parent_field_byte_size = 0;
-
-  // Get the field offset and the size of the field in bytes
-  if (_tdi_parse_keyByteSizeAndOffsetGet(
-          table_name,
-          key_name,
-          match_key_field_name_to_position_map,
-          match_key_field_name_to_parent_field_byte_size_map,
-          match_key_field_position_to_offset_map,
-          &field_offset,
-          &parent_field_byte_size) != BF_SUCCESS) {
-    LOG_ERROR(
-        "%s:%d %s ERROR in processing key field %s while trying to get field "
-        "size and offset",
-        __func__,
-        __LINE__,
-        table_name.c_str(),
-        key_name.c_str());
-    TDI_DBGCHK(0);
-    return nullptr;
+    // create key_field structure and fill it
+    auto tmp =
+        new KeyFieldInfo(static_cast<tdi_id_t>(table_key_cjson["id"]),
+                         static_cast<std::string>(table_key_cjson["name"]),
+                         width,
+                         field_data_type,
+                         static_cast<bool>(table_key_cjson["mandatory"]),
+                         static_cast<bool>(table_key_cjson["read_only"]),
+                         choices,
+                         parseAnnotations(table_key_cjson["annotations"]),
+                         default_value,
+                         default_fl_value,
+                         default_str_value,
+                         checkIsFieldSlice(table_key_cjson),
+                         false,
+                         false);
+    if (tmp == nullptr) {
+      LOG_ERROR("%s:%d Error forming key_field %d",
+                __func__,
+                __LINE__,
+                static_cast<uint32_t>(table_key_cjson["id"]));
   }
-  std::string data_type;
-  size_t width;
-  uint64_t default_value;
-  float default_fl_value;
-  std::string default_str_value;
-  std::vector<std::string> choices;
-
-  _tdi_parse_getTableFieldWidth(
-      key_json,
-      data_type,
-      width,
-      default_value,
-      default_fl_value,
-      default_str_value,
-      choices);
-
-  // create key_field structure and fill it
-  auto tmp = new KeyFieldInfo();
-  if (tmp == nullptr) {
-    LOG_ERROR("%s:%d Error forming key_field %d for table id %d",
-              __func__,
-              __LINE__,
-              static_cast<uint32_t>(key["id"]),
-              table_id);
-  }
-  tmp->field_id = key_json["id"];
-  tmp->name = key_name;
-  tmp->data_type = data_type;
-  tmp->size_bits = width;
-  tmp->match_type = key_json["match_type"];
-  tmp->enum_choices  = choices;
-  tmp->field_offset = field_offset;
-  tmp->start_bit = start_bit;
-  tmp->is_field_slice = _tdi_parse_isFieldSlice(key_json, start_bit, (width + 7) / 8, parent_field_byte_size);
-  tmp->parent_field_full_byte_size = parent_field_full_byte_size;
-  tmp->is_partition = is_atcam_partition_index;
-  tmp->default_value = default_value;
-  tmp->default_fl_value = default_fl_value;
-  tmp->default_str_value = default_str_value;
 
   std::unique_ptr<KeyFieldInfo> key_field(tmp);
   if (key_field == nullptr) {
-    LOG_ERROR("%s:%d Error forming key_field %d for table id %d",
+    LOG_ERROR("%s:%d Error forming key_field %d",
               __func__,
               __LINE__,
-              static_cast<uint32_t>(key["id"]),
-              table_id);
+              static_cast<uint32_t>(table_key_cjson["id"]));
   }
   return key_field;
 }
 
-std::set<tdi::Annotation> _tdi_parse_parseAnnotations(tdi::Cjson annotation_cjson) {
+std::set<tdi::Annotation> TdiInfoParser::parseAnnotations(
+    const tdi::Cjson &annotation_cjson) {
   std::set<tdi::Annotation> annotations;
   for (const auto &annotation : annotation_cjson.getCjsonChildVec()) {
     std::string annotation_name = (*annotation)["name"];
@@ -1647,211 +1479,19 @@ std::set<tdi::Annotation> _tdi_parse_parseAnnotations(tdi::Cjson annotation_cjso
   return annotations;
 }
 
-bool _tdi_parse_isActionParam_matchTbl(
-    const std::string table_name,
-    const std::map<std::string, std::vector<struct TableRefInfo>> table_ref_map;
-    tdi_id_t action_handle,
-    std::string parameter_name)
-{
-  std::string ref = "action_data_table_refs";
-  if (table_ref_map.find(ref) != table_ref_map.end()) {
-    // If action table exists then check the action table for the param name
-    for (const auto &action_table_res_pair : table_ref_map.at(ref) ) {
-      if (table_cjson_map.find(action_table_res_pair.name) == table_cjson_map.end()) {
-        LOG_ERROR("%s:%d Ref Table %s not found",
-                  __func__,
-                  __LINE__,
-                  action_table_res_pair.name.c_str());
-        continue;
-      }
-      tdi::Cjson action_table_cjson = *(table_cjson_map.at(action_table_res_pair.name).second);
-      auto action_table_name = action_table_res_pair.name;
-      if (_tdi_parse_isActionParam(action_table_cjson, action_handle, action_table_name, parameter_name)) {
-        return true;
-      }
-    }
-  }
-
-  // FIXME : we should probably move to parsing the p4 parameters. In that case
-  // 	     we dont need to worry if the field is an immediate action or not
-  //	     and we can get rid of the below logic
-
-  // We are here because the parameter is not encoded in the action RAM. Next
-  // check if its encoded as part of an immediate field
-
-  tdi::Cjson match_table_cjson = *(table_cjson_map.at(tdiTable->table_name_get()).second);
-  // Find if it's an ATCAM table
-  std::string atcam = match_table_cjson["match_attributes"]["match_type"];
-  bool is_atcam = (atcam == "algorithmic_tcam") ? true : false;
-  // Find if it's an ALPM table
-  bool is_alpm =
-      match_table_cjson["match_attributes"]["pre_classifier"].exists();
-  // For ALPM, table data fields reside in the algorithmic tcam part of the
-  // table
-  // ATCAM table will be present in the "atcam_table" node of the match table
-  // json
-  // There will be as many "units" as the number of ATCAM logical tables for the
-  // ALPM table. We just process the first one in order to find out about action
-  // tables
-  tdi::Cjson stage_table = match_table_cjson["match_attributes"]["stage_tables"];
-  if (is_alpm) {
-    stage_table =
-        match_table_cjson["match_attributes"]["atcam_table"]["match_attributes"]
-                         ["units"][0]["match_attributes"]["stage_tables"][0];
-  } else if (is_atcam) {
-    stage_table = match_table_cjson["match_attributes"]["units"][0]
-                                   ["match_attributes"]["stage_tables"][0];
-  } else {
-    stage_table = match_table_cjson["match_attributes"]["stage_tables"][0];
-  }
-
-  tdi::Cjson action_formats = stage_table["action_format"];
-
-  if (stage_table["ternary_indirection_stage_table"].exists()) {
-    action_formats =
-        stage_table["ternary_indirection_stage_table"]["action_format"];
-  }
-  for (const auto &action_format : action_formats.getCjsonChildVec()) {
-    auto json_action_handle =
-        static_cast<unsigned int>((*action_format)["action_handle"]);
-    // We need to modify the raw handle parsed before comparing
-    applyMaskOnContextJsonHandle(&json_action_handle,
-                                 tdiTable->table_name_get());
-    if (json_action_handle != action_handle) {
-      continue;
-    }
-    for (const auto &imm_field :
-         (*action_format)["immediate_fields"].getCjsonChildVec()) {
-      if (static_cast<std::string>((*imm_field)["param_name"]) ==
-          parameter_name) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool _tdi_parse_isParamActionParam(
-    tdi::TdiTable::TableType table_type,
-    std::string table_name,
-    tdi_id_t action_handle,
-    std::string parameter_name,
-    bool use_p4_params_node)
-{
-  // If the table is a Match-Action table call the matchTbl function to analyze
-  // if this parameter belongs to the action spec or not
-  if (table_type == TdiTable::TableType::MATCH_DIRECT) {
-    return _tdi_parse_isActionParam_matchTbl(tdiTable, action_handle, parameter_name);
-  } else if (table_type == TdiTable::TableType::ACTION_PROFILE) {
-    return _tdi_parse_isActionParam_actProf(
-        tdiTable, action_handle, parameter_name, use_p4_params_node);
-  } else if (table_type == TdiTable::TableType::PORT_METADATA) {
-    // Phase0 can have only action params as data
-    return true;
-  }
-  return false;
-}
-
-// This funcion, given the parameter_name of a certain action figures out if the
-// parameter is part of the action spec based on the action table entry
-// formatting information
-bool _tdi_parse_isActionParam_actProf(const TdiTableObj *tdiTable,
-                                         tdi_id_t action_handle,
-                                         std::string parameter_name,
-                                         bool use_p4_params_node) {
-  tdi::Cjson action_table_cjson =
-      *(table_cjson_map.at(tdiTable->table_name).second);
-
-  auto action_table_name = tdiTable->table_name_get();
-
-  return _tdi_parse_isActionParam(action_table_cjson,
-                       action_handle,
-                       action_table_name,
-                       parameter_name,
-                       use_p4_params_node);
-}
-
-bool _tdi_parse_isActionParam(tdi::Cjson action_table_cjson,
-                              tdi_id_t action_handle,
-                              std::string action_table_name,
-                              std::string parameter_name,
-                              bool use_p4_params_node) {
-  /* FIXME : Cleanup this hairy logic. For the time being we are cheking the
-             pack format to figure this out, whereas we should be using the
-             p4_parameters node (commented out logic down below). If we
-             indeed move to parsing the p4_parameters, we could get rid of
-             the new type that we added "ACTION_PARAM_OPTIMIZED_OUT"
-  */
-  if (!use_p4_params_node) {
-    for (const auto &pack_format :
-         action_table_cjson["stage_tables"][0]["pack_format"]
-             .getCjsonChildVec()) {
-      auto json_action_handle =
-          static_cast<unsigned int>((*pack_format)["action_handle"]);
-      // We need to modify the raw handle parsed before comparing
-      applyMaskOnContextJsonHandle(&json_action_handle, action_table_name);
-      if (json_action_handle != action_handle) {
-        continue;
-      }
-      for (const auto &field :
-           (*pack_format)["entries"][0]["fields"].getCjsonChildVec()) {
-        if (static_cast<std::string>((*field)["field_name"]) ==
-            parameter_name) {
-          return true;
-        }
-      }
-    }
-    return false;
-  } else {
-    // Using the p4_parameters node to figure out if its an action param instead
-    // of using the pack format. This is because there can be instances where
-    // the param might be optimized out by the compiler and hence not appear in
-    // pack format. However, the param always appears in tdi json (optimized
-    // out
-    // or not). Hence if we use pack format to figure out if its an action param
-    // there is an inconsistency (as the param exists in the tdi json but not
-    // in pack format). So its better to use p4_parameters as the param is
-    // guaranteed to be present there (optimized or not)
-    for (const auto &action :
-         action_table_cjson["actions"].getCjsonChildVec()) {
-      auto json_action_handle = static_cast<unsigned int>((*action)["handle"]);
-      // We need to modify the raw handle parsed before comparing
-      applyMaskOnContextJsonHandle(&json_action_handle, action_table_name);
-      if (json_action_handle != action_handle) {
-        continue;
-      }
-      for (const auto &field : (*action)["p4_parameters"].getCjsonChildVec()) {
-        if (static_cast<std::string>((*field)["name"]) == parameter_name) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-}
-
-std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
-    tdi::Cjson data_json,
-    tdi::Cjson action_indirect_res,
-    std::string this_table_type,
-    std::string this_table_name,
-    const tdi::TdiTableObj *tdiTable,
-    const TableInfo *parent_tbl_info,
-    pipe_act_fn_hdl_t action_handle,
-    tdi_id_t table_id,
-    tdi_id_t table_id,
-    tdi_id_t action_id,
-    uint32_t oneof_index,
-    bool *is_register_data_field) {
-  // first get mandatory and read_only
-  // because it exists outside oneof and singleton
-  auto mandatory = bool(data_json["mandatory"]);
-  auto read_only = bool(data_json["read_only"]);
+std::unique_ptr<struct DataFieldInfo> TdiInfoParser::parseDataField(
+    const tdi::Cjson &data_json_in,
+    const uint64_t &oneof_index) {
+  tdi::Cjson data_json = data_json_in;
   // if "singleton" field exists, then
   // lets point to it for further parsing
   if (data_json["singleton"].exists()) {
     data_json = data_json["singleton"];
   }
+  // first get mandatory and read_only
+  // because it exists outside oneof and singleton
+  auto mandatory = bool(data_json["mandatory"]);
+  auto read_only = bool(data_json["read_only"]);
   std::set<tdi_id_t> oneof_siblings;
   if (data_json["oneof"].exists()) {
     // Create a set of all the oneof members IDs
@@ -1863,10 +1503,9 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
     // cannot be their own sibling now, can they?
     oneof_siblings.erase(static_cast<tdi_id_t>(data_json["id"]));
   }
-  // get "name"
   std::string data_name = static_cast<std::string>(data_json["name"]);
   // get "type"
-  std::string key_type_str;
+  tdi_field_data_type_e field_data_type;
   size_t width;
   std::vector<std::string> choices;
   // Default value of the field. We currently only support listing upto 64 bits
@@ -1874,29 +1513,19 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
   uint64_t default_value;
   float default_fl_value;
   std::string default_str_value;
-  _tdi_parse_getTableFieldWidth(
-      data_json,
-      key_type_str,
-      width,
-      default_value,
-      default_fl_value,
-      default_str_value,
-      choices);
+  parseFieldWidth(data_json,
+                  field_data_type,
+                  width,
+                  default_value,
+                  default_fl_value,
+                  default_str_value,
+                  choices);
 
   bool repeated = data_json["repeated"];
   // Get Annotations if any
-  // We need to use "annotations" field to detect if a particular data_json field
-  // is a register data_json field as unlike other resource parameters register
-  // fields have user defined names in tdi json
-  bool data_field_is_reg = false;
-  std::set<Annotation> annotations = _tdi_parse_parseAnnotations(data_json["annotations"]);
-  if (annotations.find(Annotation("$tdi_field_class", "register_data")) !=
-      annotations.end()) {
-    data_field_is_reg = true;
-    *is_register_data_field = data_field_is_reg;
-  }
+  std::set<Annotation> annotations =
+      parseAnnotations(data_json["annotations"]);
 
-  tdi_id_t table_id = tdiTable->table_id_get();
   tdi_id_t data_id = static_cast<tdi_id_t>(data_json["id"]);
   // Parse the container if it exists
   bool container_valid = false;
@@ -1905,50 +1534,48 @@ std::unique_ptr<struct DataFieldInfo> _tdi_parse_dataParse(
   }
   std::unique_ptr<struct DataFieldInfo> data_field(
       new struct DataFieldInfo(
-        table_id,
-        data_id,
-        data_name,
-        action_id,
-        width,
-        type,
-        std::move(choices),
-        default_value,
-        default_fl_value,
-        default_str_value,
-        repeated,
-        mandatory,
-        read_only,
-        container_valid,
-        annotations,
-        oneof_siblings
-      )
-  );
+                               data_id,
+                               data_name,
+                               width,
+                               action_id,
+                               field_data_type
+                               std::move(choices),
+                               annotations,
+                               default_value,
+                               default_fl_value,
+                               default_str_value,
+                               repeated,
+                               mandatory,
+                               read_only,
+                               container_valid,
+                               oneof_siblings));
 
   // Parse the container if it exists
+
+#if 0
   if (container_valid) {
     tdi::Cjson c_table_data = data_json["container"];
     parseContainer(c_table_data, tdiTable, data_field.get());
   }
+#endif
   return data_field;
 }
 
 // This variant of the function is to parse the action specs for all the tables
 // except phase0 table
-std::unique_ptr<ActionInfo> _tdi_parse_actionSpecsParse(
-    tdi::Cjson &action_tdi,
-    tdi::Cjson &action_context,
-    tdi::TdiTable::TableType table_type,
-    const tdi::TdiTableObj *tdiTable)
-{
+std::unique_ptr<ActionInfo> TdiInfoParser::parseAction(
+    const tdi::Cjson &action_json) {
   std::unique_ptr<ActionInfo> action_info(new ActionInfo());
   action_info->name = static_cast<std::string>(action_tdi["name"]);
   action_info->action_id = static_cast<tdi_id_t>(action_tdi["id"]);
-  action_info->annotations = _tdi_parse_parseAnnotations(action_tdi["annotations"]);
+  action_info->annotations =
+      parseAnnotations(action_tdi["annotations"]);
   tdi::Cjson action_indirect;  // dummy
   if (action_context.exists()) {
     action_info->act_fn_hdl =
         static_cast<pipe_act_fn_hdl_t>(action_context["handle"]);
-    /* applyMaskOnContextJsonHandle(&action_info->act_fn_hdl, tdiTable->table_name_get()); */
+    /* applyMaskOnContextJsonHandle(&action_info->act_fn_hdl,
+     * tdiTable->table_name_get()); */
     action_indirect = action_context["indirect_resources"];
   } else {
     action_info->act_fn_hdl = 0;
@@ -1958,16 +1585,7 @@ std::unique_ptr<ActionInfo> _tdi_parse_actionSpecsParse(
   size_t offset = 0;
   size_t bitsize = 0;
   for (const auto &action_data : action_data_cjson.getCjsonChildVec()) {
-    auto data_field = _tdi_parse_dataParse(*action_data,
-                                action_indirect,
-                                tdiTable->table_name_get(),
-                                table_type,
-                                tdiTable,
-                                offset,
-                                bitsize,
-                                action_info->act_fn_hdl,
-                                action_info->action_id,
-                                0);
+    auto data_field = parseDataField(*action_data);
     if (action_info->data_fields.find(data_field->getId()) !=
         action_info->data_fields.end()) {
       LOG_ERROR("%s:%d Key \"%u\" Exists for data ",
@@ -1986,58 +1604,35 @@ std::unique_ptr<ActionInfo> _tdi_parse_actionSpecsParse(
   action_info->dataSzbits = bitsize;
   return action_info;
 }
-/* The function pasrse the provided json schema file and return an tdi_info object that later can be used to
+/* The function pasrse the provided json schema file and return an tdi_info
+ * object that later can be used to
  * create a finalized tdi table obj, possible a derived class from tdi_table
  */
-std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cjson> json_schema) {
-  /* std::string prog_name = program_config.prog_name_; */
-  // Name of the program to which this table obj belongs
-  std::string prog_name;
-
-  // hash_bit_width of hash object. Only required for the hash tables
-  uint64_t hash_bit_width = 0;
-
-  // action_info map
-  std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map;
-  std::map<std::string, tdi_id_t> table_action_map_from_str;
-
-  mutable std::mutex state_lock;
-  bf_status_t action_id_get_helper(const std::string &name,
-                                   tdi_id_t *action_id) const;
-  // Whether this table has a const default action or not
-  bool has_const_default_action_{false};
-  // Whether this is a const table
-  bool is_const_table_{false};
-  // Table annotations
-  std::set<Annotation> annotations_{};
-  const std::string table_name;
-  const TableType table_type;
-  const std::set<TableApi> table_apis_{};
-  // Map of reference_type -> vector of ref_info structs
-  std::map<std::string, std::vector<struct TableRefInfo>> table_ref_map;
-  // key-fields map
-  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map;
-  // Map of common data-fields like TTL/Counter etc
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map;
-  // Map of common data-fields like TTL/Counter etc with names
-  std::map<std::string, DataFieldInfo *> common_data_fields_names;
-  std::set<TableOperationsType> operations_type_set;
-  std::set<TableAttributesType> attributes_type_set;
-
-  tdi::Cjson table_tdi = *json_schema;
+std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
+    const tdi::Cjson &table_tdi) {
   tdi_id_t table_id = table_tdi["id"];
   std::string table_name = table_tdi["name"];
   std::string table_type = table_tdi["table_type"];
   size_t table_size = static_cast<unsigned int>(table_tdi["size"]);
   key_size_t table_total_key_size;
+  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map;
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map;
+  std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map;
+  std::map<tdi_id_t, std::unique_ptr<TableRefInfo>> table_ref_map;
 
-  LOG_ERROR("Table : %s :: Type :: %s ID :: %d SIZE :: %lu", table_name.c_str(), tdi_table_type.c_str(), table_id, table_size);
+  LOG_DBG("Table : %s :: Type :: %s ID :: %d SIZE :: %lu",
+            table_name.c_str(),
+            tdi_table_type.c_str(),
+            table_id,
+            table_size);
 
   ////////////////////
   // getting key   //
   ///////////////////
+  tdi::Cjson table_key_cjson = table_tdi["key"];
   for (const auto &key : table_key_cjson.getCjsonChildVec()) {
-    std::unique_ptr<KeyFieldInfo> key_field = _tdi_parse_keyParse(*key, table_id, table_name, table_type, table_size);
+    std::unique_ptr<KeyFieldInfo> key_field =
+        parseKeyField(*key);
     if (key_field == nullptr) {
       continue;
     }
@@ -2045,7 +1640,7 @@ std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cj
     if (elem == table_key_map.end()) {
       table_key_map[key_field->field_id] = (std::move(key_field));
       table_total_key_size.bytes += key_field->field_offset;
-      table_total_key_size.bits  += key_field->size_bits;
+      table_total_key_size.bits += key_field->size_bits;
     } else {
       // Field id is repeating, log an error message
       LOG_ERROR("%s:%d Field ID %d is repeating",
@@ -2075,25 +1670,8 @@ std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cj
     tdi::Cjson temp;
     for (int oneof_loop = 0; oneof_loop < oneof_size; oneof_loop++) {
       bool is_register_data_field = false;
-      auto data_field = _tdi_parse_dataParse(*data_json,
-                                  temp,
-                                  offset,
-                                  bitsize,
-                                  0,
-                                  0,
-                                  oneof_loop,
-                                  &is_register_data_field);
+      auto data_field = parseDataField(*data_json, oneof_loop);
       tdi_id_t data_field_id = data_field->field_id;
-      if (is_register_data_field) {
-        // something is not right
-        LOG_ERROR(
-            "%s:%d fixed table %s should not have register data field id %d",
-            __func__,
-            __LINE__,
-            table_name.c_str(),
-            data_field_id);
-        continue;
-      }
       if (table_data_map.find(data_field_id) != table_data_map.end()) {
         LOG_ERROR("%s:%d Id \"%u\" Exists for common data of table %s",
                   __func__,
@@ -2112,7 +1690,7 @@ std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cj
   // getting attributes //
   ////////////////////////
   std::vector<std::string> attributes_v =
-    table_tdi["attributes"].getCjsonChildStringVec();
+      table_tdi["attributes"].getCjsonChildStringVec();
   for (auto const &item : attributes_v) {
     table_attribute_set.insert(item);
   }
@@ -2124,13 +1702,13 @@ std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cj
   for (const auto &action : table_action_spec_cjson.getCjsonChildVec()) {
     std::unique_ptr<ActionInfo> action_info;
     tdi::Cjson dummy;
-    action_info = _tdi_parse_actionSpecsParse(*action, dummy, table_type, tdiTable.get());
+    action_info =
+        actionSpecsParse(*action, dummy, table_type, tdiTable.get());
     auto elem = table_action_map.find(action_info->action_id);
     if (elem == table_action_map.end()) {
       auto act_id = action_info->action_id;
       auto act_name = action_info->name;
-      table_action_map[action_info->action_id] =
-          (std::move(action_info));
+      table_action_map[action_info->action_id] = (std::move(action_info));
       table_action_map_from_str[act_name] = act_id;
     } else {
       // Action id is repeating. Log an error message
@@ -2152,7 +1730,7 @@ std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cj
     ref_info.id = static_cast<tdi_id_t>(*tbl_id);
     ref_info.name = "";
     for (auto &tbl_tdi_cjson : table_cjson_map) {
-      // Check if table present in bf-rt.json if so then verify if id match
+      // Check if table present in tdi.json if so then verify if id match
       if (tbl_tdi_cjson.second.first != nullptr &&
           static_cast<tdi_id_t>((*tbl_tdi_cjson.second.first)["id"]) ==
               ref_info.id) {
@@ -2207,37 +1785,38 @@ std::unique_ptr<tdi::TdiTableObj> _tdi_parse_table(const std::shared_ptr<tdi::Cj
   return ret_uqi_ptr;
 }
 
-// tdi_table creation will take three steps
-//  1. create tdi_info_object creation will take three steps
-//     parse device-architecture-p4_program independent json schmea file
-//     a. tdi_info_obj -> tableName => table_info_obj (json in memory presentation)
-//  2. create context_info_object that parse device dependent json schema file (context.json)
-//  3. in implementation, it need to consider the both tdi_info and context_info to make correct choices
-tdi_status tdi_info_obj_create(
-    const bf_dev_id_t dev_id,
-    const tdi::ProgramConfig program_config)
-{
-/// A. read file form a list of schema files
- if (program_config.tdiInfoFilePathVect_.empty()) {
-   LOG_CRIT("Unable to find any TDI Json Schema File");
-   return TDI_ERR;
- }
- for (auto const &tdiJsonFile : program_config.tdiInfoFilePathVect_) {
-   std::ifstream file(tdiJsonFile);
-   if (file.fail()) {
-     LOG_CRIT("Unable to find TDI Json File %s", tdiJsonFile.c_str());
-     return TDI_ERR;
-   }
-   std::string content((std::istreambuf_iterator<char>(file)),
-                       std::istreambuf_iterator<char>());
-   tdi::Cjson root_cjson = tdi::Cjson::createCjsonFromFile(content);
-   tdi::Cjson tables_cjson = root_cjson["tables"];
-   for (const auto &table : tables_cjson.getCjsonChildVec()) {
-/// B. parse file to form tdi_table_info object
-     tdi_info_map[tdiJsonFile] = _tdi_parse_table(table);
-   }
- }
- (void) dev_id;
- return TDI_OK;
+tdi_status_t TdiInfoParser::tdiInfoCreate(
+    const std::vector<std::string> &tdi_info_file_paths) {
+  // A. read file form a list of schema files
+  if (tdi_info_file_paths.empty()) {
+    LOG_CRIT("Unable to find any TDI Json Schema File");
+    return TDI_ERR;
+  }
+  for (auto const &tdiJsonFile : tdi_info_file_paths) {
+    std::ifstream file(tdiJsonFile);
+    if (file.fail()) {
+      LOG_CRIT("Unable to find TDI Json File %s", tdiJsonFile.c_str());
+      return TDI_ERR;
+    }
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
+    tdi::Cjson root_cjson = tdi::Cjson::createCjsonFromFile(content);
+    tdi::Cjson tables_cjson = root_cjson[tdi_json::TABLES];
+    for (const auto &table : tables_cjson.getCjsonChildVec()) {
+      // B. parse file to form tdi_table_info object
+      std::string table_name = static_cast<std::string>((*table)[tdi_json::TABLE_NAME]);
+      table_info_map_[table_name] = this->parseTable(*table);
+    }
+
+    tdi::Cjson tables_cjson = root_cjson[tdi_json::LEARNS];
+    for (const auto &table : tables_cjson.getCjsonChildVec()) {
+      // C. parse file to form tdi_learn_info object
+      std::string learn_name = static_cast<std::string>((*learn)["name"]);
+      learn_info_map_[learn_name] = this->parseLearn(*learn);
+    }
+  }
+  return TDI_OK;
 }
+
+} // namespace tdi
 

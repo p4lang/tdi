@@ -29,7 +29,9 @@
 #include <unordered_map>
 
 #include <tdi/common/tdi_defs.h>
+#include <tdi/common/tdi_target.hpp>
 #include <../src/tdi_utils.hpp>
+#include "tdi_cjson.hpp"
 //#include <tdi/common/tdi_target.hpp>
 //#include <tdi/common/tdi_session.hpp>
 //#include <tdi/common/tdi_table_data.hpp>
@@ -45,6 +47,48 @@ class ActionInfo;
 class KeyFieldInfo;
 class DataFieldInfo;
 class TableRefInfo;
+
+namespace tdi_json {
+const std::string SCHEMA_VERSION = "schema_version";
+const std::string TABLES = "tables";
+const std::string TABLE_NAME = "name";
+const std::string TABLE_ID = "id";
+const std::string TABLE_TABLE_TYPE = "table_type";
+const std::string TABLE_SIZE = "size";
+const std::string TABLE_ANNOTATIONS = "annotations";
+const std::string TABLE_DEPENDS_ON = "depends_on";
+const std::string TABLE_HAS_CONST_DEFAULT_ACTION = "has_const_default_action";
+
+const std::string TABLE_KEY = "key";
+const std::string TABLE_KEY_ID = "id";
+const std::string TABLE_KEY_NAME = "name";
+const std::string TABLE_KEY_REPEATED = "repeated";
+const std::string TABLE_KEY_MANDATORY = "mandatory";
+const std::string TABLE_KEY_ANNOTATIONS = "annotations";
+const std::string TABLE_KEY_MATCH_TYPE = "match_type";
+const std::string TABLE_KEY_TYPE = "type";
+const std::string TABLE_KEY_TYPE_TYPE = "type";
+const std::string TABLE_KEY_TYPE_WIDTH = "width";
+
+const std::string TABLE_ACTION_SPECS = "action_specs";
+const std::string TABLE_ACTION_ID = "id";
+const std::string TABLE_ACTION_NAME = "name";
+const std::string TABLE_ACTION_ACTION_SCOPE = "action_scope";
+const std::string TABLE_ACTION_ANNOTATIONS = "annotations";
+const std::string TABLE_ACTION_DATA = "madata";
+
+const std::string TABLE_DATA = "data";
+const std::string TABLE_DATA_ID = "id";
+const std::string TABLE_DATA_NAME = "name";
+const std::string TABLE_DATA_REPEATED = "repeated";
+const std::string TABLE_DATA_MANDATORY = "mandatory";
+const std::string TABLE_DATA_ANNOTATIONS = "annotations";
+const std::string TABLE_DATA_TYPE = "type";
+const std::string TABLE_DATA_TYPE_TYPE = "type";
+const std::string TABLE_DATA_TYPE_WIDTH = "width";
+
+const std::string LEARNS = "learns";
+}
 
 /**
  * @brief Class for Annotations. Contains 2 strings to uniquely identify an
@@ -99,7 +143,7 @@ using AnnotationSet =
     std::set<std::reference_wrapper<const Annotation>, Annotation::Less>;
 
 /**
- * @brief In memory representation of tdi.json
+ * @brief In memory representation of tdi.json Table
  */
 class TableInfo {
  public:
@@ -221,7 +265,8 @@ class TableInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t keyFieldGet(const tdi_id_t &field_id, const KeyFieldInfo *key_field_info) const;
+  tdi_status_t keyFieldGet(const tdi_id_t &field_id,
+                           const KeyFieldInfo **key_field_info) const;
 
   /**
    * @brief Get vector of DataField IDs. Only applicable for tables
@@ -317,7 +362,8 @@ class TableInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t actionGet(const tdi_id_t &action_id, const ActionInfo **action_info) const;
+  tdi_status_t actionGet(const tdi_id_t &action_id,
+                         const ActionInfo **action_info) const;
 
   /**
    * @brief Are Action IDs applicable for this table
@@ -336,13 +382,85 @@ class TableInfo {
   size_t table_size_;
   bool has_const_default_action_{false};
   bool is_const_table_{false};
-  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>>  table_key_map_;
+  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map_;
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
-  std::map<tdi_id_t, std::unique_ptr<ActionInfo>>    table_action_map_;
-  std::map<tdi_id_t, std::unique_ptr<TableRefInfo>>  table_ref_map_;
+  std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map_;
+  std::map<tdi_id_t, std::unique_ptr<TableRefInfo>> table_ref_map_;
   std::set<tdi_table_api_type_e> table_apis_{};
   std::set<tdi_operations_type_e> operations_type_set_;
   std::set<tdi_attributes_type_e> attributes_type_set_;
+  std::set<Annotation> annotations_{};
+};
+
+/**
+ * @brief In memory representation of tdi.json Learn
+ */
+class LearnInfo {
+ public:
+  /**
+   * @brief Get name of the learn
+   *
+   * @param[out] name Name of the learn
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t learnNameGet(std::string *name) const;
+
+  /**
+   * @brief Get ID of the learn
+   *
+   * @param[out] id ID of the learn
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t learnIdGet(tdi_id_t *id) const;
+
+  /**
+   * @brief Get a set of annotations on a Learn
+   *
+   * @param[out] annotations Set of annotations on a Learn
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t learnAnnotationsGet(AnnotationSet *annotations) const;
+
+  /**
+   * @brief Get vector of DataField IDs. Only applicable for learns
+   * without Action IDs
+   *
+   * @param[out] id Vector of IDs
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t dataFieldIdListGet(std::vector<tdi_id_t> *id) const;
+
+  /**
+   * @brief Get the field ID of a Data Field from a name.
+   *
+   * @param[in] name Name of a Data field
+   * @param[out] field_id Field ID
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t dataFieldIdGet(const std::string &name,
+                              tdi_id_t *field_id) const;
+
+  /**
+   * @brief Get the data Field info object from tdi_id.
+   *
+   * @param[in] id id of a Data field
+   * @param[out] data_field_info DataFieldInfo object
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t dataFieldGet(const tdi_id_t field_id, const DataFieldInfo **data_field_info) const;
+
+  const std::string &learn_name_get() const { return learn_name_; }
+
+ private:
+  std::string learn_name_;
+  tdi_id_t learn_id_;
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map_;
   std::set<Annotation> annotations_{};
 };
 
@@ -421,26 +539,61 @@ class KeyFieldInfo {
       std::vector<std::reference_wrapper<const std::string>> *choices) const;
 
   /** @} */  // End of group Key
+
+  const std::string &getName() const { return name_; };
+  const tdi_id_t &getId() const { return field_id_; };
+
  private:
+  KeyFieldInfo(tdi_id_t field_id,
+               std::string name,
+               size_t size_bits,
+               //tdi_match_type_e match_type,
+               tdi_field_data_type_e data_type,
+               bool mandatory,
+               bool read_only,
+               const std::vector<std::string> &enum_choices,
+               const std::set<tdi::Annotation> annotations,
+               uint64_t default_value,
+               float default_fl_value,
+               std::string default_str_value,
+               bool is_field_slice,
+               bool is_ptr,
+               bool match_priority)
+      : field_id_(field_id),
+        name_(name),
+        size_bits_(size_bits),
+//        match_type_(match_type),
+        data_type_(data_type),
+        mandatory_(mandatory),
+        read_only_(read_only),
+        enum_choices_(enum_choices),
+        annotations_(annotations),
+        default_value_(default_value),
+        default_fl_value_(default_fl_value),
+        default_str_value_(default_str_value),
+        is_field_slice_(is_field_slice),
+        is_ptr_(is_ptr),
+        match_priority_(match_priority){};
   // data for key field info
-  tdi_id_t field_id_;
-  size_t size_bits_;
-  tdi_match_type_e match_type_;
-  tdi_field_data_type_e data_type_;
-  std::string name_;
-  bool mandatory_;
-  bool read_only_;
-  std::vector<std::string> enum_choices_;
-  std::set<std::string> annotations_;
+  const tdi_id_t field_id_;
+  const std::string name_;
+  const size_t size_bits_;
+//  const tdi_match_type_e match_type_;
+  const tdi_field_data_type_e data_type_;
+  const bool mandatory_;
+  const bool read_only_;
+  const std::vector<std::string> enum_choices_;
+  const std::set<tdi::Annotation> annotations_;
   // Default value for this data field
-  uint64_t default_value_;
-  float default_fl_value_;
-  std::string default_str_value_;
+  const uint64_t default_value_;
+  const float default_fl_value_;
+  const std::string default_str_value_;
   // Flag to indicate if this is a field slice or not
-  bool is_field_slice_{false};
-  bool is_ptr_;
+  const bool is_field_slice_{false};
+  const bool is_ptr_{false};
   // A flag to indicate this is a match priority field
-  bool match_priority_;
+  const bool match_priority_{false};
+  friend class TdiInfoParser;
 };  // class KeyFieldInfo
 
 class DataFieldInfo {
@@ -550,13 +703,46 @@ class DataFieldInfo {
 
   /** @} */  // End of group Data
 private:
-  std::string name_;
+  DataFieldInfo(tdi_id_t field_id,
+               std::string name,
+               size_t size_bits,
+               //tdi_match_type_e match_type,
+               tdi_id_t action_id,
+               tdi_field_data_type_e data_type,
+               bool mandatory,
+               bool read_only,
+               const std::vector<std::string> &enum_choices,
+               const std::set<tdi::Annotation> annotations,
+               uint64_t default_value,
+               float default_fl_value,
+               std::string default_str_value,
+               bool is_field_slice,
+               bool is_ptr,
+               bool match_priority)
+      : field_id_(field_id),
+        name_(name),
+        size_bits_(size_bits),
+//        match_type_(match_type),
+        action_id_(action_id),
+        data_type_(data_type),
+        mandatory_(mandatory),
+        read_only_(read_only),
+        enum_choices_(enum_choices),
+        annotations_(annotations),
+        default_value_(default_value),
+        default_fl_value_(default_fl_value),
+        default_str_value_(default_str_value),
+        is_field_slice_(is_field_slice),
+        is_ptr_(is_ptr),
+        match_priority_(match_priority){};
   tdi_id_t field_id_;
+  std::string name_;
+  size_t size_bits_;
   tdi_id_t action_id_;
-  size_t size_;
   std::string data_type_;
   // Vector of allowed choices for this field
   std::vector<std::string> enum_choices_;
+  const std::set<tdi::Annotation> annotations_;
   // Default value for this data field
   uint64_t default_value_;
   float default_fl_value_;
@@ -567,7 +753,6 @@ private:
   /* Map of Objects within container */
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
   std::map<std::string, tdi_id_t> container_names_;
-  std::set<std::string> annotations_;
   std::set<tdi_id_t> oneof_siblings_;
 };
 
@@ -613,6 +798,32 @@ class ActionInfo {
   // Map of table_data_fields with names
   std::map<std::string, tdi_id_t> data_fields_names_;
   std::set<std::string> annotations_;
+  friend TableInfo;
+};
+
+class TdiInfoParser {
+  public:
+   tdi_status_t tdiInfoCreate(
+       const std::vector<std::string> &tdi_info_file_paths);
+   std::unique_ptr<tdi::TableInfo> parseTable(const tdi::Cjson &table_tdi);
+   std::unique_ptr<tdi::LearnInfo> parseLearn(const tdi::Cjson &learn_tdi);
+   std::unique_ptr<KeyFieldInfo> parseKeyField(const tdi::Cjson &key_json);
+   std::unique_ptr<DataFieldInfo> parseDataField(const tdi::Cjson &data_json,
+                                                 const uint64_t &oneof_index);
+   std::unique_ptr<ActionInfo> parseAction(const tdi::Cjson &action_json);
+   std::set<tdi::Annotation> parseAnnotations(
+       const tdi::Cjson &annotation_cjson);
+   void parseFieldWidth(const tdi::Cjson &node,
+                        tdi_field_data_type_e &type,
+                        size_t &width,
+                        uint64_t &default_value,
+                        float &default_fl_value,
+                        std::string &default_str_value,
+                        std::vector<std::string> &choices);
+
+  private:
+   std::map<std::string, std::unique_ptr<TableInfo>> table_info_map_;
+   std::map<std::string, std::unique_ptr<LearnInfo>> learn_info_map_;
 };
 
 }  // tdi

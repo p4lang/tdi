@@ -47,6 +47,7 @@ class P4Pipeline {
         scope_vec_(scope_vec){};
   const std::string name_;
   const std::string binary_path_;
+  const std::string context_path_;
   const std::vector<std::string> pipeline_info_file_paths_;
   const std::vector<uint32_t> scope_vec_;
 };
