@@ -56,8 +56,7 @@ Cjson Cjson::createCjsonFromFile(const std::string &fileContent) {
 }
 void Cjson::createCjsonFromFileInternal(const std::string &fileContent,
                                         Cjson &obj) {
-  obj.cjson_mem_tracker =
-      std::shared_ptr<CjsonObjHandler>(new CjsonObjHandler(fileContent));
+  obj.cjson_mem_tracker = std::make_shared<CjsonObjHandler>(fileContent);
   obj.root = obj.cjson_mem_tracker->rootGet();
 }
 
@@ -192,6 +191,9 @@ Cjson Cjson::operator[](int index) const { return Cjson(*this, index); }
 
 Cjson Cjson::operator[](const char *key) const {
   return Cjson(*this, std::string(key));
+}
+Cjson Cjson::operator[](const std::string &key) const {
+  return (*this)[key.c_str()];
 }
 Cjson &Cjson::operator+=(const Cjson &other) {
   cJSON_AddItemReferenceToArray(this->root, other.root);
