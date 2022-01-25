@@ -24,7 +24,7 @@
 #include <functional>
 #include <cstring>
 
-#include <bfsys/bf_sal/bf_sys_intf.h>
+#include <target-sys/bf_sal/bf_sys_intf.h>
 
 #define LOG_CRIT(...) LOG_COMMON(BF_LOG_CRIT, __VA_ARGS__)
 #define LOG_ERROR(...) LOG_COMMON(BF_LOG_ERR, __VA_ARGS__)

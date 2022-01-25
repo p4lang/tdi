@@ -32,7 +32,7 @@ extern "C" {
 #endif
 #include "tdi_cjson.hpp"
 
-#include <bfsys/bf_sal/bf_sys_mem.h>
+#include <target-sys/bf_sal/bf_sys_mem.h>
 
 namespace tdi {
 
