@@ -90,6 +90,23 @@ enum tdi_table_api_type_e {
 };
 
 /**
+ * @brief Enum of Data Types each Data field can take. This is NOT
+ *    Data field Type
+ */
+enum tdi_field_data_type_e {
+  TDI_FIELD_DATA_TYPE_INT_ARR = 0,
+  TDI_FIELD_DATA_TYPE_BOOL_ARR = 1,
+  TDI_FIELD_DATA_TYPE_UINT64 = 2,
+  TDI_FIELD_DATA_TYPE_BYTE_STREAM = 3,
+  TDI_FIELD_DATA_TYPE_FLOAT = 4,
+  TDI_FIELD_DATA_TYPE_CONTAINER = 5,
+  TDI_FIELD_DATA_TYPE_STRING = 6,
+  TDI_FIELD_DATA_TYPE_BOOL = 7,
+  TDI_FIELD_DATA_TYPE_STRING_ARR = 8,
+  TDI_FIELD_DATA_TYPE_UNKNOWN = 9,
+};
+
+/**
 * @brief P4 Arch types. If any new p4 arch needs to be
 * used not currently known by TDI, then use TDI_ARCH_TYPE_UNKNOWN
 */

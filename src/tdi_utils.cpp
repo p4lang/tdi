@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-#include <target_sys/bf_sal/bf_sys_mem.h>
+#include <target-sys/bf_sal/bf_sys_mem.h>
 #include <tdi/common/tdi_defs.h>
 
 void tdi_err_str(tdi_status_t sts, const char **err_str) {

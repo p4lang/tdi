@@ -17,10 +17,12 @@ file(COPY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(.)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-syslibs/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-utils/include)
 
-add_subdirectory(third-party)
+if(STANDALONE)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-syslibs/include)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-utils/include)
+  add_subdirectory(third-party)
+endif()
 
 set(C_CXX_FLAGS "-Wall -Wextra -Werror -Wshadow -Wpedantic -Wno-missing-field-initializers ")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-z,defs")
@@ -33,6 +35,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS}")
 
 
 add_subdirectory(src)
+add_subdirectory(tdi_json_parser)
 
 #
 ## Building tdi doxygen

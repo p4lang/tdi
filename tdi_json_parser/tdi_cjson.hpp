@@ -67,6 +67,7 @@ class Cjson {
   operator uint64_t() const;
   operator float() const;
   Cjson operator[](const char *key) const;
+  Cjson operator[](const std::string &key) const;
   Cjson operator[](int index) const;
   Cjson &operator+=(const Cjson &other);
   friend std::ostream &operator<<(std::ostream &out, const Cjson &c);

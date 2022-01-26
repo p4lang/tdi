@@ -36,21 +36,6 @@ namespace tdi {
 class Learn;
 class Table;
 
-/**
- * @brief Enum of Data Types each Data field can take. This is NOT
- *    Data field Type
- */
-enum tdi_data_field_type_e {
-  INT_ARR = 0,
-  BOOL_ARR = 1,
-  UINT64 = 2,
-  BYTE_STREAM = 3,
-  FLOAT = 4,
-  CONTAINER = 5,
-  STRING = 6,
-  BOOL = 7,
-  STRING_ARR = 8,
-};
 
 /**
  * @brief Class to construct data for a table.<br>
