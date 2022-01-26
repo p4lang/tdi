@@ -27,10 +27,11 @@
 #include <functional>
 
 #include <tdi/common/tdi_defs.h>
+#include <tdi/common/c_frontend/tdi_learn.h>
 #include <tdi/common/tdi_target.hpp>
 #include <tdi/common/tdi_table_data.hpp>
 #include <tdi/common/tdi_session.hpp>
-
+#include <tdi/common/tdi_utils.hpp>
 namespace tdi {
 
 /**
@@ -63,6 +64,26 @@ typedef std::function<tdi_status_t(
     tdi_learn_msg_hdl *const learn_msg_hdl,
     const void *cookie)> tdiCbFunction;
 
+// from tdi_learn_impl.hpp
+class LearnField {
+ public:
+  LearnField(tdi_id_t id, size_t s, std::string n, size_t off);
+  ~LearnField() = default;
+
+  tdi_id_t getFieldId() const { return field_id; };
+  const std::string &getName() const { return name; };
+  const size_t &getSize() const { return size; };
+  const size_t &getOffset() const { return offset; };
+  const bool &getIsPtr() const { return is_ptr; };
+
+ private:
+  tdi_id_t field_id;
+  size_t size;
+  std::string name;
+  bool is_ptr;
+  size_t offset;
+};
+
 /**
  * @brief Class to contain metadata of Learn Obj and perform functions
  *  like register and deregister Learn Callback <br>
@@ -90,11 +111,20 @@ class Learn {
    */
   virtual tdi_status_t tdiLearnCallbackRegister(
       const std::shared_ptr<tdi::Session> /*session*/,
-      const Target & /*dev_tgt*/,
-      const tdiCbFunction & /*callback_fn*/,
+      const tdi_target_t * /*dev_tgt*/,
+      const tdi_cb_function /*callback_c*/,
+      //const tdiCbFunction & /*callback_fn*/,
       const void * /*cookie*/) const {
     return TDI_SUCCESS;
   };
+  virtual tdi_status_t tdiLearnCallbackRegisterHelper(
+      const std::shared_ptr<tdi::Session> /*session*/,
+      const Target & /*dev_tgt*/,
+      const tdiCbFunction & /*callback_cpp*/,
+      const tdi_cb_function /*callback_c*/,
+      const void */*cookie*/) const {
+    return TDI_SUCCESS;
+  }
 
   /**
    * @brief Deregister the callback from the device
@@ -106,7 +136,16 @@ class Learn {
    */
   virtual tdi_status_t tdiLearnCallbackDeregister(
       const std::shared_ptr<tdi::Session> /*session*/,
-      const Target & /*dev_tgt*/) const {
+      const tdi_target_t * /*dev_tgt*/) const {
+    /*
+    if (session==nullptr) {
+      LOG_ERROR("invalid session %d", session);
+      return TDI_INVALID_ARG;
+    }
+    */
+    //uint32_t value;
+    //dev_tgt.getValue(TDI_TARGET_CORE, &value);
+    //LOG_DBG("invalid session %d", dev_tgt);
     return TDI_SUCCESS;
   };
 
@@ -128,8 +167,17 @@ class Learn {
 
   const LearnInfo &learnInfoGet() const { return *(learn_info_.get()); }
 
+  // following from LearnObj
+  // hidden functions
+  const LearnField *getLearnField(const tdi_id_t &field_id) const;
+  size_t getLearnMsgSize() const { return learn_msg_size; };
+  uint32_t learnFieldListSize() const { return lrn_fields.size(); };
+
  private:
   std::unique_ptr<LearnInfo> learn_info_;
+  // from LearnObj
+  std::map<tdi_id_t, std::unique_ptr<LearnField>> lrn_fields;
+  size_t learn_msg_size;
 };
 
 class LearnFieldInfo {
@@ -187,6 +235,7 @@ class LearnFieldInfo {
 };
 
 class LearnInfo {
+ public:
   /**
    * @brief Get ID of the learn Object
    *
@@ -226,6 +275,7 @@ class LearnInfo {
   tdi_status_t learnFieldIdGet(const std::string &name,
                                tdi_id_t *field_id) const;
 
+ private:
   tdi_id_t learn_id_;
   std::string learn_name_;
   std::map<tdi_id_t, std::unique_ptr<const LearnFieldInfo>> lrn_fields_;

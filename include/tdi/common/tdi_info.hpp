@@ -140,6 +140,21 @@ class TdiInfo {
    */
   tdi_status_t learnFromIdGet(tdi_id_t id, const tdi::Learn **learn_ret) const;
 
+  // from bfrt tdi_info_impl.hpp
+  std::unique_ptr<const TdiInfo> static makeTdiInfo(
+      const tdi_dev_id_t &dev_id, const ProgramConfig &program_config);
+  tdi_status_t tdiInfoTablesDependentOnThisTableGet(
+      const tdi_id_t &tbl_id,
+      std::vector<tdi_id_t> *table_vec_ret) const;
+  tdi_status_t tdiInfoTablesThisTableDependsOnGet(
+      const tdi_id_t &tbl_id,
+      std::vector<tdi_id_t> *table_vec_ret) const;
+
+  // from the tdi_info_impl.hpp
+  // Map to indicate what tables depend on a particular table
+  std::map<tdi_id_t, std::vector<tdi_id_t>>
+      tables_dependent_on_this_table_map;
+
  private:
   /* Main P4_info map. object_name --> tdi_info object */
   std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;

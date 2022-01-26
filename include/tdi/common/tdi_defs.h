@@ -273,11 +273,17 @@ static inline const char *tdi_err_str(tdi_status_t sts) {
 DECLARE_HANDLE(tdi_info_hdl);
 DECLARE_HANDLE(tdi_session_hdl);
 DECLARE_HANDLE(tdi_table_hdl);
+DECLARE_HANDLE(tdi_table_info_hdl);
+DECLARE_HANDLE(tdi_device_hdl);
+DECLARE_HANDLE(tdi_target_hdl);
+DECLARE_HANDLE(tdi_flags_hdl);
 DECLARE_HANDLE(tdi_table_key_hdl);
 DECLARE_HANDLE(tdi_table_data_hdl);
 DECLARE_HANDLE(tdi_table_attributes_hdl);
 DECLARE_HANDLE(tdi_entry_scope_arguments_hdl);
 DECLARE_HANDLE(tdi_learn_hdl);
+DECLARE_HANDLE(tdi_learn_info_hdl);
+DECLARE_HANDLE(tdi_learn_field_info_hdl);
 DECLARE_HANDLE(tdi_table_operations_hdl);
 
 /**
@@ -288,6 +294,7 @@ DECLARE_HANDLE(tdi_table_operations_hdl);
 typedef tdi_table_data_hdl tdi_learn_data_hdl;
 
 /* C and C++ void typedefs */
+
 DECLARE_HANDLE(tdi_learn_msg_hdl);
 
 #ifdef __cplusplus

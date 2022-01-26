@@ -633,6 +633,7 @@ class Table {
   std::set<tdi_operations_type_e> table_operation_set_;
   std::set<tdi_attributes_type_e> table_attribute_set_;
   tdi_handle_t table_hdl{0};
+
   /* std::unique_ptr<TableInfo> table_info_; */
 };  // end of tdi::Table
 

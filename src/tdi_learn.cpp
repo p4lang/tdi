@@ -85,4 +85,14 @@ tdi_status_t LearnFieldInfo::learnFieldNameGet(std::string *name) const {
   return TDI_SUCCESS;
 }
 
+//from tdi_learn_impl.cpp
+const LearnField *Learn::getLearnField(
+    const tdi_id_t &field_id) const {
+  if (lrn_fields.find(field_id) == lrn_fields.end()) {
+    LOG_ERROR("%s:%d Field-Id %d not found", __func__, __LINE__, field_id);
+    return nullptr;
+  }
+  return lrn_fields.at(field_id).get();
+}
+
 }  // namespace tdi
