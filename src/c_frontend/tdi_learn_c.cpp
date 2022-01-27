@@ -78,6 +78,7 @@ tdi_status_t tdi_learn_notify_ack(const tdi_learn_hdl *learn_hdl,
       reinterpret_cast<const tdi::Session *>(session));
   return learn->tdiLearnNotifyAck(session_ptr, learn_msg_hdl);
 }
+#ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_learn_id_get(const tdi_learn_info_hdl *learn_hdl,
                                tdi_id_t *learn_id_ret) {
   auto learn = reinterpret_cast<const tdi::LearnInfo *>(learn_hdl);
@@ -136,3 +137,4 @@ tdi_status_t tdi_learn_field_name_get(const tdi_learn_hdl *learn_hdl,
   *field_name = learn->getLearnField(field_id)->getName().c_str();
   return TDI_SUCCESS;
 }
+#endif

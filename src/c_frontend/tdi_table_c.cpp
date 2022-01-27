@@ -30,7 +30,7 @@
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_target.hpp>
 #include <tdi/common/tdi_table.hpp>
-#include <tdi/common/tdi_table_info.hpp>
+#include <../tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_attributes.hpp>
 //#include <tdi/common/tdi_table_attributes_impl.hpp>
 #include <tdi/common/tdi_table_data.hpp>
@@ -90,13 +90,13 @@ tdi_status_t data_field_allowed_choices_get_helper(
   }
   return TDI_SUCCESS;
 }
-#endif
-tdi_annotation_t convert_annotation(const tdi::Annotation &annotation) {
+tdi_annotation_t convert_annotation(tdi::Annotation &annotation) {
   tdi_annotation_t annotations_c;
   annotations_c.name = annotation.name_.c_str();
   annotations_c.value = annotation.value_.c_str();
   return annotations_c;
 }
+#endif
 }  // anonymous namespace
 
 tdi_status_t tdi_table_id_from_handle_get(const tdi_table_info_hdl *table_hdl,
@@ -127,8 +127,9 @@ tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_info_hdl,
   }
 
   // We need the internal function which returns a const string ref
-  auto table = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
-  *table_name_ret = table->table_name_get().c_str();
+  //auto table = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
+  //*table_name_ret = table->tableNameGet().c_str();
+  //*table_name_ret = table->tableNameGet();
   return TDI_SUCCESS;
 }
 bool tdi_generic_flag_support(void) {
@@ -678,7 +679,6 @@ tdi_status_t tdi_table_num_annotations_get(const tdi_table_hdl *table_hdl,
   *num_annotations = cpp_annotations.size();
   return TDI_SUCCESS;
 }
-#endif
 
 tdi_status_t tdi_table_annotations_get(const tdi_table_hdl *table_hdl,
                                         tdi_annotation_t *annotations_c) {
@@ -695,6 +695,7 @@ tdi_status_t tdi_table_annotations_get(const tdi_table_hdl *table_hdl,
   return TDI_SUCCESS;
 }
 
+#endif
 tdi_status_t tdi_action_id_from_data_get(const tdi_table_data_hdl *data,
                                           tdi_id_t *id_ret) {
   auto data_obj = reinterpret_cast<const tdi::TableData *>(data);

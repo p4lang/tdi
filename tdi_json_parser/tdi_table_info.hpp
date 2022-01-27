@@ -17,8 +17,8 @@
  *
  *  @brief Contains TDI Table APIs
  */
-#ifndef _TDI_TABLE_HPP
-#define _TDI_TABLE_HPP
+#ifndef _TDI_TABLE_INFO_HPP
+#define _TDI_TABLE_INFO_HPP
 
 #include <string>
 #include <cstring>
@@ -881,4 +881,4 @@ class TdiInfoParser {
 
 }  // tdi
 
-#endif  // _TDI_TABLE_HPP
+#endif  // _TDI_TABLE_INFO_HPP

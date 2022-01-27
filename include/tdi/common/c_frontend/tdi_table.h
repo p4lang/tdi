@@ -2075,7 +2075,7 @@ tdi_status_t tdi_action_annotations_get(const tdi_table_hdl *table_hdl,
 tdi_status_t tdi_table_entry_scope_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
+#ifdef _TDI_FROM_BFRT
 /**
  * @brief Allocate attribute object for Idle entry
  *
@@ -2356,7 +2356,7 @@ tdi_status_t tdi_table_operations_supported(
     const tdi_table_hdl *table_hdl,
     tdi_table_operations_mode_t *operations,
     uint32_t *num_returned);
-
+#endif
 #ifdef __cplusplus
 }
 #endif

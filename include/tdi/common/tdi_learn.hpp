@@ -165,7 +165,7 @@ class Learn {
     return TDI_SUCCESS;
   };
 
-  const LearnInfo &learnInfoGet() const { return *(learn_info_.get()); }
+  //const LearnInfo &learnInfoGet() const { return *(learn_info_.get()); }
 
   // following from LearnObj
   // hidden functions
@@ -174,7 +174,7 @@ class Learn {
   uint32_t learnFieldListSize() const { return lrn_fields.size(); };
 
  private:
-  std::unique_ptr<LearnInfo> learn_info_;
+  //std::unique_ptr<LearnInfo> learn_info_;
   // from LearnObj
   std::map<tdi_id_t, std::unique_ptr<LearnField>> lrn_fields;
   size_t learn_msg_size;
@@ -233,7 +233,7 @@ class LearnFieldInfo {
   std::string name_;
   bool is_ptr_;
 };
-
+#ifdef _TDI_FROM_BFRT
 class LearnInfo {
  public:
   /**
@@ -281,6 +281,7 @@ class LearnInfo {
   std::map<tdi_id_t, std::unique_ptr<const LearnFieldInfo>> lrn_fields_;
   size_t learn_msg_size_;
 };
+#endif
 
 }  // namespace tdi
 
