@@ -37,7 +37,7 @@ extern "C" {
 #include <tdi/common/tdi_info.hpp>
 //#include <tdi_common/tdi_session_impl.hpp>
 //#include <tdi_p4/tdi_learn_impl.hpp>
-#include <tdi/common/tdi_utils.hpp>
+#include <src/tdi_utils.hpp>
 #include "tdi_state_c.hpp"
 // learn obj apis
 tdi_status_t tdi_learn_callback_register(const tdi_learn_hdl *learn_hdl,

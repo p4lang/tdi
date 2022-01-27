@@ -33,7 +33,7 @@
 #include <tdi/common/tdi_learn.hpp>
 
 // local includes
-#include <tdi/common/tdi_utils.hpp>
+#include <src/tdi_utils.hpp>
 
 tdi_status_t tdi_num_tables_get(const tdi_info_hdl *tdi, int *num_tables) {
   if (!tdi) {

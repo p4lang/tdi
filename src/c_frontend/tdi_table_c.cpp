@@ -42,7 +42,7 @@
 #include <tdi_common/tdi_table_impl.hpp>
 #include <tdi_common/tdi_table_key_impl.hpp>
 #endif
-#include <tdi/common/tdi_utils.hpp>
+#include <src/tdi_utils.hpp>
 namespace {
 #ifdef _TDI_FROM_BFRT
 template <typename T>
