@@ -20,7 +20,11 @@
 #include <memory>
 #include <regex>
 
-#include "tdi_table_info.hpp"
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
+
+#include "../tdi_utils.hpp"
+#include "tdi_cjson.hpp"
+#include "tdi_table_info_internal.hpp"
 
 namespace tdi {
 
@@ -55,6 +59,7 @@ tdi_field_data_type_e dataTypeStrToEnum(const std::string &type,
 tdi_table_type_e tableTypeStrToEnum(const std::string & /*type*/) {
   return TDI_TABLE_TYPE_CORE;
 }
+
 // This function returns if a key field is a field slice or not
 bool checkIsFieldSlice(const tdi::Cjson &key_field) {
   tdi::Cjson key_annotations = key_field["annotations"];

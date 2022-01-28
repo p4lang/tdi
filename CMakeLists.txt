@@ -16,6 +16,7 @@ file(COPY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
   PATTERN "*.am" EXCLUDE)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 include_directories(.)
 
 if(STANDALONE)
@@ -35,7 +36,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS}")
 
 
 add_subdirectory(src)
-add_subdirectory(tdi_json_parser)
 
 #
 ## Building tdi doxygen
