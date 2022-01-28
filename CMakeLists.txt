@@ -16,6 +16,7 @@ file(COPY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
   PATTERN "*.am" EXCLUDE)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 include_directories(.)
 
 if(STANDALONE)
