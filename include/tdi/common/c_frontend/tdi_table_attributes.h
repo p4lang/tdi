@@ -28,8 +28,6 @@
 #ifndef _TDI_TABLE_ATTRIBUTES_H
 #define _TDI_TABLE_ATTRIBUTES_H
 
-#include <tdi/common/c_frontend/tdi_common.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -296,6 +296,50 @@ typedef tdi_table_data_hdl tdi_learn_data_hdl;
 /* C and C++ void typedefs */
 
 DECLARE_HANDLE(tdi_learn_msg_hdl);
+#ifdef _TDI_FROM_BFRT
+typedef uint32_t tdi_dev_id_t;
+
+/*! Identifies a specific die within an ASIC in the system. */
+typedef int tdi_subdev_id_t;
+
+/** Identifies a port on an ASIC.  This is a 9-bit field where the upper two
+ *  bits identify the pipeline and the lower 7 bits identify the port number
+ *  local to that pipeline.  The valid range for the lower 7 bits is 0-71. */
+typedef int tdi_dev_port_t;
+
+typedef enum {
+  TDI_DEV_DIR_INGRESS = 0,
+  TDI_DEV_DIR_EGRESS = 1,
+  TDI_DEV_DIR_ALL = 0xff
+} tdi_dev_direction_t;
+
+/** Identifies a pipe on an ASIC.  This is a 2-bit field where the bits identify
+ * pipeline.
+ */
+typedef uint32_t tdi_dev_pipe_t;
+
+/**
+ * @brief Structure definition for configuration target
+ */
+typedef struct tdi_target_ {
+  /** Device ID */
+  tdi_dev_id_t dev_id;
+  /** Pipe ID */
+  tdi_dev_pipe_t pipe_id;
+  /** Gress direction In/Eg */
+  tdi_dev_direction_t direction;
+  /** Parser ID */
+  uint8_t prsr_id;
+} tdi_target_t;
+#endif
+/**
+ * @brief Get error details string from an error status
+ *
+ * @param[in] sts Status of type @c tdi_status_t
+ * @param[out] err_str Pointer to error string. Doesn't require user to allocate
+ *space
+ */
+//void tdi_err_str(tdi_status_t sts, const char **err_str);
 
 #ifdef __cplusplus
 }

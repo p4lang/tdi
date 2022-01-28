@@ -29,7 +29,6 @@
 #ifndef _TDI_LEARN_H
 #define _TDI_LEARN_H
 
-#include <tdi/common/c_frontend/tdi_common.h>
 #include <tdi/common/tdi_defs.h>
 #ifdef __cplusplus
 extern "C" {

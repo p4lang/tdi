@@ -29,8 +29,6 @@
 #ifndef _TDI_INFO_H
 #define _TDI_INFO_H
 
-#include <tdi/common/c_frontend/tdi_common.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif

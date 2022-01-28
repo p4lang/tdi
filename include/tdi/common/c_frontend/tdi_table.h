@@ -28,7 +28,6 @@
 #ifndef _TDI_TABLE_H
 #define _TDI_TABLE_H
 
-#include <tdi/common/c_frontend/tdi_common.h>
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>

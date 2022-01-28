@@ -28,7 +28,6 @@
 #ifndef _TDI_SESSION_H
 #define _TDI_SESSION_H
 
-#include <tdi/common/c_frontend/tdi_common.h>
 #include <tdi/common/tdi_defs.h>
 #ifdef __cplusplus
 extern "C" {
