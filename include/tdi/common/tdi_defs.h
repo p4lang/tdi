@@ -296,7 +296,6 @@ typedef tdi_table_data_hdl tdi_learn_data_hdl;
 /* C and C++ void typedefs */
 
 DECLARE_HANDLE(tdi_learn_msg_hdl);
-#ifdef _TDI_FROM_BFRT
 typedef uint32_t tdi_dev_id_t;
 
 /*! Identifies a specific die within an ASIC in the system. */
@@ -331,7 +330,6 @@ typedef struct tdi_target_ {
   /** Parser ID */
   uint8_t prsr_id;
 } tdi_target_t;
-#endif
 /**
  * @brief Get error details string from an error status
  *
