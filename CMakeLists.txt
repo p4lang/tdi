@@ -35,7 +35,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS}")
 
 
 add_subdirectory(src)
-add_subdirectory(tdi_json_parser)
 
 #
 ## Building tdi doxygen

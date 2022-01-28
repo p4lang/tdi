@@ -25,7 +25,7 @@
 
 /* tdi_includes */
 
-#include <cJSON.h>
+#include <target-utils/third-party/cJSON/cJSON.h>
 
 namespace tdi {
 
