@@ -1,26 +1,18 @@
-/*******************************************************************************
- * BAREFOOT NETWORKS CONFIDENTIAL & PROPRIETARY
+/*
+ * Copyright(c) 2021 Intel Corporation.
  *
- * Copyright (c) 2017-2021 Barefoot Networks, Inc.
-
- * All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this software except as stipulated in the License.
+ * You may obtain a copy of the License at
  *
- * NOTICE: All information contained herein is, and remains the property of
- * Barefoot Networks, Inc. and its suppliers, if any. The intellectual and
- * technical concepts contained herein are proprietary to Barefoot Networks,
- * Inc.
- * and its suppliers and may be covered by U.S. and Foreign Patents, patents in
- * process, and are protected by trade secret or copyright law.
- * Dissemination of this information or reproduction of this material is
- * strictly forbidden unless prior written permission is obtained from
- * Barefoot Networks, Inc.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * No warranty, explicit or implicit is provided, unless granted under a
- * written agreement with Barefoot Networks, Inc.
- *
- * $Id: $
- *
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /** @file tdi_table.h
  *
  *  @brief Contains TDI Table APIs
@@ -31,8 +23,8 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
-#include <tdi/common/c_frontend/tdi_table_operations.h>
-#include <tdi/common/c_frontend/tdi_table_attributes.h>
+//#include <tdi/common/c_frontend/tdi_table_operations.h>
+//#include <tdi/common/c_frontend/tdi_table_attributes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +32,7 @@ extern "C" {
 
 /**
  * @brief Annotation struct. Contains name-value pair.
- * This is extracted from bf-rt.json. @c value might contain
+ * This is extracted from tdi.json. @c value might contain
  * null for some annotations but name will always contain
  * a string.
  */
@@ -603,7 +595,7 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
 
 /**
  * @brief The maximum size of the table. Note that this size might
- * be different than present in bf-rt.json especially for Match Action
+ * be different than present in tdi.json especially for Match Action
  * Tables. This is because sometimes MATs might reserve some space for
  * atomic modfies and hence might be 1 or 2 < json size
  *
@@ -935,7 +927,7 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
 
 /**
  * @brief The maximum size of the table. Note that this size might
- * be different than present in bf-rt.json especially for Match Action
+ * be different than present in tdi.json especially for Match Action
  * Tables. This is because sometimes MATs might reserve some space for
  * atomic modfies and hence might be 1 or 2 < json size
  * @deprecated Please use function version with new flags argument.
@@ -1794,7 +1786,7 @@ tdi_status_t tdi_data_field_type_with_action_get(
  * @brief Get size of list of all the allowed values that a particular field can
  * have. This API is only for fields with string type. If the returned
  * vector is empty, it indicates that the allowed choices have not been
- * published in bfrt json
+ * published in tdi json
  *
  * @param[in] table_hdl Table object
  * @param[in] field_id Field ID
@@ -1811,7 +1803,7 @@ tdi_status_t tdi_data_field_num_allowed_choices_get(
  * @brief Get list of all the allowed values that a particular field can
  * have. This API is only for fields with string type. If the returned
  * vector is empty, it indicates that the allowed choices have not been
- * published in bfrt json
+ * published in tdi json
  *
  * @param[in] table_hdl Table object
  * @param[in] field_id Field ID
@@ -1829,7 +1821,7 @@ tdi_status_t tdi_data_field_allowed_choices_get(
  * @brief Get size of list of all the allowed values that a particular field can
  * have. This API is only for fields with string type. If the returned
  * vector is empty, it indicates that the allowed choices have not been
- * published in bfrt json
+ * published in tdi json
  *
  * @param[in] table_hdl Table object
  * @param[in] field_id Field ID
@@ -1848,7 +1840,7 @@ tdi_status_t tdi_data_field_num_allowed_choices_with_action_get(
  * @brief Get list of all the allowed values that a particular field can
  * have. This API is only for fields with string type. If the returned
  * vector is empty, it indicates that the allowed choices have not been
- * published in bfrt json
+ * published in tdi json
  *
  * @param[in] table_hdl Table object
  * @param[in] field_id Field ID

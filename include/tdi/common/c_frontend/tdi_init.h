@@ -84,8 +84,8 @@ tdi_status_t tdi_p4_names_get(const tdi_dev_id_t dev_id, const char **p4_names);
 
 /**
  * @brief TDI Module Init API. This function needs to be called to
- * initialize BF-RT. Some specific managers can be specified to be skipped
- * BFRT initialization. This allows BFRT session layer to not know about these
+ * initialize TDI. Some specific managers can be specified to be skipped
+ * TDI initialization. This allows TDI session layer to not know about these
  * managers.
  * Recommendation is not to skip any unless user knows exactly
  * what they are doing.

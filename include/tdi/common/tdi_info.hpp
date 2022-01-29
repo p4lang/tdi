@@ -140,7 +140,7 @@ class TdiInfo {
    */
   tdi_status_t learnFromIdGet(tdi_id_t id, const tdi::Learn **learn_ret) const;
 
-  // from bfrt tdi_info_impl.hpp
+  // from tdi_info_impl.hpp
   std::unique_ptr<const TdiInfo> static makeTdiInfo(
       const tdi_dev_id_t &dev_id, const ProgramConfig &program_config);
   tdi_status_t tdiInfoTablesDependentOnThisTableGet(
