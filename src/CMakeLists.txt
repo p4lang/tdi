@@ -37,3 +37,4 @@ target_link_libraries(tdi PUBLIC target_utils target_sys tdi_json_parser)
 
 add_subdirectory(arch/tna)
 add_subdirectory(targets/dummy)
+add_subdirectory(tdi_json_parser)

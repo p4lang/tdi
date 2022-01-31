@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @file tdi_table.hpp
+/** @file tdi_table_info.hpp
  *
- *  @brief Contains TDI Table APIs
+ *  @brief Contains TDI Table and Learn Info APIs
  */
 #ifndef _TDI_TABLE_INFO_HPP
 #define _TDI_TABLE_INFO_HPP
@@ -30,14 +30,6 @@
 
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_target.hpp>
-#include <../src/tdi_utils.hpp>
-#include "tdi_cjson.hpp"
-//#include <tdi/common/tdi_target.hpp>
-//#include <tdi/common/tdi_session.hpp>
-//#include <tdi/common/tdi_table_data.hpp>
-//#include <tdi/common/tdi_table_key.hpp>
-//#include <tdi/common/tdi_attributes.hpp>
-//#include <tdi/common/tdi_operations.hpp>
 
 namespace tdi {
 
@@ -47,53 +39,17 @@ class ActionInfo;
 class KeyFieldInfo;
 class DataFieldInfo;
 class TableRefInfo;
+class Cjson;
 
-namespace tdi_json {
-const std::string SCHEMA_VERSION = "schema_version";
-const std::string TABLES = "tables";
-const std::string TABLE_NAME = "name";
-const std::string TABLE_ID = "id";
-const std::string TABLE_TYPE = "table_type";
-const std::string TABLE_SIZE = "size";
-const std::string TABLE_ANNOTATIONS = "annotations";
-const std::string TABLE_DEPENDS_ON = "depends_on";
-const std::string TABLE_HAS_CONST_DEFAULT_ACTION = "has_const_default_action";
-const std::string TABLE_IS_CONST = "is_const";
+// Classes that need to be overridden by targets in order for them to
+// target-specific information in the info
 
-const std::string TABLE_KEY = "key";
-const std::string TABLE_KEY_ID = "id";
-const std::string TABLE_KEY_NAME = "name";
-const std::string TABLE_KEY_REPEATED = "repeated";
-const std::string TABLE_KEY_MANDATORY = "mandatory";
-const std::string TABLE_KEY_ANNOTATIONS = "annotations";
-const std::string TABLE_KEY_MATCH_TYPE = "match_type";
-const std::string TABLE_KEY_TYPE = "type";
-const std::string TABLE_KEY_TYPE_TYPE = "type";
-const std::string TABLE_KEY_TYPE_WIDTH = "width";
+class TableContextInfo {};
+class KeyFieldContextInfo {};
+class DataFieldContextInfo {};
+class ActionContextInfo {};
+class LearnContextInfo {};
 
-const std::string TABLE_ACTION_SPECS = "action_specs";
-const std::string TABLE_ACTION_ID = "id";
-const std::string TABLE_ACTION_NAME = "name";
-const std::string TABLE_ACTION_ACTION_SCOPE = "action_scope";
-const std::string TABLE_ACTION_ANNOTATIONS = "annotations";
-const std::string TABLE_ACTION_DATA = "data";
-
-const std::string TABLE_DATA = "data";
-const std::string TABLE_DATA_ID = "id";
-const std::string TABLE_DATA_NAME = "name";
-const std::string TABLE_DATA_REPEATED = "repeated";
-const std::string TABLE_DATA_MANDATORY = "mandatory";
-const std::string TABLE_DATA_ANNOTATIONS = "annotations";
-const std::string TABLE_DATA_TYPE = "type";
-const std::string TABLE_DATA_TYPE_TYPE = "type";
-const std::string TABLE_DATA_TYPE_WIDTH = "width";
-
-const std::string LEARNS = "learns";
-const std::string LEARN_NAME = "name";
-const std::string LEARN_ID = "id";
-const std::string LEARN_ANNOTATIONS = "annotations";
-const std::string LEARN_DATA = "data";
-}
 
 /**
  * @brief Class for Annotations. Contains 2 strings to uniquely identify an
@@ -137,6 +93,7 @@ class Annotation {
  private:
   std::string full_name_{""};
 };
+
 
 /**
  * @brief We wrap the annotation in a reference wrapper because we want to send
@@ -377,6 +334,13 @@ class TableInfo {
    */
   bool actionIdApplicable() const;
   const std::string &nameGet() const { return name_; }
+  void tableContextInfoSet(std::unique_ptr<TableContextInfo> table_context_info) {
+    table_context_info_ = std::move(table_context_info);
+  };
+
+  std::map<std::string, const KeyFieldInfo *> name_key_map_;
+  std::map<std::string, const DataFieldInfo *> name_data_map_;
+  std::map<std::string, const ActionInfo *> name_action_map_;
 
  private:
   TableInfo(tdi_id_t id,
@@ -417,10 +381,13 @@ class TableInfo {
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
   std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map_;
   std::map<tdi_id_t, std::unique_ptr<TableRefInfo>> table_ref_map_;
+
   std::set<tdi_table_api_type_e> table_apis_{};
   std::set<tdi_operations_type_e> operations_type_set_;
   std::set<tdi_attributes_type_e> attributes_type_set_;
   std::set<Annotation> annotations_{};
+
+  mutable std::unique_ptr<TableContextInfo> table_context_info_;
   friend class TdiInfoParser;
 };
 
@@ -488,6 +455,9 @@ class LearnInfo {
   tdi_status_t dataFieldGet(const tdi_id_t field_id, const DataFieldInfo **data_field_info) const;
 
   const std::string &nameGet() const { return name_; }
+  void learnContextInfoSet(std::unique_ptr<LearnContextInfo> learn_context_info) {
+    learn_context_info_ = std::move(learn_context_info);
+  };
 
  private:
   LearnInfo(tdi_id_t id,
@@ -502,6 +472,7 @@ class LearnInfo {
   std::string name_;
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map_;
   std::set<Annotation> annotations_{};
+  mutable std::unique_ptr<LearnContextInfo> learn_context_info_;
   friend class TdiInfoParser;
 };
 
@@ -585,6 +556,10 @@ class KeyFieldInfo {
   const std::string &getName() const { return name_; };
   const tdi_id_t &idGet() const { return field_id_; };
 
+  void keyFieldContextInfoSet(std::unique_ptr<KeyFieldContextInfo> key_field_context_info) {
+    key_field_context_info_ = std::move(key_field_context_info);
+  };
+
  private:
   KeyFieldInfo(tdi_id_t field_id,
                std::string name,
@@ -616,7 +591,6 @@ class KeyFieldInfo {
         is_field_slice_(is_field_slice),
         is_ptr_(is_ptr),
         match_priority_(match_priority){};
-  // data for key field info
   const tdi_id_t field_id_;
   const std::string name_;
   const size_t size_bits_;
@@ -626,15 +600,15 @@ class KeyFieldInfo {
   const bool read_only_;
   const std::vector<std::string> enum_choices_;
   const std::set<tdi::Annotation> annotations_;
-  // Default value for this data field
+
   const uint64_t default_value_;
   const float default_fl_value_;
   const std::string default_str_value_;
-  // Flag to indicate if this is a field slice or not
+
   const bool is_field_slice_{false};
   const bool is_ptr_{false};
-  // A flag to indicate this is a match priority field
   const bool match_priority_{false};
+  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_;
   friend class TdiInfoParser;
 };  // class KeyFieldInfo
 
@@ -746,6 +720,10 @@ class DataFieldInfo {
   /** @} */  // End of group Data
 
   const tdi_id_t &idGet() { return field_id_; }
+  void dataFieldContextInfoSet(std::unique_ptr<DataFieldContextInfo> data_field_context_info) {
+    data_field_context_info_ = std::move(data_field_context_info);
+  };
+
 private:
  DataFieldInfo(tdi_id_t field_id,
                std::string name,
@@ -781,19 +759,17 @@ private:
  const tdi_field_data_type_e data_type_;
  const bool mandatory_;
  const bool read_only_;
- // Vector of allowed choices for this field
  const std::vector<std::string> enum_choices_;
  const std::set<tdi::Annotation> annotations_;
- // Default value for this data field
  const uint64_t default_value_;
  const float default_fl_value_;
  const std::string default_str_value_;
  const bool repeated_;
  const bool container_valid_{false};
- /* Map of Objects within container */
  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
  const std::map<std::string, tdi_id_t> container_names_;
  const std::set<tdi_id_t> oneof_siblings_;
+ mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_;
  friend class TdiInfoParser;
 };
 
@@ -833,6 +809,10 @@ class ActionInfo {
   /** @} */  // End of group Action IDs
 
   const tdi_id_t &idGet() const { return action_id_; };
+  void actionContextInfoSet(std::unique_ptr<ActionContextInfo> action_context_info) {
+    action_context_info_ = std::move(action_context_info);
+  };
+
  private:
   ActionInfo(tdi_id_t field_id,
              std::string name,
@@ -850,6 +830,7 @@ class ActionInfo {
   const std::set<tdi::Annotation> annotations_;
   // Map of table_data_fields with names
   std::map<std::string, const DataFieldInfo *> data_fields_names_;
+  mutable std::unique_ptr<ActionContextInfo> action_context_info_;
   friend class TableInfo;
   friend class TdiInfoParser;
 };
