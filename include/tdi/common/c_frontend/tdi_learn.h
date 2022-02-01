@@ -190,7 +190,7 @@ tdi_status_t tdi_learn_field_is_ptr_get(const tdi_learn_hdl *learn,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_learn_field_name_get(const tdi_learn_hdl *learn,
+tdi_status_t tdi_learn_field_name_get(const tdi_learn_info_hdl *learn,
                                        const tdi_id_t field_id,
                                        const char **field_name_ret);
 

@@ -22,7 +22,6 @@ include_directories(.)
 if(STANDALONE)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-syslibs/include)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-utils/include)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-utils/third-party/cJSON)
   add_subdirectory(third-party)
 endif()
 

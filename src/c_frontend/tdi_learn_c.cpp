@@ -60,6 +60,7 @@ tdi_status_t tdi_learn_callback_deregister(const tdi_learn_hdl *learn_hdl,
 
   return learn->tdiLearnCallbackDeregister(session_ptr, dev_tgt);
 }
+
 tdi_status_t tdi_learn_notify_ack(const tdi_learn_hdl *learn_hdl,
                                    const tdi_session_hdl *session,
                                    tdi_learn_msg_hdl *const learn_msg_hdl) {
@@ -70,18 +71,21 @@ tdi_status_t tdi_learn_notify_ack(const tdi_learn_hdl *learn_hdl,
       reinterpret_cast<const tdi::Session *>(session));
   return learn->tdiLearnNotifyAck(session_ptr, learn_msg_hdl);
 }
+
 #ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_learn_id_get(const tdi_learn_info_hdl *learn_hdl,
                                tdi_id_t *learn_id_ret) {
   auto learn = reinterpret_cast<const tdi::LearnInfo *>(learn_hdl);
   return learn->learnIdGet(learn_id_ret);
 }
+
 tdi_status_t tdi_learn_name_get(const tdi_learn_field_info_hdl *learn_hdl,
                                  const char **learn_name_ret) {
   auto learn = reinterpret_cast<const tdi::LearnFieldInfo *>(learn_hdl);
   *learn_name_ret = learn->getName().c_str();
   return TDI_SUCCESS;
 }
+
 tdi_status_t tdi_learn_field_id_list_size_get(const tdi_learn_hdl *learn_hdl,
                                                uint32_t *num_ret) {
   // Only here are we using LearnObj than Learn
@@ -122,10 +126,11 @@ tdi_status_t tdi_learn_field_is_ptr_get(const tdi_learn_field_info_hdl *learn_hd
   auto learn = reinterpret_cast<const tdi::LearnFieldInfo *>(learn_hdl);
   return learn->learnFieldIsPtrGet(is_ptr);
 }
-tdi_status_t tdi_learn_field_name_get(const tdi_learn_hdl *learn_hdl,
+
+tdi_status_t tdi_learn_field_name_get(const tdi_learn_info_hdl *learn_hdl,
                                        const tdi_id_t field_id,
                                        const char **field_name) {
-  auto learn = reinterpret_cast<const tdi::Learn *>(learn_hdl);
+  auto learn = reinterpret_cast<const tdi::LearnInfo *>(learn_hdl);
   *field_name = learn->getLearnField(field_id)->getName().c_str();
   return TDI_SUCCESS;
 }

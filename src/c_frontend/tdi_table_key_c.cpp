@@ -37,6 +37,7 @@ tdi_status_t tdi_key_field_set_value(tdi_table_key_hdl *key_hdl,
   tdi::KeyFieldValueExact <const long unsigned int> keyFieldValue(value);
   return key->setValue(field_id, keyFieldValue);
 }
+
 tdi_status_t tdi_key_field_set_value_ptr(tdi_table_key_hdl *key_hdl,
                                           const tdi_id_t field_id,
                                           const uint8_t *value,
@@ -53,6 +54,7 @@ tdi_status_t tdi_key_field_set_value_string(tdi_table_key_hdl *key_hdl,
   tdi::KeyFieldValueString<const char *> keyFieldValue(value);
   return key->setValue(field_id, keyFieldValue);
 }
+
 /* Ternary */
 tdi_status_t tdi_key_field_set_value_and_mask(tdi_table_key_hdl *key_hdl,
                                                const tdi_id_t field_id,
@@ -65,6 +67,7 @@ tdi_status_t tdi_key_field_set_value_and_mask(tdi_table_key_hdl *key_hdl,
   tdi::KeyFieldValueTernary <const long unsigned int> keyFieldValue(value, mask);
   return key->setValue(field_id, keyFieldValue);
 }
+
 tdi_status_t tdi_key_field_set_value_and_mask_ptr(tdi_table_key_hdl *key_hdl,
                                                    const tdi_id_t field_id,
                                                    const uint8_t *value1,
@@ -75,6 +78,7 @@ tdi_status_t tdi_key_field_set_value_and_mask_ptr(tdi_table_key_hdl *key_hdl,
   //return key->setValueandMask(field_id, value1, mask, size);
   return key->setValue(field_id, keyFieldValue);
 }
+
 /* Range */
 tdi_status_t tdi_key_field_set_value_range(tdi_table_key_hdl *key_hdl,
                                             const tdi_id_t field_id,
@@ -94,6 +98,7 @@ tdi_status_t tdi_key_field_set_value_range_ptr(tdi_table_key_hdl *key_hdl,
   tdi::KeyFieldValueRange<const unsigned char > keyFieldValue(&start, &end, size);
   return key->setValue(field_id, keyFieldValue);
 }
+
 /* LPM */
 tdi_status_t tdi_key_field_set_value_lpm(tdi_table_key_hdl *key_hdl,
                                           const tdi_id_t field_id,

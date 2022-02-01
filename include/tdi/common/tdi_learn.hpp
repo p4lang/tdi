@@ -63,7 +63,6 @@ typedef std::function<tdi_status_t(
     std::vector<std::unique_ptr<tdi::LearnData>> learnDataVec,
     tdi_learn_msg_hdl *const learn_msg_hdl,
     const void *cookie)> tdiCbFunction;
-
 // from tdi_learn_impl.hpp
 class LearnField {
  public:
@@ -83,7 +82,6 @@ class LearnField {
   bool is_ptr;
   size_t offset;
 };
-
 /**
  * @brief Class to contain metadata of Learn Obj and perform functions
  *  like register and deregister Learn Callback <br>
@@ -169,8 +167,8 @@ class Learn {
 
   // following from LearnObj
   // hidden functions
-  const LearnField *getLearnField(const tdi_id_t &field_id) const;
-  size_t getLearnMsgSize() const { return learn_msg_size; };
+  const LearnField *learnFieldGet(const tdi_id_t &field_id) const;
+  size_t learnMsgSizeGet() const { return learn_msg_size; };
   uint32_t learnFieldListSize() const { return lrn_fields.size(); };
 
  private:

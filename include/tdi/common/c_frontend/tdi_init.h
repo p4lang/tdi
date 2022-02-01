@@ -51,6 +51,7 @@ tdi_status_t tdi_info_get(const tdi_dev_id_t dev_id,
  * @return Status of the API call
  */
 tdi_status_t tdi_num_device_id_list_get(uint32_t *num);
+
 /**
  * @brief Get a list of all device IDs currently added
  *

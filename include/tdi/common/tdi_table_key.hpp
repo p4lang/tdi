@@ -44,7 +44,6 @@ enum class KeyFieldType {
   TERNARY = 2,
   RANGE = 3,
   LPM = 4,
-  OPTIONAL = 5,
 };
 
 /**
@@ -55,8 +54,7 @@ const std::map<KeyFieldType, const char *> KeyFieldTypeStr = {
     {KeyFieldType::EXACT, "EXACT"},
     {KeyFieldType::TERNARY, "TERNARY"},
     {KeyFieldType::RANGE, "RANGE"},
-    {KeyFieldType::LPM, "LPM"},
-    {KeyFieldType::OPTIONAL, "OPTIONAL"}};
+    {KeyFieldType::LPM, "LPM"}};
 
 /**
  * @brief Key Field Match Type. A key can have multiple fields,

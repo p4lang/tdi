@@ -63,7 +63,7 @@ tdi_status_t tdi_session_destroy(tdi_session_hdl *const session) {
   }
   // remove the shared_ptr from the state map. It will get destroyed
   // automatically if not already
-  // wdai: temperate disable for compile
+  // temperate disable for compile
   auto &c_state = tdi::tdi_c::TdiCFrontEndSessionState::getInstance();
   c_state.removeShared(sess);
   return TDI_SUCCESS;
@@ -77,16 +77,6 @@ tdi_id_t tdi_sess_handle_get(const tdi_session_hdl *const session, tdi_mgr_type_
   auto sess = reinterpret_cast<const tdi::Session *>(session);
   return sess->handleGet(mgr_type);
 }
-#ifdef _TDI_FROM_BFRT
-tdi_id_t tdi_pre_sess_handle_get(const tdi_session_hdl *const session) {
-  if (session == nullptr) {
-    LOG_ERROR("%s:%d Session Handle passed is null", __func__, __LINE__);
-    return TDI_INVALID_ARG;
-  }
-  auto sess = reinterpret_cast<const tdi::Session *>(session);
-  return sess->preSessHandleGet();
-}
-#endif 
 bool tdi_session_is_valid(const tdi_session_hdl *const session) {
   if (session == nullptr) {
     LOG_ERROR("%s:%d Session Handle passed is null", __func__, __LINE__);

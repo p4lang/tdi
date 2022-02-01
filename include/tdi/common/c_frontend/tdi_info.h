@@ -24,7 +24,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef uint32_t tdi_dev_pipe_t;
 
 /**
  * @brief Get size of the list of TdiTable Objs
