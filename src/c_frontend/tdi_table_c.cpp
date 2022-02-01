@@ -21,7 +21,7 @@
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_target.hpp>
 #include <tdi/common/tdi_table.hpp>
-#include <../tdi_json_parser/tdi_table_info.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_attributes.hpp>
 //#include <tdi/common/tdi_table_attributes_impl.hpp>
 #include <tdi/common/tdi_table_data.hpp>
