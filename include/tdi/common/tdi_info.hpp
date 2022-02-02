@@ -21,16 +21,16 @@
 #ifndef _TDI_INFO_HPP
 #define _TDI_INFO_HPP
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <map>
-#include <set>
 
 #include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_table.hpp>
 #include <tdi/common/tdi_learn.hpp>
+#include <tdi/common/tdi_table.hpp>
 
 /**
  * @brief Namespace for TDI
@@ -40,32 +40,6 @@ namespace tdi {
 // Forward declarations
 class Learn;
 class Table;
-
-class TdiInfoMapper {
- public:
-  const std::map<std::string, tdi_table_type_e> &tableEnumMapGet() {
-    return table_e_map_;
-  };
-  const std::map<std::string, tdi_match_type_e> &matchEnumMapGet() {
-    return match_e_map_;
-  };
-  const std::map<std::string, tdi_operations_type_e> &operationsEnumMapGet() {
-    return operations_e_map_;
-  };
-  const std::map<std::string, tdi_attributes_type_e> &attributesEnumMapGet() {
-    return attributes_e_map_;
-  };
-
-  TdiInfoMapper() {
-    // 1. add core mappings to the maps
-  }
-
- protected:
-  std::map<std::string, tdi_table_type_e> table_e_map_;
-  std::map<std::string, tdi_match_type_e> match_e_map_;
-  std::map<std::string, tdi_operations_type_e> operations_e_map_;
-  std::map<std::string, tdi_attributes_type_e> attributes_e_map_;
-};
 
 /**
  * @brief Class to maintain metadata of all tables and learn objects. Note that
