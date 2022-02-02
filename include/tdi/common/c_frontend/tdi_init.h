@@ -83,25 +83,6 @@ tdi_status_t tdi_num_p4_names_get(const tdi_dev_id_t dev_id, int *num_names);
  */
 tdi_status_t tdi_p4_names_get(const tdi_dev_id_t dev_id, const char **p4_names);
 
-/**
- * @brief TDI Module Init API. This function needs to be called to
- * initialize TDI. Some specific managers can be specified to be skipped
- * TDI initialization. This allows TDI session layer to not know about these
- * managers.
- * Recommendation is not to skip any unless user knows exactly
- * what they are doing.
- *
- * @param[in] pkt_mgr_skip Skip Packet mgr
- * @param[in] mc_mgr_skip Skip Multicast mgr
- * @param[in] port_mgr_skip Skip Port mgr
- * @param[in] traffic_mgr_skip Skip Traffic mgr
- * @return Status of the API call
- */
-tdi_status_t tdi_module_init(bool pkt_mgr_skip,
-                              bool mc_mgr_skip,
-                              bool port_mgr_skip,
-                              bool traffic_mgr_skip);
-
 #ifdef __cplusplus
 }
 #endif
