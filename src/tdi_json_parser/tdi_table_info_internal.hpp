@@ -16,15 +16,14 @@
 #ifndef _TDI_TABLE_INFO_INTERNAL_HPP
 #define _TDI_TABLE_INFO_INTERNAL_HPP
 
-#include <memory>
-#include <string>
-#include <map>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 /* tdi_includes */
-
 
 namespace tdi {
 namespace tdi_json {
@@ -67,6 +66,7 @@ const std::string TABLE_DATA_ANNOTATIONS = "annotations";
 const std::string TABLE_DATA_TYPE = "type";
 const std::string TABLE_DATA_TYPE_TYPE = "type";
 const std::string TABLE_DATA_TYPE_WIDTH = "width";
+const std::string TABLE_DATA_TYPE_DEFAULT_VALUE = "default_value";
 
 const std::string LEARNS = "learns";
 const std::string LEARN_NAME = "name";

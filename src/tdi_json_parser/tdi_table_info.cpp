@@ -1276,12 +1276,13 @@ void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
                                     float &default_fl_value,
                                     std::string &default_str_value,
                                     std::vector<std::string> &choices) {
-  auto type_str = std::string(node["type"]["type"]);
+  auto type_str =
+      std::string(node[tdi_json::TABLE_DATA_TYPE][tdi_json::TABLE_DATA_TYPE]);
   bool repeated = false;
-  if (node["repeated"].exists()) {
-    repeated = node["repeated"];
+  if (node[tdi_json::TABLE_DATA_REPEATED].exists()) {
+    repeated = node[tdi_json::TABLE_DATA_REPEATED];
   }
-  type = dataTypeStrToEnum(std::string(node["type"]["type"]), repeated);
+  type = dataTypeStrToEnum(type_str, repeated);
   if (type_str == "bytes") {
     width = static_cast<unsigned int>(node["type"]["width"]);
   } else if (type_str == "uint64") {
@@ -1333,9 +1334,10 @@ std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
     const tdi::Cjson &table_key_cjson) {
   // parses the table_key json node and extracts all the relevant
   tdi_id_t id = static_cast<tdi_id_t>(table_key_cjson["id"]);
-  std::string name = table_key_cjson["name"];
-  bool mandatory = table_key_cjson["mandatory"];
-  bool read_only = table_key_cjson["read_only"];
+  std::string name = table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE];
+  bool mandatory = table_key_cjson[tdi_json::TABLE_KEY_MANDATORY];
+  tdi_match_type_e match_type =
+      matchTypeStrToEnum(table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE]);
   tdi_field_data_type_e field_data_type;
   size_t width;
   uint64_t default_value;
@@ -1355,9 +1357,9 @@ std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
   auto tmp = new KeyFieldInfo(id,
                               name,
                               width,
+                              match_type,
                               field_data_type,
                               mandatory,
-                              read_only,
                               choices,
                               parseAnnotations(table_key_cjson["annotations"]),
                               default_value,
@@ -1704,13 +1706,14 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   return table_info;
 }
 
-tdi_status_t TdiInfoParser::parseTdiInfo() {
+tdi_status_t TdiInfoParser::parseTdiInfo(
+    const std::vector<std::string> &tdi_info_file_paths) {
   // A. read file form a list of schema files
-  if (tdi_info_file_paths_.empty()) {
+  if (tdi_info_file_paths.empty()) {
     LOG_CRIT("Unable to find any TDI Json Schema File");
     return TDI_OBJECT_NOT_FOUND;
   }
-  for (auto const &tdiJsonFile : tdi_info_file_paths_) {
+  for (auto const &tdiJsonFile : tdi_info_file_paths) {
     std::ifstream file(tdiJsonFile);
     if (file.fail()) {
       LOG_CRIT("Unable to find TDI Json File %s", tdiJsonFile.c_str());

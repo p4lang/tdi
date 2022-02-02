@@ -593,10 +593,9 @@ class KeyFieldInfo {
   KeyFieldInfo(tdi_id_t field_id,
                std::string name,
                size_t size_bits,
-               // tdi_match_type_e match_type,
+               tdi_match_type_e match_type,
                tdi_field_data_type_e data_type,
                bool mandatory,
-               bool read_only,
                const std::vector<std::string> &enum_choices,
                const std::set<tdi::Annotation> annotations,
                uint64_t default_value,
@@ -608,10 +607,9 @@ class KeyFieldInfo {
       : field_id_(field_id),
         name_(name),
         size_bits_(size_bits),
-        //        match_type_(match_type),
+        match_type_(match_type),
         data_type_(data_type),
         mandatory_(mandatory),
-        read_only_(read_only),
         enum_choices_(enum_choices),
         annotations_(annotations),
         default_value_(default_value),
@@ -623,10 +621,9 @@ class KeyFieldInfo {
   const tdi_id_t field_id_;
   const std::string name_;
   const size_t size_bits_;
-  //  const tdi_match_type_e match_type_;
+  const tdi_match_type_e match_type_;
   const tdi_field_data_type_e data_type_;
   const bool mandatory_;
-  const bool read_only_;
   const std::vector<std::string> enum_choices_;
   const std::set<tdi::Annotation> annotations_;
 
@@ -869,12 +866,8 @@ class ActionInfo {
 
 class TdiInfoParser {
  public:
-  TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper,
-                const std::vector<std::string> tdi_info_file_paths)
-      : tdi_info_file_paths_(tdi_info_file_paths),
-        tdi_info_mapper_(std::move(tdi_info_mapper)) {
-    this->parseTdiInfo();
-  };
+  TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper)
+      : tdi_info_mapper_(std::move(tdi_info_mapper)){};
 
  private:
   std::unique_ptr<tdi::TableInfo> parseTable(const tdi::Cjson &table_tdi);
@@ -897,9 +890,9 @@ class TdiInfoParser {
   tdi_operations_type_e operationsTypeStrToEnum(const std::string &type);
   tdi_attributes_type_e attributesTypeStrToEnum(const std::string &type);
 
-  tdi_status_t parseTdiInfo();
+  tdi_status_t parseTdiInfo(
+      const std::vector<std::string> &tdi_info_file_paths);
 
-  const std::vector<std::string> tdi_info_file_paths_;
   const std::unique_ptr<TdiInfoMapper> tdi_info_mapper_;
   std::map<std::string, std::unique_ptr<TableInfo>> table_info_map_;
   std::map<std::string, std::unique_ptr<LearnInfo>> learn_info_map_;
