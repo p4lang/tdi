@@ -23,7 +23,7 @@
 #include <tdi/common/tdi_json_parser/tdi_learn_info.hpp>
 
 #include "../tdi_utils.hpp"
-#include "tdi_cjson.hpp"
+#include <tdi/common/tdi_json_parser/tdi_cjson.hpp>
 
 namespace tdi {
 
