@@ -22,6 +22,6 @@
 #include <vector>
 
 #include <tdi/common/tdi_learn.hpp>
-#include "tdi_utils.hpp"
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {}  // namespace tdi

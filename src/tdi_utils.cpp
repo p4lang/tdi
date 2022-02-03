@@ -15,7 +15,7 @@
  */
 #include <memory>
 // local includes
-#include "tdi_utils.hpp"
+#include <tdi/common/tdi_utils.hpp>
 
 #ifdef __cplusplus
 extern "C" {
