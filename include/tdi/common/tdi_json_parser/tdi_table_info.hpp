@@ -38,7 +38,7 @@ class ActionInfo;
 class KeyFieldInfo;
 class DataFieldInfo;
 class Cjson;
-class TdiInfoParser;
+class TdiInfoMapper;
 
 // Classes that need to be overridden by targets in order for them to
 // target-specific information in the info
