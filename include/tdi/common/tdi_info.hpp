@@ -37,9 +37,82 @@
  */
 namespace tdi {
 
-// Forward declarations
-class Learn;
-class Table;
+namespace tdi_json {
+namespace values {
+namespace core {
+const std::string TABLE_KEY_MATCH_TYPE_EXACT = "Exact";
+const std::string TABLE_KEY_MATCH_TYPE_TERNARY = "Ternary";
+const std::string TABLE_KEY_MATCH_TYPE_LPM = "LPM";
+}  // namespace core
+}  // namespace values
+}  // namespace tdi_json
+
+class TdiInfoMapper {
+ public:
+  const std::map<std::string, tdi_table_type_e> &tableEnumMapGet() {
+    return table_e_map_;
+  };
+  const std::map<std::string, tdi_match_type_e> &matchEnumMapGet() {
+    return match_e_map_;
+  };
+  const std::map<std::string, tdi_operations_type_e> &operationsEnumMapGet() {
+    return operations_e_map_;
+  };
+  const std::map<std::string, tdi_attributes_type_e> &attributesEnumMapGet() {
+    return attributes_e_map_;
+  };
+
+  TdiInfoMapper() {
+    // Match types
+    matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_EXACT,
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT));
+    matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_TERNARY,
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY));
+    matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_LPM,
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM));
+  }
+  virtual ~TdiInfoMapper(){};
+
+ protected:
+  tdi_status_t tableEnumMapAdd(const std::string &str,
+                               const tdi_table_type_e &type) {
+    if (table_e_map_.find(str) != table_e_map_.end()) {
+      return TDI_ALREADY_EXISTS;
+    }
+    table_e_map_[str] = type;
+    return TDI_SUCCESS;
+  }
+  tdi_status_t matchEnumMapAdd(const std::string &str,
+                               const tdi_match_type_e &type) {
+    if (match_e_map_.find(str) != match_e_map_.end()) {
+      return TDI_ALREADY_EXISTS;
+    }
+    match_e_map_[str] = type;
+    return TDI_SUCCESS;
+  }
+  tdi_status_t operationsEnumMapAdd(const std::string &str,
+                                    const tdi_operations_type_e &type) {
+    if (operations_e_map_.find(str) != operations_e_map_.end()) {
+      return TDI_ALREADY_EXISTS;
+    }
+    operations_e_map_[str] = type;
+    return TDI_SUCCESS;
+  }
+  tdi_status_t attributesEnumMapAdd(const std::string &str,
+                                    const tdi_attributes_type_e &type) {
+    if (attributes_e_map_.find(str) != attributes_e_map_.end()) {
+      return TDI_ALREADY_EXISTS;
+    }
+    attributes_e_map_[str] = type;
+    return TDI_SUCCESS;
+  }
+
+ private:
+  std::map<std::string, tdi_table_type_e> table_e_map_;
+  std::map<std::string, tdi_match_type_e> match_e_map_;
+  std::map<std::string, tdi_operations_type_e> operations_e_map_;
+  std::map<std::string, tdi_attributes_type_e> attributes_e_map_;
+};
 
 /**
  * @brief Class to maintain metadata of all tables and learn objects. Note that

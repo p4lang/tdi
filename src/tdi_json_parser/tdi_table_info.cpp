@@ -20,6 +20,7 @@
 #include <memory>
 #include <regex>
 
+#include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 
 #include "../tdi_utils.hpp"
@@ -1237,6 +1238,9 @@ typedef struct key_size_ {
   size_t bytes;
   size_t bits;
 } key_size_t;
+
+TdiInfoParser::TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper)
+    : tdi_info_mapper_(std::move(tdi_info_mapper)) {}
 
 tdi_table_type_e TdiInfoParser::tableTypeStrToEnum(const std::string &type) {
   if (tdi_info_mapper_->tableEnumMapGet().find(type) !=

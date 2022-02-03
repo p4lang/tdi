@@ -29,7 +29,6 @@
 #include <vector>
 
 #include <tdi/common/tdi_defs.h>
-//#include <tdi/common/tdi_target.hpp>
 
 namespace tdi {
 
@@ -40,6 +39,7 @@ class KeyFieldInfo;
 class DataFieldInfo;
 class TableRefInfo;
 class Cjson;
+class TdiInfoMapper;
 
 // Classes that need to be overridden by targets in order for them to
 // target-specific information in the info
@@ -49,32 +49,6 @@ class KeyFieldContextInfo {};
 class DataFieldContextInfo {};
 class ActionContextInfo {};
 class LearnContextInfo {};
-
-class TdiInfoMapper {
- public:
-  const std::map<std::string, tdi_table_type_e> &tableEnumMapGet() {
-    return table_e_map_;
-  };
-  const std::map<std::string, tdi_match_type_e> &matchEnumMapGet() {
-    return match_e_map_;
-  };
-  const std::map<std::string, tdi_operations_type_e> &operationsEnumMapGet() {
-    return operations_e_map_;
-  };
-  const std::map<std::string, tdi_attributes_type_e> &attributesEnumMapGet() {
-    return attributes_e_map_;
-  };
-
-  TdiInfoMapper() {
-    // 1. add core mappings to the maps
-  }
-
- protected:
-  std::map<std::string, tdi_table_type_e> table_e_map_;
-  std::map<std::string, tdi_match_type_e> match_e_map_;
-  std::map<std::string, tdi_operations_type_e> operations_e_map_;
-  std::map<std::string, tdi_attributes_type_e> attributes_e_map_;
-};
 
 /**
  * @brief Class for Annotations. Contains 2 strings to uniquely identify an
@@ -866,8 +840,7 @@ class ActionInfo {
 
 class TdiInfoParser {
  public:
-  TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper)
-      : tdi_info_mapper_(std::move(tdi_info_mapper)){};
+  TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper);
 
  private:
   std::unique_ptr<tdi::TableInfo> parseTable(const tdi::Cjson &table_tdi);
