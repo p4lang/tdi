@@ -20,6 +20,7 @@
 #include <memory>
 #include <regex>
 
+#include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 
 #include "../tdi_utils.hpp"
@@ -54,10 +55,6 @@ tdi_field_data_type_e dataTypeStrToEnum(const std::string &type,
       return TDI_FIELD_DATA_TYPE_STRING_ARR;
   }
   return TDI_FIELD_DATA_TYPE_UNKNOWN;
-}
-
-tdi_table_type_e tableTypeStrToEnum(const std::string & /*type*/) {
-  return TDI_TABLE_TYPE_CORE;
 }
 
 // This function returns if a key field is a field slice or not
@@ -1242,6 +1239,40 @@ typedef struct key_size_ {
   size_t bits;
 } key_size_t;
 
+TdiInfoParser::TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper)
+    : tdi_info_mapper_(std::move(tdi_info_mapper)) {}
+
+tdi_table_type_e TdiInfoParser::tableTypeStrToEnum(const std::string &type) {
+  if (tdi_info_mapper_->tableEnumMapGet().find(type) !=
+      tdi_info_mapper_->tableEnumMapGet().end()) {
+    return tdi_info_mapper_->tableEnumMapGet().at(type);
+  }
+  return TDI_TABLE_TYPE_CORE;
+}
+tdi_match_type_e TdiInfoParser::matchTypeStrToEnum(const std::string &type) {
+  if (tdi_info_mapper_->matchEnumMapGet().find(type) !=
+      tdi_info_mapper_->matchEnumMapGet().end()) {
+    return tdi_info_mapper_->matchEnumMapGet().at(type);
+  }
+  return TDI_MATCH_TYPE_CORE;
+}
+tdi_operations_type_e TdiInfoParser::operationsTypeStrToEnum(
+    const std::string &type) {
+  if (tdi_info_mapper_->operationsEnumMapGet().find(type) !=
+      tdi_info_mapper_->operationsEnumMapGet().end()) {
+    return tdi_info_mapper_->operationsEnumMapGet().at(type);
+  }
+  return TDI_OPERATIONS_TYPE_CORE;
+}
+tdi_attributes_type_e TdiInfoParser::attributesTypeStrToEnum(
+    const std::string &type) {
+  if (tdi_info_mapper_->attributesEnumMapGet().find(type) !=
+      tdi_info_mapper_->attributesEnumMapGet().end()) {
+    return tdi_info_mapper_->attributesEnumMapGet().at(type);
+  }
+  return TDI_ATTRIBUTES_TYPE_CORE;
+}
+
 void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
                                     tdi_field_data_type_e &type,
                                     size_t &width,
@@ -1249,12 +1280,13 @@ void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
                                     float &default_fl_value,
                                     std::string &default_str_value,
                                     std::vector<std::string> &choices) {
-  auto type_str = std::string(node["type"]["type"]);
+  auto type_str =
+      std::string(node[tdi_json::TABLE_DATA_TYPE][tdi_json::TABLE_DATA_TYPE]);
   bool repeated = false;
-  if (node["repeated"].exists()) {
-    repeated = node["repeated"];
+  if (node[tdi_json::TABLE_DATA_REPEATED].exists()) {
+    repeated = node[tdi_json::TABLE_DATA_REPEATED];
   }
-  type = dataTypeStrToEnum(std::string(node["type"]["type"]), repeated);
+  type = dataTypeStrToEnum(type_str, repeated);
   if (type_str == "bytes") {
     width = static_cast<unsigned int>(node["type"]["width"]);
   } else if (type_str == "uint64") {
@@ -1302,133 +1334,14 @@ void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
   }
 }
 
-// This function is only applicable when the key field is a field slice
-// This function strips out '[]' if present in the name of the key_field.
-// This will be true when the key is a field slice. The compiler will
-// publish the name of the key with '[]' when the user does not use '@name'
-// p4 annotation for the field slice. If the p4 annotation is uses, then
-// the new name will be published in tdi json and this field that will be
-// treated as an independent field and not as a field slice.
-// Refer P4C-1293 for more details on how the compiler will publish
-// different fields
-std::string _tdi_parse_getParentName(const tdi::Cjson &key_field) {
-  const std::string key_name = key_field["name"];
-  tdi::Cjson key_annotations = key_field["annotations"];
-  for (const auto &annotation : key_annotations.getCjsonChildVec()) {
-    std::string annotation_name = (*annotation)["name"];
-    std::string annotation_value = (*annotation)["value"];
-    if ((annotation_name == "isFieldSlice") && (annotation_value == "true")) {
-      size_t offset = key_name.find_last_of("[");
-      if (offset == std::string::npos) {
-        LOG_ERROR(
-            "%s:%d ERROR %s Field is a field slice but the name does not "
-            "contain a '['",
-            __func__,
-            __LINE__,
-            key_name.c_str());
-        TDI_DBGCHK(0);
-        return key_name;
-      }
-      return std::string(key_name.begin(), key_name.begin() + offset);
-    }
-  }
-  return key_name;
-}
-
-// This function determines the offset and the size(in bytes) of the field
-tdi_status_t _tdi_parse_keyByteSizeAndOffsetGet(
-    const std::string &table_name,
-    const std::string &key_name,
-    const std::map<std::string, size_t> &match_key_field_name_to_position_map,
-    const std::map<std::string, size_t>
-        &match_key_field_name_to_parent_field_byte_size_map,
-    const std::map<size_t, size_t> &match_key_field_position_to_offset_map,
-    size_t *field_offset,
-    size_t *parent_field_byte_size) {
-  const auto iter_1 = match_key_field_name_to_position_map.find(key_name);
-  // Get the field offset and the size of the field in bytes
-  if (iter_1 == match_key_field_name_to_position_map.end()) {
-    LOG_ERROR(
-        "%s:%d %s ERROR key field name %s not found in "
-        "match_key_field_name_to_position_map ",
-        __func__,
-        __LINE__,
-        table_name.c_str(),
-        key_name.c_str());
-    // TDI_DBGCHK(0);
-    return TDI_OBJECT_NOT_FOUND;
-  }
-  size_t position = iter_1->second;
-  const auto iter_2 = match_key_field_position_to_offset_map.find(position);
-  if (iter_2 == match_key_field_position_to_offset_map.end()) {
-    LOG_ERROR(
-        "%s:%d %s ERROR Unable to find offset of key field %s with position "
-        "%zu",
-        __func__,
-        __LINE__,
-        table_name.c_str(),
-        key_name.c_str(),
-        position);
-    TDI_DBGCHK(0);
-    return TDI_OBJECT_NOT_FOUND;
-  }
-  *field_offset = iter_2->second;
-  const auto iter_3 =
-      match_key_field_name_to_parent_field_byte_size_map.find(key_name);
-  if (iter_3 == match_key_field_name_to_parent_field_byte_size_map.end()) {
-    LOG_ERROR(
-        "%s:%d %s ERROR key field name %s not found in "
-        "match_key_field_name_to_parent_field_byte_size_map ",
-        __func__,
-        __LINE__,
-        table_name.c_str(),
-        key_name.c_str());
-    TDI_DBGCHK(0);
-    return TDI_OBJECT_NOT_FOUND;
-  }
-  *parent_field_byte_size = iter_3->second;
-  return TDI_SUCCESS;
-}
-// This function returns the start bit of the field
-// If the field is a field slice then the start bit is derived from the name
-// The format of a field slice name is as follows :
-// <field_name>[<end_bit>:<start_bit>]
-// If the field is a name annotated field slice or not a field slice at all,
-// then the start bit is read from the context json node if present or set
-// to zero if the context json node is absent
-size_t _tdi_parse_getStartBit(const tdi::Cjson *tdi_json_key_field) {
-  const std::string key_name = (*tdi_json_key_field)["name"];
-  tdi::Cjson key_annotations = (*tdi_json_key_field)["annotations"];
-  for (const auto &annotation : key_annotations.getCjsonChildVec()) {
-    std::string annotation_name = (*annotation)["name"];
-    std::string annotation_value = (*annotation)["value"];
-    if ((annotation_name == "isFieldSlice") && (annotation_value == "true")) {
-      size_t offset = key_name.find(":");
-      if (offset == std::string::npos) {
-        LOG_ERROR(
-            "%s:%d ERROR %s Field is a field slice but the name does not "
-            "contain a ':'",
-            __func__,
-            __LINE__,
-            key_name.c_str());
-        TDI_DBGCHK(0);
-        return 0;
-      }
-      return std::stoi(key_name.substr(offset + 1), nullptr, 10);
-    }
-  }
-
-  // This indicates that the key field is not a field slice
-  return 0;
-}
-
 std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
     const tdi::Cjson &table_key_cjson) {
   // parses the table_key json node and extracts all the relevant
   tdi_id_t id = static_cast<tdi_id_t>(table_key_cjson["id"]);
-  std::string name = table_key_cjson["name"];
-  bool mandatory = table_key_cjson["mandatory"];
-  bool read_only = table_key_cjson["read_only"];
+  std::string name = table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE];
+  bool mandatory = table_key_cjson[tdi_json::TABLE_KEY_MANDATORY];
+  tdi_match_type_e match_type =
+      matchTypeStrToEnum(table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE]);
   tdi_field_data_type_e field_data_type;
   size_t width;
   uint64_t default_value;
@@ -1448,9 +1361,9 @@ std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
   auto tmp = new KeyFieldInfo(id,
                               name,
                               width,
+                              match_type,
                               field_data_type,
                               mandatory,
-                              read_only,
                               choices,
                               parseAnnotations(table_key_cjson["annotations"]),
                               default_value,
@@ -1554,7 +1467,7 @@ std::unique_ptr<struct DataFieldInfo> TdiInfoParser::parseDataField(
                                container_valid,
                                oneof_siblings));
 
-// Parse the container if it exists
+  // Parse the container if it exists
 
 #if 0
   if (container_valid) {
@@ -1601,9 +1514,7 @@ std::unique_ptr<tdi::LearnInfo> TdiInfoParser::parseLearn(
   std::string learn_name = learn_tdi[tdi_json::LEARN_NAME];
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map;
 
-  LOG_DBG("Learn : %s :: ID :: %d ",
-          learn_name.c_str(),
-          learn_id);
+  LOG_DBG("Learn : %s :: ID :: %d ", learn_name.c_str(), learn_id);
 
   ////////////////////
   // getting data   //
@@ -1727,15 +1638,31 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   }
 
   ////////////////////////
+  // getting depends on //
+  ////////////////////////
+  tdi::Cjson depends_on_cjson = table_tdi[tdi_json::TABLE_DEPENDS_ON];
+  std::set<tdi_id_t> depends_on_set;
+  for (const auto &tbl_id : depends_on_cjson.getCjsonChildVec()) {
+    depends_on_set.insert(*tbl_id);
+  }
+
+  ////////////////////////
+  // getting operations //
+  ////////////////////////
+  std::vector<std::string> operations_v =
+      table_tdi["operations"].getCjsonChildStringVec();
+  for (auto const &item : operations_v) {
+    operations_type_set.insert(operationsTypeStrToEnum(item));
+  }
+
+  ////////////////////////
   // getting attributes //
   ////////////////////////
-#if 0
   std::vector<std::string> attributes_v =
       table_tdi["attributes"].getCjsonChildStringVec();
   for (auto const &item : attributes_v) {
-    table_attribute_set.insert(item);
+    attributes_type_set.insert(attributesTypeStrToEnum(item));
   }
-#endif
 
   ////////////////////
   // getting action //
@@ -1757,44 +1684,6 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   }
 
   //////////////////////////
-  // getting dependencies //
-  //////////////////////////
-
-
-#if 0
-  tdi::Cjson depends_on_cjson = table_tdi[tdi_json::TABLE_DEPENDS_ON];
-  std::string ref_name = "other";
-  for (const auto &tbl_id : depends_on_cjson.getCjsonChildVec()) {
-    TableRefInfo ref_info;
-    ref_info.id_ = *tbl_id;
-    ref_info.name_ = "";
-    for (auto &tbl_tdi_cjson : table_cjson_map) {
-      // Check if table present in tdi.json if so then verify if id match
-      if (tbl_tdi_cjson.second.first != nullptr &&
-          static_cast<tdi_id_t>((*tbl_tdi_cjson.second.first)["id"]) ==
-              ref_info.id) {
-        ref_info.name = tbl_tdi_cjson.first;
-      }
-    }
-    if (ref_info.name_ == "") {
-      LOG_TRACE("%s:%d Cannot find proper reference table info for id %u",
-                __func__,
-                __LINE__,
-                ref_info.id_);
-      break;
-    }
-
-    LOG_DBG("%s:%d Adding \'%s\' as \'%s\' of \'%s\'",
-            __func__,
-            __LINE__,
-            ref_info.name_.c_str(),
-            ref_name.c_str(),
-            tdiTable->nameGet().c_str());
-    tdiTable->table_ref_map[ref_name].push_back(std::move(ref_info));
-  }
-#endif
-
-  //////////////////////////
   // create tableInfo     //
   //////////////////////////
   auto table_info = std::unique_ptr<TableInfo>(
@@ -1807,7 +1696,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
                     std::move(table_key_map),
                     std::move(table_data_map),
                     std::move(table_action_map),
-                    std::move(table_ref_map),
+                    depends_on_set,
                     table_apis,
                     operations_type_set,
                     attributes_type_set,
@@ -1821,7 +1710,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   return table_info;
 }
 
-tdi_status_t TdiInfoParser::tdiInfoCreate(
+tdi_status_t TdiInfoParser::parseTdiInfo(
     const std::vector<std::string> &tdi_info_file_paths) {
   // A. read file form a list of schema files
   if (tdi_info_file_paths.empty()) {
@@ -1856,4 +1745,3 @@ tdi_status_t TdiInfoParser::tdiInfoCreate(
 }
 
 }  // namespace tdi
-
