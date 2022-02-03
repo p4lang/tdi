@@ -332,7 +332,7 @@ class TableInfo {
   bool actionIdApplicable() const;
   const std::string &nameGet() const { return name_; }
   void tableContextInfoSet(
-      std::unique_ptr<TableContextInfo> table_context_info) {
+      std::unique_ptr<TableContextInfo> table_context_info) const{
     table_context_info_ = std::move(table_context_info);
   };
 
@@ -463,7 +463,7 @@ class KeyFieldInfo {
   const tdi_id_t &idGet() const { return field_id_; };
 
   void keyFieldContextInfoSet(
-      std::unique_ptr<KeyFieldContextInfo> key_field_context_info) {
+      std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const{
     key_field_context_info_ = std::move(key_field_context_info);
   };
 
@@ -717,10 +717,12 @@ class ActionInfo {
 
   const tdi_id_t &idGet() const { return action_id_; };
   void actionContextInfoSet(
-      std::unique_ptr<ActionContextInfo> action_context_info) {
+      std::unique_ptr<ActionContextInfo> action_context_info) const{
     action_context_info_ = std::move(action_context_info);
   };
 
+  // Map of table_data_fields with names
+  std::map<std::string, const DataFieldInfo *> data_fields_names_;
  private:
   ActionInfo(tdi_id_t field_id,
              std::string name,
@@ -736,8 +738,6 @@ class ActionInfo {
   // Map of table_data_fields
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields_;
   const std::set<tdi::Annotation> annotations_;
-  // Map of table_data_fields with names
-  std::map<std::string, const DataFieldInfo *> data_fields_names_;
   mutable std::unique_ptr<ActionContextInfo> action_context_info_;
   friend class TableInfo;
   friend class TdiInfoParser;

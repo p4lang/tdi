@@ -625,7 +625,7 @@ class Table {
   virtual tdi_status_t tableOperationsExecute(
       const tdi::TableOperations &tableOperations) const;
   /** @} */  // End of group Operations
-  const TableInfo &tableInfoGet() const { return *table_info_; }
+  const TableInfo *tableInfoGet() const { return table_info_; }
 
  private:
   const std::string table_name_;
