@@ -22,8 +22,7 @@
 #include <vector>
 
 /* tdi_includes */
-//#include "tdi_cjson.hpp"
-#include <tdi/common/tdi_cjson.hpp>
+#include <tdi/common/tdi_json_parser/tdi_cjson.hpp>
 
 #include <target-sys/bf_sal/bf_sys_mem.h>
 
