@@ -20,22 +20,22 @@
 #ifndef _TDI_TABLE_HPP
 #define _TDI_TABLE_HPP
 
-#include <string>
 #include <cstring>
-#include <vector>
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <tdi/common/tdi_defs.h>
-//#include <tdi/common/tdi_table_info.hpp>
-#include <tdi/common/tdi_target.hpp>
+#include <tdi/common/tdi_attributes.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
+#include <tdi/common/tdi_operations.hpp>
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_table_data.hpp>
 #include <tdi/common/tdi_table_key.hpp>
-#include <tdi/common/tdi_attributes.hpp>
-#include <tdi/common/tdi_operations.hpp>
+#include <tdi/common/tdi_target.hpp>
 
 namespace tdi {
 
@@ -625,7 +625,7 @@ class Table {
   virtual tdi_status_t tableOperationsExecute(
       const tdi::TableOperations &tableOperations) const;
   /** @} */  // End of group Operations
-  /* const TableInfo &tableInfoGet() const { return *(table_info_.get()); } */
+  const TableInfo &tableInfoGet() const { return *table_info_; }
 
  private:
   const std::string table_name_;
@@ -633,10 +633,9 @@ class Table {
   std::set<tdi_operations_type_e> table_operation_set_;
   std::set<tdi_attributes_type_e> table_attribute_set_;
   tdi_handle_t table_hdl{0};
-
-  /* std::unique_ptr<TableInfo> table_info_; */
+  const TableInfo *table_info_;
 };  // end of tdi::Table
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_TABLE_HPP
