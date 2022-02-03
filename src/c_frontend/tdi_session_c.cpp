@@ -27,7 +27,7 @@ extern "C" {
 #include <tdi/common/tdi_init.hpp>
 #include <tdi/common/tdi_session.hpp>
 //#include <tdi_common/tdi_session_impl.hpp>
-#include <src/tdi_utils.hpp>
+#include <tdi/common/tdi_utils.hpp>
 
 #include "tdi_state_c.hpp"
 

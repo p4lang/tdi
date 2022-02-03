@@ -24,7 +24,7 @@
 #include <regex>
 
 #include <tdi/common/tdi_info.hpp>
-#include "tdi_utils.hpp"
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 
@@ -102,6 +102,7 @@ tdi_status_t TdiInfo::learnFromIdGet(
   return this->learnFromNameGet(learnIdMap.at(id), learn_ret);
 }
 
+#ifdef _TDI_FROM_BFRT
 // from tdi_info_impl.cpp
 tdi_status_t TdiInfo::tdiInfoTablesDependentOnThisTableGet(
     const tdi_id_t &tbl_id, std::vector<tdi_id_t> *table_vec_ret) const {
@@ -120,7 +121,7 @@ tdi_status_t TdiInfo::tdiInfoTablesDependentOnThisTableGet(
   *table_vec_ret = tables_dependent_on_this_table_map.at(tbl_id);
   return TDI_SUCCESS;
 }
-#ifdef _TDI_FROM_BFRT
+
 tdi_status_t TdiInfo::tdiInfoTablesThisTableDependsOnGet(
     const tdi_id_t &tbl_id, std::vector<tdi_id_t> *table_vec_ret) const {
   if (table_vec_ret == nullptr) {

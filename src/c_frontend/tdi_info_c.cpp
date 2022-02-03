@@ -24,7 +24,7 @@
 #include <tdi/common/tdi_learn.hpp>
 
 // local includes
-#include <src/tdi_utils.hpp>
+#include <tdi/common/tdi_utils.hpp>
 
 tdi_status_t tdi_num_tables_get(const tdi_info_hdl *tdi, int *num_tables) {
   if (!tdi) {
@@ -104,7 +104,7 @@ tdi_status_t tdi_table_from_id_get(const tdi_info_hdl *tdi,
   *table_hdl_ret = reinterpret_cast<const tdi_table_hdl *>(table);
   return status;
 }
-#ifdef __TDI_FROM_BFRT
+
 tdi_status_t tdi_table_name_to_id(const tdi_info_hdl *tdi,
                                    const char *table_name,
                                    tdi_id_t *id_ret) {
@@ -125,9 +125,14 @@ tdi_status_t tdi_table_name_to_id(const tdi_info_hdl *tdi,
     LOG_ERROR("%s:%d Table %s not found", __func__, __LINE__, table_name);
     return status;
   }
-  return table->tableFromIdGet(id_ret);
+  auto tableInfo = table->tableInfoGet();
+  auto status1 = tableInfo->tableIdGet(id_ret);
+  if (status1 != TDI_SUCCESS) {
+    return status1;
+  }
+  return tableInfo->tableIdGet(id_ret);
 }
-#endif
+
 tdi_status_t tdi_num_learns_get(const tdi_info_hdl *tdi, int *num_learns) {
   if (!tdi) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
@@ -229,7 +234,6 @@ tdi_status_t tdi_learn_name_to_id(const tdi_info_hdl *tdi,
   }
   return learn->learnIdGet(id_ret);
 }
-#endif
 
 tdi_status_t tdi_num_tables_dependent_on_this_table_get(
     const tdi_info_hdl *tdi, const tdi_id_t tbl_id, int *num_tables) {
@@ -269,7 +273,6 @@ tdi_status_t tdi_tables_dependent_on_this_table_get(
   return TDI_SUCCESS;
 }
 
-#ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_num_tables_this_table_depends_on_get(
     const tdi_info_hdl *tdi, const tdi_id_t tbl_id, int *num_tables) {
   if (!tdi || !num_tables) {
