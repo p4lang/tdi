@@ -24,7 +24,7 @@ set(TDI_C_FRONTEND_SRCS
   c_frontend/tdi_table_key_c.cpp
   #c_frontend/tdi_table_attributes_c.cpp
   #c_frontend/tdi_table_operations_c.cpp
-  c_frontend/tdi_learn_c.cpp
+  #c_frontend/tdi_learn_c.cpp
   c_frontend/tdi_state_c.cpp
   c_frontend/tdi_info_c.cpp
 )
