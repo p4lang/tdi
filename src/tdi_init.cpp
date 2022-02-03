@@ -116,9 +116,9 @@ tdi_status_t DevMgr::deviceAdd(
     const std::vector<tdi::ProgramConfig> &device_config,
     const std::vector<tdi_mgr_type_e> mgr_type_list,
     void *cookie) {
-  if (this->dev_map_.find(dev_id) != this->dev_map_.end()) {
+  if (this->dev_map_.find(device_id) != this->dev_map_.end()) {
     LOG_ERROR(
-        "%s:%d Device obj exists for dev : %d", __func__, __LINE__, dev_id);
+        "%s:%d Device obj exists for dev : %d", __func__, __LINE__, device_id);
     return TDI_ALREADY_EXISTS;
   }
   auto dev = std::unique_ptr<tdi::Device>(
