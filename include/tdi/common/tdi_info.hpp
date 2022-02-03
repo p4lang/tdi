@@ -15,8 +15,8 @@
  */
 /** @file tdi_info.hpp
  *
- *  @brief Contains TDI Info APIs. Mostly to get Table and Learn Object
- *metadata
+ *  @brief Contains TDI Info APIs. Get Table and Learn Object from TdiInfo
+ *  Object
  */
 #ifndef _TDI_INFO_HPP
 #define _TDI_INFO_HPP

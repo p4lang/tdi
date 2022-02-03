@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _TDI_TABLE_INFO_INTERNAL_HPP
-#define _TDI_TABLE_INFO_INTERNAL_HPP
+#ifndef _TDI_INFO_PARSER_HPP
+#define _TDI_INFO_PARSER_HPP
 
 #include <fstream>
 #include <iostream>
@@ -24,6 +24,8 @@
 #include <vector>
 
 /* tdi_includes */
+#include <tdi/common/tdi_json_parser/tdi_learn_info.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 
 namespace tdi {
 namespace tdi_json {
@@ -75,6 +77,43 @@ const std::string LEARN_ANNOTATIONS = "annotations";
 const std::string LEARN_DATA = "data";
 
 }  // namespace tdi_json
+
+// Forward declarations
+class TdiInfoMapper;
+
+class TdiInfoParser {
+ public:
+  TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper);
+
+ private:
+  std::unique_ptr<tdi::TableInfo> parseTable(const tdi::Cjson &table_tdi);
+  std::unique_ptr<tdi::LearnInfo> parseLearn(const tdi::Cjson &learn_tdi);
+  std::unique_ptr<KeyFieldInfo> parseKeyField(const tdi::Cjson &key_json);
+  std::unique_ptr<DataFieldInfo> parseDataField(const tdi::Cjson &data_json,
+                                                const uint64_t &oneof_index);
+  std::unique_ptr<ActionInfo> parseAction(const tdi::Cjson &action_json);
+  std::set<tdi::Annotation> parseAnnotations(
+      const tdi::Cjson &annotation_cjson);
+  void parseFieldWidth(const tdi::Cjson &node,
+                       tdi_field_data_type_e &type,
+                       size_t &width,
+                       uint64_t &default_value,
+                       float &default_fl_value,
+                       std::string &default_str_value,
+                       std::vector<std::string> &choices);
+  tdi_table_type_e tableTypeStrToEnum(const std::string &type);
+  tdi_match_type_e matchTypeStrToEnum(const std::string &type);
+  tdi_operations_type_e operationsTypeStrToEnum(const std::string &type);
+  tdi_attributes_type_e attributesTypeStrToEnum(const std::string &type);
+
+  tdi_status_t parseTdiInfo(
+      const std::vector<std::string> &tdi_info_file_paths);
+
+  const std::unique_ptr<TdiInfoMapper> tdi_info_mapper_;
+  std::map<std::string, std::unique_ptr<TableInfo>> table_info_map_;
+  std::map<std::string, std::unique_ptr<LearnInfo>> learn_info_map_;
+};
+
 }  // namespace tdi
 
 #endif
