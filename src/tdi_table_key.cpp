@@ -15,7 +15,7 @@
  */
 
 #include <tdi/common/tdi_table_key.hpp>
-#include "tdi_utils.hpp"
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 

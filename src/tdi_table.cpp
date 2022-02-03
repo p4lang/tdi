@@ -17,7 +17,7 @@
 #include <tdi/common/tdi_table.hpp>
 
 // local includes
-#include "tdi_utils.hpp"
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 const std::string tdiNullStr = "";

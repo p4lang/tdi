@@ -21,7 +21,7 @@
 #include <tdi/arch/tna/tna_target.hpp>
 
 //local includes
-#include "../../tdi_utils.hpp"
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 namespace tna {

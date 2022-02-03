@@ -187,9 +187,9 @@ class TdiInfo {
    */
   tdi_status_t learnFromIdGet(tdi_id_t id, const tdi::Learn **learn_ret) const;
 
- private:
   /* Main P4_info map. object_name --> tdi_info object */
   std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
+ private:
   // This is the map which is to be queried when a name lookup for a table
   // happens. Multiple names can point to the same table because multiple
   // names can exist for a table. Example, switchingress.forward and forward
