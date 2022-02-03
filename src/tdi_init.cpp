@@ -17,8 +17,7 @@
 #include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_init.hpp>
 
-
-//local includes
+// local includes
 #include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
@@ -28,8 +27,7 @@ std::mutex DevMgr::dev_mgr_instance_mutex;
 
 tdi_status_t Device::tdiInfoGet(const std::string &prog_name,
                                 const TdiInfo **tdi_info) const {
-  if (this->tdi_info_map_.find(
-          prog_name) == this->tdi_info_map_.end()) {
+  if (this->tdi_info_map_.find(prog_name) == this->tdi_info_map_.end()) {
     LOG_ERROR("%s:%d TDI Info Object not found for dev : %d",
               __func__,
               __LINE__,
@@ -42,22 +40,22 @@ tdi_status_t Device::tdiInfoGet(const std::string &prog_name,
 }
 
 tdi_status_t Device::p4NamesGet(
-       std::vector<std::reference_wrapper<const std::string>> &p4_names) const {
-  for (const auto& it: this->tdi_info_map_) {
+    std::vector<std::reference_wrapper<const std::string>> &p4_names) const {
+  for (const auto &it : this->tdi_info_map_) {
     p4_names.push_back(std::cref(it.first));
   }
   return TDI_SUCCESS;
 }
 
 tdi_status_t Device::deviceConfigGet(
-    const std::vector<std::unique_ptr<tdi::ProgramConfig>> **device_config)
-    const {
+    const std::vector<tdi::ProgramConfig> **device_config) const {
   *device_config = &(this->device_config_);
   return TDI_SUCCESS;
 }
 
-tdi_status_t Device::createSession(std::shared_ptr<tdi::Session> * /*session*/) const {
-//  *session = std::make_shared<tdi::Session>(this->mgr_type_list_);
+tdi_status_t Device::createSession(
+    std::shared_ptr<tdi::Session> * /*session*/) const {
+  //  *session = std::make_shared<tdi::Session>(this->mgr_type_list_);
   return TDI_NOT_SUPPORTED;
 }
 
@@ -83,11 +81,9 @@ DevMgr &DevMgr::getInstance() {
   return *(DevMgr::dev_mgr_instance);
 }
 
-
 tdi_status_t DevMgr::deviceGet(const tdi_dev_id_t &dev_id,
-                          const tdi::Device **device) const {
-  if (this->dev_map_.find(
-          dev_id) == this->dev_map_.end()) {
+                               const tdi::Device **device) const {
+  if (this->dev_map_.find(dev_id) == this->dev_map_.end()) {
     LOG_ERROR("%s:%d Device Object not found for dev : %d",
               __func__,
               __LINE__,
@@ -113,31 +109,34 @@ tdi_status_t DevMgr::deviceIdListGet(
   return TDI_SUCCESS;
 }
 
+template <typename T>
 tdi_status_t DevMgr::deviceAdd(
-    const tdi_dev_id_t & /*device_id*/,
-    const tdi_arch_type_e & /*arch_type*/,
-    std::vector<std::unique_ptr<tdi::ProgramConfig>> &/*device_config*/,
-    void * /*cookie*/) {
-  // Target Agnostic parsing here
-
-
-  // Target Specific parsing here
-
+    const tdi_dev_id_t &device_id,
+    const tdi_arch_type_e &arch_type,
+    const std::vector<tdi::ProgramConfig> &device_config,
+    const std::vector<tdi_mgr_type_e> mgr_type_list,
+    void *cookie) {
+  if (this->dev_map_.find(dev_id) != this->dev_map_.end()) {
+    LOG_ERROR(
+        "%s:%d Device obj exists for dev : %d", __func__, __LINE__, dev_id);
+    return TDI_ALREADY_EXISTS;
+  }
+  auto dev = std::unique_ptr<tdi::Device>(
+      new T(device_id, arch_type, device_config, mgr_type_list, cookie));
+  this->dev_map_[device_id] = std::move(dev);
   return TDI_SUCCESS;
 }
 
 tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t &dev_id) {
-  LOG_DBG("%s:%d  Device Remove called for dev : %d",
-          __func__,
-          __LINE__,
-          dev_id);
+  LOG_DBG(
+      "%s:%d  Device Remove called for dev : %d", __func__, __LINE__, dev_id);
   return TDI_SUCCESS;
 }
 
-tdi_status_t Init::tdiModuleInit(const std::vector<tdi_mgr_type_e>  /*mgr_type_list*/ ) {
+tdi_status_t Init::tdiModuleInit(
+    const std::vector<tdi_mgr_type_e> /*mgr_type_list*/) {
   // Devices need to override Init::tdiModuleInit()
   return TDI_SUCCESS;
 }
 
-
-}  // tdi
+}  // namespace tdi

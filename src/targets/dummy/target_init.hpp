@@ -20,8 +20,8 @@
 #ifndef _TARGET_INIT_HPP_
 #define _TARGET_INIT_HPP_
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 // tdi includes
 #include <tdi/common/tdi_defs.h>
@@ -29,36 +29,8 @@
 
 namespace tdi {
 namespace tna {
-namespace dummy {
-
-/**
- * @brief Class to manage Device per dev_id.<br>
- * <B>Creation: </B> Singleton....
- */
-class DevMgr : public tdi::DevMgr {
- public:
-
-  /**
-   * @brief Device Add function which creates a Device object and maintains it
-   *
-   * @param[in] device_id 
-   * @param[in] cookie User defined cookie which platforms can use to
-   * send any additional information they want to help with inititalization
-   *
-   * @return Status of API call
-   */
-  tdi_status_t deviceAdd(
-      const tdi_dev_id_t &device_id,
-      const tdi_arch_type_e &arch_type,
-      std::vector<std::unique_ptr<tdi::ProgramConfig>> &device_config,
-      void *cookie);
-
-  tdi_status_t deviceRemove(const tdi_dev_id_t &device_id);
-
-};  // DevMgr
-
-} // dummy
-} // tna
-} // tdi
+namespace dummy {}  // namespace dummy
+}  // namespace tna
+}  // namespace tdi
 
 #endif  // _TARGET_INIT_HPP_
