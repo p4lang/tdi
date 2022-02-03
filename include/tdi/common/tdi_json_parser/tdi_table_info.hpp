@@ -15,7 +15,7 @@
  */
 /** @file tdi_table_info.hpp
  *
- *  @brief Contains TDI Table and Learn Info APIs
+ *  @brief Contains TDI Table Info APIs
  */
 #ifndef _TDI_TABLE_INFO_HPP
 #define _TDI_TABLE_INFO_HPP
@@ -37,9 +37,8 @@ class TableInfo;
 class ActionInfo;
 class KeyFieldInfo;
 class DataFieldInfo;
-class TableRefInfo;
 class Cjson;
-class TdiInfoMapper;
+class TdiInfoParser;
 
 // Classes that need to be overridden by targets in order for them to
 // target-specific information in the info
@@ -48,7 +47,6 @@ class TableContextInfo {};
 class KeyFieldContextInfo {};
 class DataFieldContextInfo {};
 class ActionContextInfo {};
-class LearnContextInfo {};
 
 /**
  * @brief Class for Annotations. Contains 2 strings to uniquely identify an
@@ -391,100 +389,6 @@ class TableInfo {
   friend class TdiInfoParser;
 };
 
-/**
- * @brief In memory representation of tdi.json Learn
- */
-class LearnInfo {
- public:
-  /**
-   * @brief Get name of the learn
-   *
-   * @param[out] name Name of the learn
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnNameGet(std::string *name) const;
-
-  /**
-   * @brief Get ID of the learn
-   *
-   * @param[out] id ID of the learn
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnIdGet(tdi_id_t *id) const;
-
-  /**
-   * @brief Get a set of annotations on a Learn
-   *
-   * @param[out] annotations Set of annotations on a Learn
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnAnnotationsGet(AnnotationSet *annotations) const;
-
-  /**
-   * @brief Get vector of DataField IDs. Only applicable for learns
-   * without Action IDs
-   *
-   * @param[out] id Vector of IDs
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldIdListGet(std::vector<tdi_id_t> *id) const;
-
-  /**
-   * @brief Get the field ID of a Data Field from a name.
-   *
-   * @param[in] name Name of a Data field
-   * @param[out] field_id Field ID
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldIdGet(const std::string &name,
-                              tdi_id_t *field_id) const;
-
-  /**
-   * @brief Get the data Field info object from tdi_id.
-   *
-   * @param[in] id id of a Data field
-   * @param[out] data_field_info DataFieldInfo object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldGet(const tdi_id_t field_id,
-                            const DataFieldInfo **data_field_info) const;
-
-  const std::string &nameGet() const { return name_; }
-  void learnContextInfoSet(
-      std::unique_ptr<LearnContextInfo> learn_context_info) {
-    learn_context_info_ = std::move(learn_context_info);
-  };
-
- private:
-  LearnInfo(tdi_id_t id,
-            std::string name,
-            std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map,
-            std::set<Annotation> annotations)
-      : id_(id),
-        name_(name),
-        learn_data_map_(std::move(learn_data_map)),
-        annotations_(annotations){};
-  tdi_id_t id_;
-  std::string name_;
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map_;
-  std::set<Annotation> annotations_{};
-  mutable std::unique_ptr<LearnContextInfo> learn_context_info_;
-  friend class TdiInfoParser;
-};
-
-/* class to keep info regarding a reference to another tableInfo */
-class TableRefInfo {
- public:
-  tdi_id_t id_;
-  std::string name_;
-};
-
 class KeyFieldInfo {
  public:
   /**
@@ -555,7 +459,7 @@ class KeyFieldInfo {
 
   /** @} */  // End of group Key
 
-  const std::string &getName() const { return name_; };
+  const std::string &nameGet() const { return name_; };
   const tdi_id_t &idGet() const { return field_id_; };
 
   void keyFieldContextInfoSet(
@@ -721,6 +625,7 @@ class DataFieldInfo {
   /** @} */  // End of group Data
 
   const tdi_id_t &idGet() { return field_id_; }
+  const std::string &nameGet() const { return name_; };
   void dataFieldContextInfoSet(
       std::unique_ptr<DataFieldContextInfo> data_field_context_info) {
     data_field_context_info_ = std::move(data_field_context_info);
@@ -836,39 +741,6 @@ class ActionInfo {
   mutable std::unique_ptr<ActionContextInfo> action_context_info_;
   friend class TableInfo;
   friend class TdiInfoParser;
-};
-
-class TdiInfoParser {
- public:
-  TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper);
-
- private:
-  std::unique_ptr<tdi::TableInfo> parseTable(const tdi::Cjson &table_tdi);
-  std::unique_ptr<tdi::LearnInfo> parseLearn(const tdi::Cjson &learn_tdi);
-  std::unique_ptr<KeyFieldInfo> parseKeyField(const tdi::Cjson &key_json);
-  std::unique_ptr<DataFieldInfo> parseDataField(const tdi::Cjson &data_json,
-                                                const uint64_t &oneof_index);
-  std::unique_ptr<ActionInfo> parseAction(const tdi::Cjson &action_json);
-  std::set<tdi::Annotation> parseAnnotations(
-      const tdi::Cjson &annotation_cjson);
-  void parseFieldWidth(const tdi::Cjson &node,
-                       tdi_field_data_type_e &type,
-                       size_t &width,
-                       uint64_t &default_value,
-                       float &default_fl_value,
-                       std::string &default_str_value,
-                       std::vector<std::string> &choices);
-  tdi_table_type_e tableTypeStrToEnum(const std::string &type);
-  tdi_match_type_e matchTypeStrToEnum(const std::string &type);
-  tdi_operations_type_e operationsTypeStrToEnum(const std::string &type);
-  tdi_attributes_type_e attributesTypeStrToEnum(const std::string &type);
-
-  tdi_status_t parseTdiInfo(
-      const std::vector<std::string> &tdi_info_file_paths);
-
-  const std::unique_ptr<TdiInfoMapper> tdi_info_mapper_;
-  std::map<std::string, std::unique_ptr<TableInfo>> table_info_map_;
-  std::map<std::string, std::unique_ptr<LearnInfo>> learn_info_map_;
 };
 
 }  // namespace tdi

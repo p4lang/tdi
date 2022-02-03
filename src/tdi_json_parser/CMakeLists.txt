@@ -1,6 +1,8 @@
 
 set(TDI_JSON_PARSING_SRCS
   tdi_cjson.cpp
+  tdi_info_parser.cpp
+  tdi_learn_info.cpp
   tdi_table_info.cpp
 )
 
