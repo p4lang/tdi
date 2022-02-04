@@ -51,7 +51,7 @@ tdi_status_t tdi_key_field_set_value_string(tdi_table_key_hdl *key_hdl,
                                              const tdi_id_t field_id,
                                              const char *value) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueString<const char *> keyFieldValue(value);
+  tdi::KeyFieldValueExact<const char *> keyFieldValue(value);
   return key->setValue(field_id, keyFieldValue);
 }
 
@@ -74,7 +74,7 @@ tdi_status_t tdi_key_field_set_value_and_mask_ptr(tdi_table_key_hdl *key_hdl,
                                                    const uint8_t *mask,
                                                    const size_t size) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueTernary <const unsigned char > keyFieldValue(value1, mask, size);
+  tdi::KeyFieldValueTernary <const uint8_t> keyFieldValue(value1, mask, size);
   //return key->setValueandMask(field_id, value1, mask, size);
   return key->setValue(field_id, keyFieldValue);
 }
@@ -91,11 +91,11 @@ tdi_status_t tdi_key_field_set_value_range(tdi_table_key_hdl *key_hdl,
 
 tdi_status_t tdi_key_field_set_value_range_ptr(tdi_table_key_hdl *key_hdl,
                                                 const tdi_id_t field_id,
-                                                const uint8_t start,
-                                                const uint8_t end,
+                                                const uint8_t *start,
+                                                const uint8_t *end,
                                                 const size_t size) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueRange<const unsigned char > keyFieldValue(&start, &end, size);
+  tdi::KeyFieldValueRange<const unsigned char > keyFieldValue(start, end, size);
   return key->setValue(field_id, keyFieldValue);
 }
 
@@ -165,21 +165,23 @@ tdi_status_t tdi_key_field_get_value_string_size(
     uint32_t *str_size) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   std::string str;
-  tdi::KeyFieldValueString<std::string> keyFieldValue(str);
+  tdi::KeyFieldValueExact<std::string> keyFieldValue(str);
   tdi_status_t status = key->getValue(field_id, &keyFieldValue);
   *str_size = str.size();
   return status;
 }
+
 tdi_status_t tdi_key_field_get_value_string(const tdi_table_key_hdl *key_hdl,
-                                             const tdi_id_t field_id,
-                                             char *value) {
+                                            const tdi_id_t field_id,
+                                            char *value) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
-  std::string str;
-  tdi::KeyFieldValueString<char *> keyFieldValue(value);
+  std::string str(value);
+  tdi::KeyFieldValueExact<std::string> keyFieldValue(str);
   tdi_status_t status = key->getValue(field_id, &keyFieldValue);
-  //strncpy(value, str.c_str(), str.size());
+  strncpy(value, str.c_str(), str.size());
   return status;
 }
+
 /* Ternary */
 tdi_status_t tdi_key_field_get_value_and_mask(
     const tdi_table_key_hdl *key_hdl,

@@ -88,26 +88,14 @@ class KeyFieldValueTernary : public KeyFieldValue {
  public:
   KeyFieldValueTernary(T &value, T &mask)
       : value_(value), mask_(mask){};
-  KeyFieldValueTernary(T *value_ptr,
-                       T *mask_ptr,
-                       const size_t size)
+  KeyFieldValueTernary(const uint8_t *value_ptr,
+                       const uint8_t *mask_ptr,
+                       const size_t &size)
       : value_ptr_(value_ptr), mask_ptr_(mask_ptr), size_(size){};
   T value_ = 0;
-  T *value_ptr_ = nullptr;
+  const uint8_t *value_ptr_ = nullptr;
   T mask_ = 0;
-  T *mask_ptr_ = nullptr;
-  size_t size_ = 0;
-};
-template<class T>
-class KeyFieldValueString: public KeyFieldValue {
- public:
-  KeyFieldValueString(T &str)
-      : str_(str){};
-  KeyFieldValueString(T *str_ptr,
-                       const size_t size)
-      : str_ptr_(str_ptr), size_(size){};
-  T str_ = 0;
-  T *str_ptr_ = nullptr;
+  const uint8_t *mask_ptr_ = nullptr;
   size_t size_ = 0;
 };
 
@@ -116,14 +104,14 @@ class KeyFieldValueRange : public KeyFieldValue {
  public:
   KeyFieldValueRange(T &start, T &end)
       : start_(start), end_(end){};
-  KeyFieldValueRange(T *start_ptr,
-                       T *end_ptr,
-                       const size_t size)
+  KeyFieldValueRange(const uint8_t *start_ptr,
+                     const uint8_t *end_ptr,
+                     const size_t size)
       : start_ptr_(start_ptr), end_ptr_(end_ptr), size_(size){};
   T start_ = 0;
-  T *start_ptr_ = nullptr;
+  const uint8_t *start_ptr_ = nullptr;
   T end_ = 0;
-  T *end_ptr_ = nullptr;
+  const uint8_t *end_ptr_ = nullptr;
   size_t size_ = 0;
 };
 
@@ -132,10 +120,10 @@ class KeyFieldValueLPM : public KeyFieldValue {
  public:
   KeyFieldValueLPM(T &value, const uint16_t &prefix_len)
       : value_(value), prefix_len_(prefix_len) {};
-  KeyFieldValueLPM(T *value_ptr, const uint16_t prefix_len, const size_t size)
+  KeyFieldValueLPM(const uint8_t *value_ptr, const uint16_t prefix_len, const size_t size)
       : value_ptr_(value_ptr), prefix_len_(prefix_len), size_(size) {};
   T value_ = 0;
-  T *value_ptr_ = nullptr;
+  const uint8_t *value_ptr_ = nullptr;
   uint16_t prefix_len_ = 0;
   size_t size_ = 0;
 };
@@ -145,10 +133,10 @@ class KeyFieldValueOptional: public KeyFieldValue {
  public:
   KeyFieldValueOptional(T &value, const bool &is_valid)
       : value_(value), is_valid_(is_valid) {};
-  KeyFieldValueOptional(T *value_ptr, const bool is_valid, const size_t size)
+  KeyFieldValueOptional(const uint8_t *value_ptr, const bool is_valid, const size_t size)
       : value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
   T value_ = 0;
-  T *value_ptr_ = nullptr;
+  const uint8_t *value_ptr_ = nullptr;
   bool is_valid_ = 0;
   size_t size_ = 0;
 };

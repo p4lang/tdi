@@ -54,7 +54,7 @@ tdi_status_t tdi_tables_get(const tdi_info_hdl *tdi,
  *
  * @param[in] tdi_info Handle of Info object. Retrieved using
  * tdi_info_get()
- * @param[in] table_name Fully qualified P4 Table Obj name
+ * @param[in] table_name Fully qualified Table Obj name
  * @param[out] tdi_table_hdl_ret Table Obj Pointer
  *
  * @return Status of the API call
@@ -123,7 +123,7 @@ tdi_status_t tdi_learns_get(const tdi_info_hdl *tdi_info,
  *
  * @param[in] tdi_info Handle of Info object. Retrieved using
  * tdi_info_get()
- * @param[in] learn_name Fully qualified P4 Learn Obj name
+ * @param[in] learn_name Fully qualified Learn Obj name
  * @param[out] tdi_learn_hdl_ret Learn Obj Pointer
  *
  * @return Status of the API call
