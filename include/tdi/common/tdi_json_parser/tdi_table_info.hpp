@@ -92,13 +92,6 @@ class Annotation {
 };
 
 /**
- * @brief We wrap the annotation in a reference wrapper because we want to send
- * the actual object to the API user and not a copy.
- */
-using AnnotationSet =
-    std::set<std::reference_wrapper<const Annotation>, Annotation::Less>;
-
-/**
  * @brief In memory representation of tdi.json Table
  */
 class TableInfo {
@@ -106,46 +99,36 @@ class TableInfo {
   /**
    * @brief Get name of the table
    *
-   * @param[out] name Name of the table
-   *
-   * @return Status of the API call
+   * @return Name of the table
    */
-  tdi_status_t tableNameGet(std::string *name) const;
+  const std::string &nameGet() const { return name_; };
 
   /**
    * @brief Get ID of the table
-   *
-   * @param[out] id ID of the table
-   *
-   * @return Status of the API call
+   * @return ID of the table
    */
-  tdi_status_t tableIdGet(tdi_id_t *id) const;
+  const tdi_id_t &idGet() const { return id_; };
 
   /**
    * @brief The type of the table
-   *
-   * @param[out] table_type Type of the table
-   *
-   * @return Status of the API call
+   * @return Type of the table
    */
-  tdi_status_t tableTypeGet(tdi_table_type_e *table_type) const;
+  const tdi_table_type_e &tableTypeGet() const { return table_type_; };
 
   /**
    * @brief Size of a table acc to tdi.json
    *
-   * @param[out] size Number of total available entries
-   *
-   * @return Status of the API call
+   * @return Number of total available size
    */
-  tdi_status_t tableSizeGet(size_t *size) const;
+  const size_t &sizeGet() const { return size_; };
   /**
    * @brief Get whether this table has a const default action
    *
-   * @param[out] has_const_default_action If default action is const
-   *
-   * @return Status of the API call
+   * @return If default action is const
    */
-  tdi_status_t tableHasConstDefaultAction(bool *has_const_default_action) const;
+  const bool &hasConstDefaultAction() const {
+    return has_const_default_action_;
+  };
 
   /**
    * @brief Get whether this table is a const table
@@ -154,186 +137,153 @@ class TableInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t tableIsConst(bool *is_const) const;
+  const bool &isConst() const { return is_const_; };
 
   /**
    * @brief Get a set of annotations on a Table
-   *
-   * @param[out] annotations Set of annotations on a Table
-   *
-   * @return Status of the API call
+   * @return Set of annotations on a Table
    */
-  tdi_status_t tableAnnotationsGet(AnnotationSet *annotations) const;
+  const std::set<Annotation> &annotationsGet() const { return annotations_; };
 
-  using TableApiSet =
-      std::set<std::reference_wrapper<const tdi_table_api_type_e>>;
   /**
    * @brief Get a set of APIs which are supported by this table.
-   *
-   * @param[out] tableApiset The set of APIs which are supported by this table
-   *
-   * @return Status of the API call
+   * @return The set of APIs which are supported by this table
    */
-  tdi_status_t tableApiSupportedGet(TableApiSet *tableApis) const;
+  const std::set<tdi_table_api_type_e> &apiSupportedGet() const {
+    return table_apis_;
+  };
 
   /**
    * @brief Get the set of supported attributes
    *
-   * @param[out] type_set Set of the supported Attributes
-   *
-   * @return Status of the API call
+   * @return Set of the supported Attributes
    */
-  tdi_status_t tableAttributesSupported(
-      std::set<tdi_attributes_type_e> *type_set) const;
+  const std::set<tdi_attributes_type_e> &attributesSupported() const {
+    return attributes_type_set_;
+  };
   /**
    * @brief Get set of supported Operations
-   *
-   * @param[out] type_set Set of supported Operations
-   *
-   * @return Status of the API call
+   * @return Set of supported Operations
    */
-  tdi_status_t tableOperationsSupported(
-      std::set<tdi_operations_type_e> *type_set) const;
+  const std::set<tdi_operations_type_e> &perationsSupported() const {
+    return operations_type_set_;
+  };
   /**
    * @brief Get a vector of Key field IDs
-   *
-   * @param[out] id Vector of Key field IDs
-   *
-   * @return Status of the API call
+   * @return Vector of Key field IDs
    */
-  tdi_status_t keyFieldIdListGet(std::vector<tdi_id_t> *id) const;
+  std::vector<tdi_id_t> keyFieldIdListGet() const;
 
   /**
    * @brief Get field ID of Key Field from name
    *
    * @param[in] name Key Field name
-   * @param[out] field_id Field ID
-   *
-   * @return Status of the API call
+   * @return field_id Field ID. Returns 0 (invalid field_id),
+   * if not found
    */
-  tdi_status_t keyFieldIdGet(const std::string &name, tdi_id_t *field_id) const;
+   tdi_id_t keyFieldIdGet(const std::string &name) const;
 
-  /**
-   * @brief Get Key Field
-   *
-   * @param[in] id Key Field ID
-   * @param[out] key_field_info KeyFieldInfo object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t keyFieldGet(const tdi_id_t &field_id,
-                           const KeyFieldInfo **key_field_info) const;
+   /**
+    * @brief Get Key Field
+    *
+    * @param[in] id Key Field ID
+    * @return key_field_info KeyFieldInfo object. nullptr if not found
+    */
+   const KeyFieldInfo *keyFieldGet(const tdi_id_t &field_id) const;
 
-  /**
-   * @brief Get vector of DataField IDs. Only applicable for tables
-   * without Action IDs
-   *
-   * @param[out] id Vector of IDs
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldIdListGet(std::vector<tdi_id_t> *id) const;
+   /**
+    * @brief Get vector of DataField IDs. Only applicable for tables
+    * without Action IDs
+    *
+    * @return Vector of IDs
+    */
+   std::vector<tdi_id_t> dataFieldIdListGet() const;
 
-  /**
-   * @brief Get vector of DataField IDs for a particular action. If action
-   * doesn't exist, then common fields list is returned.
-   *
-   * @param[in] action_id Action ID
-   * @param[out] id Vector of IDs
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldIdListGet(const tdi_id_t &action_id,
-                                  std::vector<tdi_id_t> *id) const;
-  /**
-   * @brief Get the field ID of a Data Field from a name.
-   *
-   * @param[in] name Name of a Data field
-   * @param[out] field_id Field ID
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldIdGet(const std::string &name,
-                              tdi_id_t *field_id) const;
+   /**
+    * @brief Get vector of DataField IDs for a particular action. If action
+    * doesn't exist, then common fields list is returned.
+    *
+    * @param[in] action_id Action ID
+    * @return Vector of ID.
+    */
+   std::vector<tdi_id_t> dataFieldIdListGet(const tdi_id_t &action_id) const;
 
-  /**
-   * @brief Get the field ID of a Data Field from a name
-   *
-   * @param[in] name Name of a Data field
-   * @param[in] action_id Action ID
-   * @param[out] field_id Field ID
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldIdGet(const std::string &name,
-                              const tdi_id_t &action_id,
-                              tdi_id_t *field_id) const;
+   /**
+    * @brief Get the field ID of a Data Field from a name.
+    *
+    * @param[in] name Name of a Data field
+    * @return Field ID. 0 if not found
+    *
+    */
+   tdi_id_t dataFieldIdGet(const std::string &name) const;
 
-  /**
-   * @brief Get the data Field info object from tdi_id.
-   *
-   * @param[in] id id of a Data field
-   * @param[out] data_field_info DataFieldInfo object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldGet(const tdi_id_t field_id,
-                            const DataFieldInfo **data_field_info) const;
+   /**
+    * @brief Get the field ID of a Data Field from a name
+    *
+    * @param[in] name Name of a Data field
+    * @param[in] action_id Action ID
+    * @return Field ID. 0 if not found
+    *
+    */
+   tdi_id_t dataFieldIdGet(const std::string &name,
+                           const tdi_id_t &action_id) const;
 
-  /**
-   * @brief Get the data Field info object from tdi_id.
-   *
-   * @param[in] id id of a Data field
-   * @param[in] action_id Action ID
-   * @param[out] data_field_info DataFieldInfo object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t dataFieldGet(const tdi_id_t field_id,
-                            const tdi_id_t &action_id,
-                            const DataFieldInfo **data_field_info) const;
+   /**
+    * @brief Get the data Field info object from tdi_id.
+    *
+    * @param[in] id id of a Data field
+    * @return DataFieldInfo object. nullptr if doesn't exist
+    *
+    */
+   const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id) const;
 
-  /**
-   * @brief Get Action ID from Name
-   *
-   * @param[in] name Action Name
-   * @param[out] action_id Action ID
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t actionIdGet(const std::string &name, tdi_id_t *action_id) const;
-  /**
-   * @brief Get vector of Action IDs
-   *
-   * @param[out] action_id Vector of Action IDs
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t actionIdListGet(std::vector<tdi_id_t> *action_id) const;
+   /**
+    * @brief Get the data Field info object from tdi_id.
+    *
+    * @param[in] id id of a Data field
+    * @param[in] action_id Action ID
+    * @return DataFieldInfo object. nullptr if doesn't exist
+    *
+    */
+   const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id,
+                                     const tdi_id_t &action_id) const;
 
-  /**
-   * @brief Get ActionInfo object from tdi_id of action (action_id)
-   *
-   * @param[in] action_id tdi_id of Action
-   * @param[out] action_info ActionInfo object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t actionGet(const tdi_id_t &action_id,
-                         const ActionInfo **action_info) const;
+   /**
+    * @brief Get Action ID from Name
+    *
+    * @param[in] name Action Name
+    * @return Action ID. 0 if not found
+    */
+   tdi_id_t actionIdGet(const std::string &name) const;
 
-  /**
-   * @brief Are Action IDs applicable for this table
-   *
-   * @retval True : If Action ID applicable
-   * @retval False : If not
-   *
-   */
-  bool actionIdApplicable() const;
-  const std::string &nameGet() const { return name_; }
-  void tableContextInfoSet(
-      std::unique_ptr<TableContextInfo> table_context_info) const{
-    table_context_info_ = std::move(table_context_info);
+   /**
+    * @brief Get vector of Action IDs
+    * @return Vector of Action IDs
+    */
+   std::vector<tdi_id_t> actionIdListGet() const;
+
+   /**
+    * @brief Get ActionInfo object from tdi_id of action (action_id)
+    *
+    * @param[in] action_id tdi_id of Action
+    * @param[out] action_info ActionInfo object
+    *
+    * @return Status of the API call
+    */
+   const ActionInfo *actionGet(const tdi_id_t &action_id) const;
+
+   /**
+    * @brief Are Action IDs applicable for this table
+    *
+    * @retval True : If Action ID applicable
+    * @retval False : If not
+    *
+    */
+   bool actionIdApplicable() const;
+
+   void tableContextInfoSet(
+       std::unique_ptr<TableContextInfo> table_context_info) const {
+     table_context_info_ = std::move(table_context_info);
   };
 
   std::map<std::string, const KeyFieldInfo *> name_key_map_;
@@ -369,21 +319,20 @@ class TableInfo {
         operations_type_set_(operations_type_set),
         attributes_type_set_(attributes_type_set),
         annotations_(annotations){};
-  tdi_id_t id_;
-  std::string name_;
-  tdi_table_type_e table_type_;
-  size_t size_;
-  bool has_const_default_action_{false};
-  bool is_const_{false};
-  std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map_;
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
-  std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map_;
-  std::set<tdi_id_t> depends_on_set_;
-
-  std::set<tdi_table_api_type_e> table_apis_{};
-  std::set<tdi_operations_type_e> operations_type_set_;
-  std::set<tdi_attributes_type_e> attributes_type_set_;
-  std::set<Annotation> annotations_{};
+  const tdi_id_t id_;
+  const std::string name_;
+  const tdi_table_type_e table_type_;
+  const size_t size_;
+  const bool has_const_default_action_{false};
+  const bool is_const_{false};
+  const std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map_;
+  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
+  const std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map_;
+  const std::set<tdi_id_t> depends_on_set_;
+  const std::set<tdi_table_api_type_e> table_apis_{};
+  const std::set<tdi_operations_type_e> operations_type_set_;
+  const std::set<tdi_attributes_type_e> attributes_type_set_;
+  const std::set<Annotation> annotations_{};
 
   mutable std::unique_ptr<TableContextInfo> table_context_info_;
   friend class TdiInfoParser;
@@ -399,49 +348,48 @@ class KeyFieldInfo {
   /**
    * @brief Get match type of Key Field
    *
-   * @param[out] match_type Match Type (Exact/Ternary/LPM ... )
+   * @return Match Type (Exact/Ternary/LPM ... )
    *
-   * @return Status of the API call
    */
-  tdi_status_t keyFieldMatchTypeGet(tdi_match_type_e *field_type) const;
+  const tdi_match_type_e &matchTypeGet() const { return match_type_; };
 
   /**
    * @brief Get data type of Key Field
    *
-   * @param[out] data_type Field Type (uint64, float, string)
-   *
-   * @return Status of the API call
+   * @return Field Type (uint64, float, string)
    */
-  tdi_status_t keyFieldDataTypeGet(tdi_field_data_type_e *data_type) const;
+  const tdi_field_data_type_e& dataTypeGet() const;
 
   /**
    * @brief Get field size
    *
-   * @param[out] size Field Size in bits
-   *
-   * @return Status of the API call
+   * @return Field Size in bits
    */
-  tdi_status_t keyFieldSizeGet(size_t *size) const;
+  const size_t &sizeGet() const { return size_bits_; };
+
+  /**
+   * @brief Is field Slice
+   *
+   * @return if the key is a field slice
+   */
+  const bool &isFieldSlice() const { return is_field_slice_; };
 
   /**
    * @brief Get whether Key Field is of type ptr or not. If the field is
    * of ptr type, then only ptr sets/gets are applicable on the field. Else
    * both the ptr versions and the uint64_t versions work
    *
-   * @param[out] is_ptr Boolean type indicating whether Field is of type ptr
+   * @return Boolean type indicating whether Field is of type ptr
    *
-   * @return Status of the API call
    */
-  tdi_status_t keyFieldIsPtrGet(bool *is_ptr) const;
+  const bool &isPtrGet() const { return is_ptr_; };
 
   /**
    * @brief Get name of field
    *
-   * @param[out] name Field name
-   *
-   * @return Status of the API call
+   * @return Field name
    */
-  tdi_status_t keyFieldNameGet(std::string *name) const;
+   const std::string &nameGet() const { return name_; };
 
   /**
    * @brief Get a list of all the allowed values that a particular field can
@@ -449,22 +397,23 @@ class KeyFieldInfo {
    * vector is empty, it indicates that the allowed choices have not been
    * published in tdi json
    *
-   * @param[out] choices Vector of const references of the values that are
+   * @return choices Vector of the string values that are
    * allowed for this field
    *
-   * @return Status of the API call
    */
-  tdi_status_t keyFieldAllowedChoicesGet(
-      std::vector<std::reference_wrapper<const std::string>> *choices) const;
+   const std::vector<std::string> &choicesGet() const { return enum_choices_; };
 
-  /** @} */  // End of group Key
+   /**
+    * @brief Get field ID
+    * @return field ID
+    */
+   const tdi_id_t &idGet() const { return field_id_; };
 
-  const std::string &nameGet() const { return name_; };
-  const tdi_id_t &idGet() const { return field_id_; };
+   /** @} */  // End of group Key
 
-  void keyFieldContextInfoSet(
-      std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const{
-    key_field_context_info_ = std::move(key_field_context_info);
+   void keyFieldContextInfoSet(
+       std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const {
+     key_field_context_info_ = std::move(key_field_context_info);
   };
 
  private:
@@ -475,7 +424,7 @@ class KeyFieldInfo {
                tdi_field_data_type_e data_type,
                bool mandatory,
                const std::vector<std::string> &enum_choices,
-               const std::set<tdi::Annotation> annotations,
+               const std::set<tdi::Annotation> &annotations,
                uint64_t default_value,
                float default_fl_value,
                std::string default_str_value,
@@ -525,47 +474,40 @@ class DataFieldInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t containerDataFieldIdListGet(std::vector<tdi_id_t> *id) const;
+   std::vector<tdi_id_t> containerDataFieldIdListGet() const;
 
   /**
    * @brief Get the Size of a field.
    * For container fields this function will return number
    * of elements inside the container.
    *
-   * @param[out] size Size of the field in bits
-   *
-   * @return Status of the API call
+   * @return Size of the field in bits
    */
-  tdi_status_t dataFieldSizeGet(size_t *size) const;
+  const size_t &sizeGet() const { return size_bits_; };
 
   /**
    * @brief Get whether a field is a ptr type.
    * Only the ptr versions of setValue/getValue will work on fields
    * for which this API returns true
    *
-   * @param[out] is_ptr Boolean value indicating if it is ptr type
+   * @return Boolean value indicating if it is ptr type
    *
-   * @return Status of the API call
    */
-  tdi_status_t dataFieldIsPtrGet(bool *is_ptr) const;
+  const bool& isPtrGet() const { return is_ptr_; };
 
   /**
    * @brief Get whether a field is mandatory.
    *
-   * @param[out] is_mandatory Boolean value indicating if it is mandatory
-   *
-   * @return Status of the API call
+   * @return Boolean value indicating if it is mandatory
    */
-  tdi_status_t dataFieldMandatoryGet(bool *is_mandatory) const;
+  const bool &mandatoryGet() const { return mandatory_; };
 
   /**
    * @brief Get whether a field is ReadOnly.
    *
-   * @param[out] is_read_only Boolean value indicating if it is ReadOnly
-   *
-   * @return Status of the API call
+   * @return Boolean value indicating if it is ReadOnly
    */
-  tdi_status_t dataFieldReadOnlyGet(bool *is_read_only) const;
+  const bool &readOnlyGet() const { return read_only_; };
 
   /**
    * @brief Get the IDs of oneof siblings of a field. If a field is part of a
@@ -574,44 +516,41 @@ class DataFieldInfo {
    * $SELECTOR_GROUP_ID.
    *
    *
-   * @param[out] oneof_siblings Set containing field IDs of oneof siblings
+   * @return Set containing field IDs of oneof siblings
    *
-   * @return Status of the API call
    */
-  tdi_status_t dataFieldOneofSiblingsGet(
-      std::set<tdi_id_t> *oneof_siblings) const;
+  const std::set<tdi_id_t> &oneofSiblingsGet() const {
+    return oneof_siblings_;
+  };
 
   /**
    * @brief Get the Name of a field.
    *
-   * @param[out] name Name of the field
-   *
-   * @return Status of the API call
+   * @return Name of the field
    */
-  tdi_status_t dataFieldNameGet(std::string *name) const;
+  const std::string &nameGet() const { return name_; };
 
   /**
    * @brief Get the Data type of a field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)
    *
-   * @param[out] type Data type of a data field
-   *
-   * @return Status of the API call
+   * @return Data type of a data field
    */
-  tdi_status_t dataFieldDataTypeGet(tdi_field_data_type_e *type) const;
+  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
 
   /**
    * @brief Get a list of all the allowed values that a particular field can
    * have. This API is only for fields with string type. If the returned
    * vector is empty, it indicates that the allowed choices have not been
-   * published in tdi json
+   * published in tdi json. If called for non-string fields, then also empty
+   * vector would be returned
    *
-   * @param[out] choices Vector of const references of the values that are
+   * @return Vector of const references of the values that are
    * allowed for this field
    *
-   * @return Status of the API call
    */
-  tdi_status_t dataFieldAllowedChoicesGet(
-      std::vector<std::reference_wrapper<const std::string>> *choices) const;
+  const std::vector<std::string> &allowedChoicesGet() const {
+    return enum_choices_;
+  };
 
   /**
    * @brief Get a set of annotations on a data field
@@ -620,12 +559,18 @@ class DataFieldInfo {
    *
    * @return Status of the API call
    */
-  tdi_status_t dataFieldAnnotationsGet(AnnotationSet *annotations) const;
+  const std::set<tdi::Annotation> &annotationsGet() const {
+    return annotations_;
+  };
+
+  /**
+   * @brief Get ID of field
+   * @return ID of field
+   */
+  const tdi_id_t &idGet() { return field_id_; }
 
   /** @} */  // End of group Data
 
-  const tdi_id_t &idGet() { return field_id_; }
-  const std::string &nameGet() const { return name_; };
   void dataFieldContextInfoSet(
       std::unique_ptr<DataFieldContextInfo> data_field_context_info) {
     data_field_context_info_ = std::move(data_field_context_info);
@@ -664,6 +609,7 @@ class DataFieldInfo {
   const std::string name_;
   const size_t size_bits_;
   const tdi_field_data_type_e data_type_;
+  const bool is_ptr_{false};
   const bool mandatory_;
   const bool read_only_;
   const std::vector<std::string> enum_choices_;
@@ -689,33 +635,24 @@ class ActionInfo {
    */
   /**
    * @brief Get Action ID
-   *
-   * @param[out] action_id Action ID
-   *
-   * @return Status of the API call
+   * @return Action ID
    */
-  tdi_status_t actionIdGet(tdi_id_t *action_id) const;
+  const tdi_id_t &idGet() const { return action_id_; };
 
   /**
    * @brief Get Action Name
-   *
-   * @param[out] name Action Name
-   *
-   * @return Status of the API call
+   * @return Action Name
    */
-  tdi_status_t actionNameGet(std::string *name) const;
+  const std::string &nameGet() const { return name_; };
 
   /**
    * @brief Get a set of annotations for this action.
    *
-   * @param[out] annotations Set of annotations
-   *
-   * @return Status of the API call
+   * @return Set of annotations
    */
-  tdi_status_t actionAnnotationsGet(AnnotationSet *annotations) const;
+  const std::set<tdi::Annotation> &annotationsGet() const { return annotations_; };
   /** @} */  // End of group Action IDs
 
-  const tdi_id_t &idGet() const { return action_id_; };
   void actionContextInfoSet(
       std::unique_ptr<ActionContextInfo> action_context_info) const{
     action_context_info_ = std::move(action_context_info);

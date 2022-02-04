@@ -46,63 +46,52 @@ class LearnInfo {
   /**
    * @brief Get name of the learn
    *
-   * @param[out] name Name of the learn
-   *
-   * @return Status of the API call
+   * @return Name of the learn
    */
-  tdi_status_t learnNameGet(std::string *name) const;
+  const std::string &nameGet() const { return name_; };
 
   /**
    * @brief Get ID of the learn
+   * @return ID of the learn
    *
-   * @param[out] id ID of the learn
-   *
-   * @return Status of the API call
    */
-  tdi_status_t learnIdGet(tdi_id_t *id) const;
+  const tdi_id_t &idGet() const { return id_; };
 
   /**
    * @brief Get a set of annotations on a Learn
    *
-   * @param[out] annotations Set of annotations on a Learn
-   *
-   * @return Status of the API call
+   * @return Set of annotations on a Learn
    */
-  tdi_status_t learnAnnotationsGet(AnnotationSet *annotations) const;
+  const std::set<tdi::Annotation> annotationsGet() const {
+    return annotations_;
+  };
 
   /**
    * @brief Get vector of DataField IDs. Only applicable for learns
    * without Action IDs
    *
-   * @param[out] id Vector of IDs
+   * @return Vector of IDs
    *
-   * @return Status of the API call
    */
-  tdi_status_t dataFieldIdListGet(std::vector<tdi_id_t> *id) const;
+  std::vector<tdi_id_t>  dataFieldIdListGet() const;
 
   /**
    * @brief Get the field ID of a Data Field from a name.
    *
    * @param[in] name Name of a Data field
-   * @param[out] field_id Field ID
-   *
-   * @return Status of the API call
+   * @return Field ID. 0 if not found
    */
-  tdi_status_t dataFieldIdGet(const std::string &name,
-                              tdi_id_t *field_id) const;
+  tdi_id_t dataFieldIdGet(const std::string &name) const;
 
   /**
    * @brief Get the data Field info object from tdi_id.
    *
    * @param[in] id id of a Data field
-   * @param[out] data_field_info DataFieldInfo object
+   * @return DataFieldInfo object. nullptr if not found
    *
-   * @return Status of the API call
    */
-  tdi_status_t dataFieldGet(const tdi_id_t &field_id,
-                            const DataFieldInfo **data_field_info) const;
+  const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id) const;
 
-  const std::string &nameGet() const { return name_; }
   void learnContextInfoSet(
       std::unique_ptr<LearnContextInfo> learn_context_info) {
     learn_context_info_ = std::move(learn_context_info);
