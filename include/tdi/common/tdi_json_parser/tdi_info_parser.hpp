@@ -85,6 +85,18 @@ class TdiInfoParser {
  public:
   TdiInfoParser(std::unique_ptr<TdiInfoMapper> tdi_info_mapper);
 
+  tdi_status_t parseTdiInfo(
+      const std::vector<std::string> &tdi_info_file_paths);
+
+  const std::map<std::string, std::unique_ptr<TableInfo>> &tableInfoMapGet()
+      const {
+    return table_info_map_;
+  };
+  const std::map<std::string, std::unique_ptr<LearnInfo>> &learnInfoMapGet()
+      const {
+    return learn_info_map_;
+  };
+
  private:
   std::unique_ptr<tdi::TableInfo> parseTable(const tdi::Cjson &table_tdi);
   std::unique_ptr<tdi::LearnInfo> parseLearn(const tdi::Cjson &learn_tdi);
@@ -105,9 +117,6 @@ class TdiInfoParser {
   tdi_match_type_e matchTypeStrToEnum(const std::string &type);
   tdi_operations_type_e operationsTypeStrToEnum(const std::string &type);
   tdi_attributes_type_e attributesTypeStrToEnum(const std::string &type);
-
-  tdi_status_t parseTdiInfo(
-      const std::vector<std::string> &tdi_info_file_paths);
 
   const std::unique_ptr<TdiInfoMapper> tdi_info_mapper_;
   std::map<std::string, std::unique_ptr<TableInfo>> table_info_map_;

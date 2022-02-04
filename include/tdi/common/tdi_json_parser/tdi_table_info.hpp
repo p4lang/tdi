@@ -165,7 +165,7 @@ class TableInfo {
    * @brief Get set of supported Operations
    * @return Set of supported Operations
    */
-  const std::set<tdi_operations_type_e> &perationsSupported() const {
+  const std::set<tdi_operations_type_e> &operationsSupported() const {
     return operations_type_set_;
   };
   /**
@@ -181,109 +181,109 @@ class TableInfo {
    * @return field_id Field ID. Returns 0 (invalid field_id),
    * if not found
    */
-   tdi_id_t keyFieldIdGet(const std::string &name) const;
+  tdi_id_t keyFieldIdGet(const std::string &name) const;
 
-   /**
-    * @brief Get Key Field
-    *
-    * @param[in] id Key Field ID
-    * @return key_field_info KeyFieldInfo object. nullptr if not found
-    */
-   const KeyFieldInfo *keyFieldGet(const tdi_id_t &field_id) const;
+  /**
+   * @brief Get Key Field
+   *
+   * @param[in] id Key Field ID
+   * @return key_field_info KeyFieldInfo object. nullptr if not found
+   */
+  const KeyFieldInfo *keyFieldGet(const tdi_id_t &field_id) const;
 
-   /**
-    * @brief Get vector of DataField IDs. Only applicable for tables
-    * without Action IDs
-    *
-    * @return Vector of IDs
-    */
-   std::vector<tdi_id_t> dataFieldIdListGet() const;
+  /**
+   * @brief Get vector of DataField IDs. Only applicable for tables
+   * without Action IDs
+   *
+   * @return Vector of IDs
+   */
+  std::vector<tdi_id_t> dataFieldIdListGet() const;
 
-   /**
-    * @brief Get vector of DataField IDs for a particular action. If action
-    * doesn't exist, then common fields list is returned.
-    *
-    * @param[in] action_id Action ID
-    * @return Vector of ID.
-    */
-   std::vector<tdi_id_t> dataFieldIdListGet(const tdi_id_t &action_id) const;
+  /**
+   * @brief Get vector of DataField IDs for a particular action. If action
+   * doesn't exist, then common fields list is returned.
+   *
+   * @param[in] action_id Action ID
+   * @return Vector of ID.
+   */
+  std::vector<tdi_id_t> dataFieldIdListGet(const tdi_id_t &action_id) const;
 
-   /**
-    * @brief Get the field ID of a Data Field from a name.
-    *
-    * @param[in] name Name of a Data field
-    * @return Field ID. 0 if not found
-    *
-    */
-   tdi_id_t dataFieldIdGet(const std::string &name) const;
+  /**
+   * @brief Get the field ID of a Data Field from a name.
+   *
+   * @param[in] name Name of a Data field
+   * @return Field ID. 0 if not found
+   *
+   */
+  tdi_id_t dataFieldIdGet(const std::string &name) const;
 
-   /**
-    * @brief Get the field ID of a Data Field from a name
-    *
-    * @param[in] name Name of a Data field
-    * @param[in] action_id Action ID
-    * @return Field ID. 0 if not found
-    *
-    */
-   tdi_id_t dataFieldIdGet(const std::string &name,
-                           const tdi_id_t &action_id) const;
+  /**
+   * @brief Get the field ID of a Data Field from a name
+   *
+   * @param[in] name Name of a Data field
+   * @param[in] action_id Action ID
+   * @return Field ID. 0 if not found
+   *
+   */
+  tdi_id_t dataFieldIdGet(const std::string &name,
+                          const tdi_id_t &action_id) const;
 
-   /**
-    * @brief Get the data Field info object from tdi_id.
-    *
-    * @param[in] id id of a Data field
-    * @return DataFieldInfo object. nullptr if doesn't exist
-    *
-    */
-   const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id) const;
+  /**
+   * @brief Get the data Field info object from tdi_id.
+   *
+   * @param[in] id id of a Data field
+   * @return DataFieldInfo object. nullptr if doesn't exist
+   *
+   */
+  const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id) const;
 
-   /**
-    * @brief Get the data Field info object from tdi_id.
-    *
-    * @param[in] id id of a Data field
-    * @param[in] action_id Action ID
-    * @return DataFieldInfo object. nullptr if doesn't exist
-    *
-    */
-   const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id,
-                                     const tdi_id_t &action_id) const;
+  /**
+   * @brief Get the data Field info object from tdi_id.
+   *
+   * @param[in] id id of a Data field
+   * @param[in] action_id Action ID
+   * @return DataFieldInfo object. nullptr if doesn't exist
+   *
+   */
+  const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id,
+                                    const tdi_id_t &action_id) const;
 
-   /**
-    * @brief Get Action ID from Name
-    *
-    * @param[in] name Action Name
-    * @return Action ID. 0 if not found
-    */
-   tdi_id_t actionIdGet(const std::string &name) const;
+  /**
+   * @brief Get Action ID from Name
+   *
+   * @param[in] name Action Name
+   * @return Action ID. 0 if not found
+   */
+  tdi_id_t actionIdGet(const std::string &name) const;
 
-   /**
-    * @brief Get vector of Action IDs
-    * @return Vector of Action IDs
-    */
-   std::vector<tdi_id_t> actionIdListGet() const;
+  /**
+   * @brief Get vector of Action IDs
+   * @return Vector of Action IDs
+   */
+  std::vector<tdi_id_t> actionIdListGet() const;
 
-   /**
-    * @brief Get ActionInfo object from tdi_id of action (action_id)
-    *
-    * @param[in] action_id tdi_id of Action
-    * @param[out] action_info ActionInfo object
-    *
-    * @return Status of the API call
-    */
-   const ActionInfo *actionGet(const tdi_id_t &action_id) const;
+  /**
+   * @brief Get ActionInfo object from tdi_id of action (action_id)
+   *
+   * @param[in] action_id tdi_id of Action
+   * @param[out] action_info ActionInfo object
+   *
+   * @return Status of the API call
+   */
+  const ActionInfo *actionGet(const tdi_id_t &action_id) const;
 
-   /**
-    * @brief Are Action IDs applicable for this table
-    *
-    * @retval True : If Action ID applicable
-    * @retval False : If not
-    *
-    */
-   bool actionIdApplicable() const;
+  /**
+   * @brief Are Action IDs applicable for this table
+   *
+   * @retval True : If Action ID applicable
+   * @retval False : If not
+   *
+   */
+  bool actionIdApplicable() const;
 
-   void tableContextInfoSet(
-       std::unique_ptr<TableContextInfo> table_context_info) const {
-     table_context_info_ = std::move(table_context_info);
+  void tableContextInfoSet(
+      std::unique_ptr<TableContextInfo> table_context_info) const {
+    table_context_info_ = std::move(table_context_info);
   };
 
   std::map<std::string, const KeyFieldInfo *> name_key_map_;
@@ -358,7 +358,7 @@ class KeyFieldInfo {
    *
    * @return Field Type (uint64, float, string)
    */
-  const tdi_field_data_type_e& dataTypeGet() const;
+  const tdi_field_data_type_e &dataTypeGet() const;
 
   /**
    * @brief Get field size
@@ -389,7 +389,7 @@ class KeyFieldInfo {
    *
    * @return Field name
    */
-   const std::string &nameGet() const { return name_; };
+  const std::string &nameGet() const { return name_; };
 
   /**
    * @brief Get a list of all the allowed values that a particular field can
@@ -401,19 +401,19 @@ class KeyFieldInfo {
    * allowed for this field
    *
    */
-   const std::vector<std::string> &choicesGet() const { return enum_choices_; };
+  const std::vector<std::string> &choicesGet() const { return enum_choices_; };
 
-   /**
-    * @brief Get field ID
-    * @return field ID
-    */
-   const tdi_id_t &idGet() const { return field_id_; };
+  /**
+   * @brief Get field ID
+   * @return field ID
+   */
+  const tdi_id_t &idGet() const { return field_id_; };
 
-   /** @} */  // End of group Key
+  /** @} */  // End of group Key
 
-   void keyFieldContextInfoSet(
-       std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const {
-     key_field_context_info_ = std::move(key_field_context_info);
+  void keyFieldContextInfoSet(
+      std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const {
+    key_field_context_info_ = std::move(key_field_context_info);
   };
 
  private:
@@ -474,7 +474,7 @@ class DataFieldInfo {
    *
    * @return Status of the API call
    */
-   std::vector<tdi_id_t> containerDataFieldIdListGet() const;
+  std::vector<tdi_id_t> containerDataFieldIdListGet() const;
 
   /**
    * @brief Get the Size of a field.
@@ -493,7 +493,7 @@ class DataFieldInfo {
    * @return Boolean value indicating if it is ptr type
    *
    */
-  const bool& isPtrGet() const { return is_ptr_; };
+  const bool &isPtrGet() const { return is_ptr_; };
 
   /**
    * @brief Get whether a field is mandatory.
@@ -650,16 +650,19 @@ class ActionInfo {
    *
    * @return Set of annotations
    */
-  const std::set<tdi::Annotation> &annotationsGet() const { return annotations_; };
+  const std::set<tdi::Annotation> &annotationsGet() const {
+    return annotations_;
+  };
   /** @} */  // End of group Action IDs
 
   void actionContextInfoSet(
-      std::unique_ptr<ActionContextInfo> action_context_info) const{
+      std::unique_ptr<ActionContextInfo> action_context_info) const {
     action_context_info_ = std::move(action_context_info);
   };
 
   // Map of table_data_fields with names
   std::map<std::string, const DataFieldInfo *> data_fields_names_;
+
  private:
   ActionInfo(tdi_id_t field_id,
              std::string name,

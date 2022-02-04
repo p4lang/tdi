@@ -39,6 +39,9 @@
 
 namespace tdi {
 
+// Fwd declaration
+class TdiInfo;
+
 /**
  * @brief Class to contain metadata of Table Objs like Data and Key Fields,
  *  and perform functions like EntryAdd, AttributeSet, OperationsExecute etc<br>
@@ -627,13 +630,12 @@ class Table {
   /** @} */  // End of group Operations
   const TableInfo *tableInfoGet() const { return table_info_; }
 
+ protected:
+  Table(const TableInfo *table_info) : table_info_(table_info){};
+
  private:
-  const std::string table_name_;
-  const size_t table_size_{0};
-  std::set<tdi_operations_type_e> table_operation_set_;
-  std::set<tdi_attributes_type_e> table_attribute_set_;
-  tdi_handle_t table_hdl{0};
   const TableInfo *table_info_;
+  friend tdi::TdiInfo;
 };  // end of tdi::Table
 
 }  // namespace tdi

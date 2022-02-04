@@ -20,9 +20,9 @@
 #ifndef _TNA_DEFS_H
 #define _TNA_DEFS_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,9 +42,18 @@ typedef uint32_t tna_pipe_id_t;
 
 typedef enum {
   TNA_DIRECTION_INGRESS = 0,
-  TNA_DIRECTION_EGRESS  = 1,
-  TNA_DIRECTION_ALL     = 0xff,
+  TNA_DIRECTION_EGRESS = 1,
+  TNA_DIRECTION_ALL = 0xff,
 } tna_direction_e;
+
+/**
+ * @brief Key Field Match Type. A key can have multiple fields,
+ * each with a different match type
+ */
+enum tdi_match_type_tna_e {
+  TDI_MATCH_TYPE_TNA_RANGE = TDI_MATCH_TYPE_ARCH,
+  TDI_MATCH_TYPE_TNA_ATCAM,
+};
 
 #ifdef __cplusplus
 }
