@@ -18,21 +18,6 @@
 
 namespace tdi {
 namespace tna {
-namespace dummy {
-
-tdi_status_t DevMgr::deviceAdd(
-      const tdi_dev_id_t & /*device_id*/,
-      const tdi_arch_type_e & /*arch_type*/,
-      std::vector<std::unique_ptr<tdi::ProgramConfig>> & /*device_config*/,
-      void * /*cookie*/) {
-  return TDI_SUCCESS;
-}
-
-tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t & /*device_id*/) {
-  return TDI_SUCCESS;
-}
-
-
-} // dummy
-} // tna
-} // tdi
+namespace dummy {}  // namespace dummy
+}  // namespace tna
+}  // namespace tdi
