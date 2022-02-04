@@ -109,24 +109,6 @@ tdi_status_t DevMgr::deviceIdListGet(
   return TDI_SUCCESS;
 }
 
-template <typename T>
-tdi_status_t DevMgr::deviceAdd(
-    const tdi_dev_id_t &device_id,
-    const tdi_arch_type_e &arch_type,
-    const std::vector<tdi::ProgramConfig> &device_config,
-    const std::vector<tdi_mgr_type_e> mgr_type_list,
-    void *cookie) {
-  if (this->dev_map_.find(device_id) != this->dev_map_.end()) {
-    LOG_ERROR(
-        "%s:%d Device obj exists for dev : %d", __func__, __LINE__, device_id);
-    return TDI_ALREADY_EXISTS;
-  }
-  auto dev = std::unique_ptr<tdi::Device>(
-      new T(device_id, arch_type, device_config, mgr_type_list, cookie));
-  this->dev_map_[device_id] = std::move(dev);
-  return TDI_SUCCESS;
-}
-
 tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t &dev_id) {
   LOG_DBG(
       "%s:%d  Device Remove called for dev : %d", __func__, __LINE__, dev_id);

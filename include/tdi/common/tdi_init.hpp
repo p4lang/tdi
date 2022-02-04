@@ -31,6 +31,7 @@
 #include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_target.hpp>
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 
@@ -55,6 +56,8 @@ class Device {
         device_config_(device_config),
         mgr_type_list_(mgr_type_list),
         cookie_(cookie){};
+
+  virtual ~Device(){};
 
   /**
    * @brief Get the TdiInfo object corresponding to the program name
@@ -146,7 +149,19 @@ class DevMgr {
                          const tdi_arch_type_e &arch_type,
                          const std::vector<tdi::ProgramConfig> &device_config,
                          const std::vector<tdi_mgr_type_e> mgr_type_list,
-                         void *cookie);
+                         void *cookie) {
+    if (this->dev_map_.find(device_id) != this->dev_map_.end()) {
+      LOG_ERROR("%s:%d Device obj exists for dev : %d",
+                __func__,
+                __LINE__,
+                device_id);
+      return TDI_ALREADY_EXISTS;
+    }
+    auto dev = std::unique_ptr<tdi::Device>(
+        new T(device_id, arch_type, device_config, mgr_type_list, cookie));
+    this->dev_map_[device_id] = std::move(dev);
+    return TDI_SUCCESS;
+  }
 
   tdi_status_t deviceRemove(const tdi_dev_id_t &device_id);
 
