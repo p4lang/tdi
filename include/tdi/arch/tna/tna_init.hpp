@@ -39,22 +39,24 @@ namespace tna {
  * device eg.
  */
 class Device : public tdi::Device {
-  public:
-   Device(const tdi_dev_id_t &device_id,
-          const tdi_arch_type_e &arch_type,
-          std::vector<std::unique_ptr<tdi::ProgramConfig>> device_config,
-          const std::vector<tdi_mgr_type_e> mgr_type_list)
-       : tdi::Device(
-             device_id, arch_type, std::move(device_config), mgr_type_list){};
+ public:
+  Device(const tdi_dev_id_t &device_id,
+         const tdi_arch_type_e &arch_type,
+         const std::vector<tdi::ProgramConfig> &device_config,
+         const std::vector<tdi_mgr_type_e> mgr_type_list,
+         void *cookie)
+      : tdi::Device(
+            device_id, arch_type, device_config, mgr_type_list, cookie){};
 
-   virtual tdi_status_t createSession(std::shared_ptr<tdi::Session> *session) const override;
-   virtual tdi_status_t createTarget(std::unique_ptr<tdi::Target> *target) const override;
+  virtual tdi_status_t createSession(
+      std::shared_ptr<tdi::Session> *session) const override;
+  virtual tdi_status_t createTarget(
+      std::unique_ptr<tdi::Target> *target) const override;
 
-  private:
+ private:
 };
 
-
-}  // tna
-}  // tdi
+}  // namespace tna
+}  // namespace tdi
 
 #endif  // _TNA_INIT_HPP_

@@ -28,9 +28,10 @@
 #include <mutex>
 
 // tdi includes
-#include <tdi/common/tdi_target.hpp>
 #include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_session.hpp>
+#include <tdi/common/tdi_target.hpp>
+#include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 
@@ -44,58 +45,60 @@ namespace tdi {
  * device add happens.
  */
 class Device {
-  public:
-   Device(const tdi_dev_id_t &device_id,
-          const tdi_arch_type_e &arch_type,
-          std::vector<std::unique_ptr<tdi::ProgramConfig>> device_config,
-          const std::vector<tdi_mgr_type_e> mgr_type_list)
-       : device_id_(device_id),
-         arch_type_(arch_type),
-         device_config_(std::move(device_config)),
-         mgr_type_list_(mgr_type_list){};
+ public:
+  Device(const tdi_dev_id_t &device_id,
+         const tdi_arch_type_e &arch_type,
+         const std::vector<tdi::ProgramConfig> &device_config,
+         const std::vector<tdi_mgr_type_e> mgr_type_list,
+         void *cookie)
+      : device_id_(device_id),
+        arch_type_(arch_type),
+        device_config_(device_config),
+        mgr_type_list_(mgr_type_list),
+        cookie_(cookie){};
 
-   /**
-    * @brief Get the TdiInfo object corresponding to the program name
-    *
-    * @param[in] prog_name Name of the P4 program
-    * @param[out] tdi_info TdiInfo Obj associated with the Device
-    *    and the program name
-    *
-    * @return Status of the API call
-    */
-   tdi_status_t
-   tdiInfoGet(const std::string &prog_name, const TdiInfo **tdi_info) const;
+  virtual ~Device(){};
 
-   /**
-    * @brief Get a vector of loaded p4 program names on this device
-    *
-    * @param[out] p4_names Vector containing const string references to the
-    * P4 names loaded on the device
-    *
-    * @return Status of the API call
-    */
-   tdi_status_t p4NamesGet(
-       std::vector<std::reference_wrapper<const std::string>> &p4_names) const;
+  /**
+   * @brief Get the TdiInfo object corresponding to the program name
+   *
+   * @param[in] prog_name Name of the P4 program
+   * @param[out] tdi_info TdiInfo Obj associated with the Device
+   *    and the program name
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t tdiInfoGet(const std::string &prog_name,
+                          const TdiInfo **tdi_info) const;
 
-   tdi_status_t deviceConfigGet(
-       const std::vector<std::unique_ptr<tdi::ProgramConfig>> **device_config)
-       const;
+  /**
+   * @brief Get a vector of loaded p4 program names on this device
+   *
+   * @param[out] p4_names Vector containing const string references to the
+   * P4 names loaded on the device
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t p4NamesGet(
+      std::vector<std::reference_wrapper<const std::string>> &p4_names) const;
 
-   virtual tdi_status_t createSession(std::shared_ptr<tdi::Session> *session) const;
-   virtual tdi_status_t createTarget(std::unique_ptr<tdi::Target> *target) const;
-   virtual tdi_status_t createFlags(const uint64_t &flags_val,
-                            std::unique_ptr<tdi::Flags> *flags) const;
+  tdi_status_t deviceConfigGet(
+      const std::vector<tdi::ProgramConfig> **device_config) const;
 
-  protected:
-   tdi_dev_id_t device_id_;
-  private:
-   tdi_arch_type_e arch_type_;
-   std::vector<std::unique_ptr<tdi::ProgramConfig>> device_config_;
-   std::vector<tdi_mgr_type_e> mgr_type_list_;
-   std::map<std::string, std::unique_ptr<TdiInfo>> tdi_info_map_;
-   //std::map<std::string, std::shared_ptr<DeviceState>> tdi_dev_state_map_;
+  virtual tdi_status_t createSession(
+      std::shared_ptr<tdi::Session> *session) const;
+  virtual tdi_status_t createTarget(std::unique_ptr<tdi::Target> *target) const;
+  virtual tdi_status_t createFlags(const uint64_t &flags_val,
+                                   std::unique_ptr<tdi::Flags> *flags) const;
+
+ protected:
+  const tdi_dev_id_t device_id_;
+  const tdi_arch_type_e arch_type_;
+  const std::vector<tdi::ProgramConfig> device_config_;
+  const std::vector<tdi_mgr_type_e> mgr_type_list_;
+  const void *cookie_;
+  std::map<std::string, std::unique_ptr<TdiInfo>> tdi_info_map_;
 };
-
 
 /**
  * @brief Class to manage Device per dev_id.<br>
@@ -120,7 +123,7 @@ class DevMgr {
    * @return Status of the API call
    */
   tdi_status_t deviceGet(const tdi_dev_id_t &dev_id,
-                          const tdi::Device **device) const;
+                         const tdi::Device **device) const;
 
   /**
    * @brief Get a list of all device IDs currently added
@@ -135,19 +138,32 @@ class DevMgr {
   /**
    * @brief Device Add function which creates a Device object and maintains it
    *
-   * @param[in] device_id 
+   * @param[in] device_id
    * @param[in] cookie User defined cookie which platforms can use to
    * send any additional information they want to help with inititalization
    *
    * @return Status of API call
    */
-  virtual tdi_status_t deviceAdd(
-      const tdi_dev_id_t &device_id,
-      const tdi_arch_type_e &arch_type,
-      std::vector<std::unique_ptr<tdi::ProgramConfig>> &device_config,
-      void *cookie);
+  template <typename T>
+  tdi_status_t deviceAdd(const tdi_dev_id_t &device_id,
+                         const tdi_arch_type_e &arch_type,
+                         const std::vector<tdi::ProgramConfig> &device_config,
+                         const std::vector<tdi_mgr_type_e> mgr_type_list,
+                         void *cookie) {
+    if (this->dev_map_.find(device_id) != this->dev_map_.end()) {
+      LOG_ERROR("%s:%d Device obj exists for dev : %d",
+                __func__,
+                __LINE__,
+                device_id);
+      return TDI_ALREADY_EXISTS;
+    }
+    auto dev = std::unique_ptr<tdi::Device>(
+        new T(device_id, arch_type, device_config, mgr_type_list, cookie));
+    this->dev_map_[device_id] = std::move(dev);
+    return TDI_SUCCESS;
+  }
 
-  virtual tdi_status_t deviceRemove(const tdi_dev_id_t &device_id);
+  tdi_status_t deviceRemove(const tdi_dev_id_t &device_id);
 
   DevMgr(DevMgr const &) = delete;
   DevMgr(DevMgr &&) = delete;
@@ -163,7 +179,6 @@ class DevMgr {
   static std::mutex dev_mgr_instance_mutex;
   static DevMgr *dev_mgr_instance;
 };  // DevMgr
-
 
 /**
  * @brief Class to manage initialization of TDI <br>
@@ -182,9 +197,10 @@ class Init {
    * empty, don't skip anything
    * @return Status of the API call
    */
-  static tdi_status_t tdiModuleInit(const std::vector<tdi_mgr_type_e> mgr_type_list);
+  static tdi_status_t tdiModuleInit(
+      const std::vector<tdi_mgr_type_e> mgr_type_list);
 };  // Init
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_INIT_HPP_
