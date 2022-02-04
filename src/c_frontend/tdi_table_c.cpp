@@ -90,7 +90,7 @@ tdi_annotation_t convert_annotation(tdi::Annotation &annotation) {
 #endif
 }  // anonymous namespace
 
-tdi_status_t tdi_table_id_from_handle_get(const tdi_table_info_hdl *table_hdl,
+tdi_status_t tdi_table_id_from_handle_get(const tdi_table_hdl *table_hdl,
                                            tdi_id_t *id) {
   if (id == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
@@ -98,13 +98,15 @@ tdi_status_t tdi_table_id_from_handle_get(const tdi_table_info_hdl *table_hdl,
               __LINE__);
     return TDI_INVALID_ARG;
   }
-  const tdi::TableInfo *table =
-      reinterpret_cast<const tdi::TableInfo *>(table_hdl);
-  auto status = table->tableIdGet(id);
-  return status;
+  const tdi::Table *table =
+      reinterpret_cast<const tdi::Table *>(table_hdl);
+  const tdi::TableInfo *tableInfo;
+  tableInfo = table->tableInfoGet();
+  *id = tableInfo->idGet();
+  return TDI_SUCCESS;
 }
 
-tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_info_hdl,
+tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_hdl,
                                  const char **table_name_ret) {
   if (table_name_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
@@ -112,17 +114,19 @@ tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_info_hdl,
               __LINE__);
     return TDI_INVALID_ARG;
   }
-  if (!table_info_hdl) {
+  if (!table_hdl) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
 
   // We need the internal function which returns a const string ref
-  //auto table = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
-  //*table_name_ret = table->tableNameGet().c_str();
-  //*table_name_ret = table->tableNameGet();
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+  const tdi::TableInfo *tableInfo;
+  tableInfo = table->tableInfoGet();
+  *table_name_ret = tableInfo->nameGet().c_str();
   return TDI_SUCCESS;
 }
+
 bool tdi_generic_flag_support(void) {
 #ifdef TDI_GENERIC_FLAGS
   return true;
@@ -1061,10 +1065,10 @@ tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
   return table->keyFieldTypeGet(
       field_id, reinterpret_cast<tdi::KeyFieldType *>(field_type_ret));
 }
-tdi_status_t tdi_key_field_type_get(const tdi_table_info_hdl *table_info_hdl,
+tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
                                      const tdi_id_t field_id,
                                      tdi_key_field_type_t *field_type_ret) {
-  auto table = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
 
   return table->keyFieldTypeGet(
       field_id, reinterpret_cast<tdi::KeyFieldType *>(field_type_ret));
@@ -1081,10 +1085,20 @@ tdi_status_t tdi_key_field_data_type_get(const tdi_table_hdl *table_hdl,
 #endif
 
 tdi_status_t tdi_key_field_id_get(const tdi_table_hdl *table_hdl,
-                                   const char *key_field_name,
-                                   tdi_id_t *field_id) {
-  auto table = reinterpret_cast<const tdi::TableInfo *>(table_hdl);
-  return table->keyFieldIdGet(key_field_name, field_id);
+                                  const char *key_field_name,
+                                  tdi_id_t *field_id) {
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+  const tdi::TableInfo *tableInfo;
+  tableInfo = table->tableInfoGet();
+  *field_id = tableInfo->keyFieldIdGet(key_field_name);
+  if (*field_id == 0) {
+    LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
+              __func__,
+              __LINE__);
+    return TDI_INVALID_ARG;
+  } else {
+    return TDI_SUCCESS;
+  }
 }
 
 #ifdef _TDI_FROM_BFRT
@@ -1199,17 +1213,18 @@ tdi_status_t tdi_data_field_list_get(const tdi_table_hdl *table_hdl,
     return TDI_INVALID_ARG;
   }
 
-  auto table = reinterpret_cast<const tdi::TableInfo *>(table_hdl);
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+  const tdi::TableInfo *tableInfo = table->tableInfoGet();
   std::vector<tdi_id_t> field_ids;
-  tdi_status_t sts = table->dataFieldIdListGet(&field_ids);
-  if (sts == TDI_SUCCESS) {
+  field_ids = tableInfo->dataFieldIdListGet();
+  //if (field_ids == TDI_SUCCESS) {
     for (auto it = field_ids.begin(); it != field_ids.end(); ++it) {
       tdi_id_t field_id = *it;
       id_vec_ret[it - field_ids.begin()] = field_id;
     }
-  }
+  //}
 
-  return sts;
+  return TDI_SUCCESS;
 }
 
 #ifdef _TDI_FROM_BFRT
@@ -1278,17 +1293,15 @@ tdi_status_t tdi_data_field_list_with_action_get(
     return TDI_INVALID_ARG;
   }
 
-  auto table = reinterpret_cast<const tdi::TableInfo *>(table_hdl);
+  auto table = reinterpret_cast<const tdi::Table*>(table_hdl);
+  const tdi::TableInfo *tableInfo = table->tableInfoGet();
   std::vector<tdi_id_t> field_ids;
-  tdi_status_t sts = table->dataFieldIdListGet(action_id, &field_ids);
-  if (sts == TDI_SUCCESS) {
-    for (auto it = field_ids.begin(); it != field_ids.end(); ++it) {
-      tdi_id_t field_id = *it;
-      id_vec_ret[it - field_ids.begin()] = field_id;
-    }
+  field_ids = tableInfo->dataFieldIdListGet(action_id);
+  for (auto it = field_ids.begin(); it != field_ids.end(); ++it) {
+    tdi_id_t field_id = *it;
+    id_vec_ret[it - field_ids.begin()] = field_id;
   }
-
-  return sts;
+  return TDI_SUCCESS;
 }
 
 #ifdef _TDI_FROM_BFRT

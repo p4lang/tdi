@@ -126,11 +126,8 @@ tdi_status_t tdi_table_name_to_id(const tdi_info_hdl *tdi,
     return status;
   }
   auto tableInfo = table->tableInfoGet();
-  auto status1 = tableInfo->tableIdGet(id_ret);
-  if (status1 != TDI_SUCCESS) {
-    return status1;
-  }
-  return tableInfo->tableIdGet(id_ret);
+  *id_ret = tableInfo->idGet();
+  return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_num_learns_get(const tdi_info_hdl *tdi, int *num_learns) {
