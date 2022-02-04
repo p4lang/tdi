@@ -38,17 +38,16 @@ class Device;
 class P4Pipeline {
  public:
   P4Pipeline(const std::string &name,
+             const std::string context_path,
              const std::string &binary_path,
-             const std::vector<std::string> &pipeline_info_file_paths,
              const std::vector<uint32_t> &scope_vec)
       : name_(name),
+        context_path_(context_path),
         binary_path_(binary_path),
-        pipeline_info_file_paths_(pipeline_info_file_paths),
         scope_vec_(scope_vec){};
   const std::string name_;
-  const std::string binary_path_;
   const std::string context_path_;
-  const std::vector<std::string> pipeline_info_file_paths_;
+  const std::string binary_path_;
   const std::vector<uint32_t> scope_vec_;
 };
 
