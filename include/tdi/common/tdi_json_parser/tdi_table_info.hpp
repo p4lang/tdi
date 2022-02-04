@@ -365,7 +365,14 @@ class KeyFieldInfo {
    *
    * @return Field Size in bits
    */
-  const size_t &sizeGet() const;
+  const size_t &sizeGet() const { return size_bits_; };
+
+  /**
+   * @brief Is field Slice
+   *
+   * @return if the key is a field slice
+   */
+  const bool &isFieldSlice() const { return is_field_slice_; };
 
   /**
    * @brief Get whether Key Field is of type ptr or not. If the field is
