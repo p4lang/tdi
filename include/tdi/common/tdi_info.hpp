@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <tdi/common/tdi_defs.h>
+#include <tdi/common/tdi_json_parser/tdi_info_parser.hpp>
 #include <tdi/common/tdi_learn.hpp>
 #include <tdi/common/tdi_table.hpp>
 
@@ -115,6 +116,19 @@ class TdiInfoMapper {
 };
 
 /**
+ * @brief Class to help create the correct Table object with the
+ * help of a map. Targets/Arch should override
+ */
+class TableFactory {
+ public:
+  std::unique_ptr<tdi::Table> makeTable(
+      const tdi::TableInfo * /*table_info*/) const {
+    // No tables in core currently
+    return nullptr;
+  };
+};
+
+/**
  * @brief Class to maintain metadata of all tables and learn objects. Note that
  *    all the objects returned are representations of the actual HW tables.\n So
  *    TdiInfo doesn't provide ownership of any of its internal structures.
@@ -125,10 +139,25 @@ class TdiInfoMapper {
  */
 class TdiInfo {
  public:
+  TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
+          const tdi::TableFactory *factory);
   /**
    * @brief Destructor destroys all metadata contained in this object.
    */
   virtual ~TdiInfo() = default;
+
+  /**
+   * @brief Static function to create TdiInfo from a program config.
+   * The ProgramConfig creates information even if no "P4 Program"
+   * is involved and they are all non-p4 tables
+   *
+   * @param program_config Program config
+   *
+   * @return unique_ptr to TdiInfo
+   */
+  std::unique_ptr<const TdiInfo> static makeTdiInfo(
+      std::unique_ptr<TdiInfoParser> tdi_info_parser,
+      const tdi::TableFactory *factory);
 
   /**
    * @brief Get all the tdi::Table objs.
@@ -187,8 +216,15 @@ class TdiInfo {
    */
   tdi_status_t learnFromIdGet(tdi_id_t id, const tdi::Learn **learn_ret) const;
 
+  TdiInfo(TdiInfo const &) = delete;
+  TdiInfo(TdiInfo &&) = delete;
+  TdiInfo() = delete;
+  TdiInfo &operator=(const TdiInfo &) = delete;
+  TdiInfo &operator=(TdiInfo &&) = delete;
+
   /* Main P4_info map. object_name --> tdi_info object */
   std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
+
  private:
   // This is the map which is to be queried when a name lookup for a table
   // happens. Multiple names can point to the same table because multiple
@@ -208,6 +244,7 @@ class TdiInfo {
   // in TDI.json but Device decided not to have a table object present
   // for it at all.
   std::set<std::string> invalid_table_names;
+  std::unique_ptr<TdiInfoParser> tdi_info_parser_;
 };
 
 }  // namespace tdi

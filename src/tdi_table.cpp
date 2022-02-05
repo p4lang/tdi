@@ -30,7 +30,7 @@ tdi_status_t Table::tableEntryAdd(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR : Table Entry add not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -42,7 +42,7 @@ tdi_status_t Table::tableEntryMod(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR : Table entry mod not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -54,7 +54,7 @@ tdi_status_t Table::tableEntryModInc(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR : Table entry modify incremental not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -65,7 +65,7 @@ tdi_status_t Table::tableEntryDel(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR : Table entry Delete not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -75,7 +75,7 @@ tdi_status_t Table::tableClear(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR : Table Clear not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -86,7 +86,7 @@ tdi_status_t Table::tableDefaultEntrySet(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR : Table default entry set not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -96,7 +96,7 @@ tdi_status_t Table::tableDefaultEntryReset(const Session & /* session */,
   LOG_ERROR("%s:%d %s ERROR : Table default entry reset not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -107,7 +107,7 @@ tdi_status_t Table::tableDefaultEntryGet(const Session & /* session */,
   LOG_ERROR("%s:%d %s ERROR : Table default entry get not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -119,7 +119,7 @@ tdi_status_t Table::tableEntryGet(const Session & /*session */,
   LOG_ERROR("%s:%d %s ERROR Table entry get not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -131,7 +131,7 @@ tdi_status_t Table::tableEntryGetFirst(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR Table entry get first not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -144,7 +144,7 @@ tdi_status_t Table::tableEntryGet(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR Table entry get by handle not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -157,7 +157,7 @@ tdi_status_t Table::tableEntryKeyGet(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR Table entry get key not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -169,7 +169,7 @@ tdi_status_t Table::tableEntryHandleGet(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR Table entry get handle not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -183,7 +183,7 @@ tdi_status_t Table::tableEntryGetNext_n(const Session & /*session*/,
   LOG_ERROR("%s:%d %s ERROR Table entry get next_n not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -194,7 +194,7 @@ tdi_status_t Table::tableUsageGet(const Session & /*session*/,
   LOG_ERROR("%s:%d %s Not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -206,7 +206,7 @@ tdi_status_t Table::tableSizeGet(const Session & /*session*/,
     LOG_ERROR("%s:%d Outparam passed is nullptr", __func__, __LINE__);
     return TDI_INVALID_ARG;
   } else {
-    *size = table_size_;
+    *size = tableInfoGet()->sizeGet();
     return TDI_SUCCESS;
   }
 }
@@ -215,7 +215,7 @@ tdi_status_t Table::keyAllocate(std::unique_ptr<TableKey> * /*key_ret*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table Key allocate not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -223,7 +223,7 @@ tdi_status_t Table::keyReset(TableKey * /* key */) const {
   LOG_ERROR("%s:%d %s ERROR : Table Key reset not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -232,7 +232,7 @@ tdi_status_t Table::dataAllocate(
   LOG_ERROR("%s:%d %s ERROR : Table data allocate not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -242,7 +242,7 @@ tdi_status_t Table::dataAllocate(
   LOG_ERROR("%s:%d %s ERROR : Table data allocate not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -253,7 +253,7 @@ tdi_status_t Table::dataAllocate(
   LOG_ERROR("%s:%d %s ERROR : Table data allocate not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -263,7 +263,7 @@ tdi_status_t Table::dataAllocate(
   LOG_ERROR("%s:%d %s ERROR : Table data allocate not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -271,7 +271,7 @@ tdi_status_t Table::dataReset(TableData * /*data */) const {
   LOG_ERROR("%s:%d %s ERROR : Table data reset not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -280,7 +280,7 @@ tdi_status_t Table::dataReset(const tdi_id_t & /* action_id */,
   LOG_ERROR("%s:%d %s ERROR : Table data reset not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -289,7 +289,7 @@ tdi_status_t Table::dataReset(const std::vector<tdi_id_t> & /* fields */,
   LOG_ERROR("%s:%d %s ERROR : Table data reset not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
@@ -299,21 +299,20 @@ tdi_status_t Table::dataReset(const std::vector<tdi_id_t> & /* fields */,
   LOG_ERROR("%s:%d %s ERROR : Table data reset not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 
 tdi_status_t Table::attributeAllocate(
     const tdi_attributes_type_e &attr_type,
     std::unique_ptr<TableAttributes> *table_attr) const {
-
-  auto op_found = table_attribute_set_.find(attr_type);
-  if (op_found == table_attribute_set_.end()) {
+  auto op_found = tableInfoGet()->attributesSupported().find(attr_type);
+  if (op_found == tableInfoGet()->attributesSupported().end()) {
     *table_attr = nullptr;
     LOG_ERROR("%s:%d %s Operation not supported for this table",
               __func__,
               __LINE__,
-              table_name_.c_str());
+              tableInfoGet()->nameGet().c_str());
     return TDI_NOT_SUPPORTED;
   }
 
@@ -328,7 +327,7 @@ tdi_status_t Table::attributeReset(
   LOG_ERROR("%s:%d %s ERROR : Table attribute allocate not supported",
             __func__,
             __LINE__,
-            table_name_.c_str());
+            tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
 tdi_status_t Table::tableAttributesSet(
@@ -352,14 +351,13 @@ tdi_status_t Table::tableAttributesGet(
 tdi_status_t Table::operationsAllocate(
     const tdi_operations_type_e &op_type,
     std::unique_ptr<TableOperations> *table_ops) const {
-
-  auto op_found = table_operation_set_.find(op_type);
-  if (op_found == table_operation_set_.end()) {
+  auto op_found = tableInfoGet()->operationsSupported().find(op_type);
+  if (op_found == tableInfoGet()->operationsSupported().end()) {
     *table_ops = nullptr;
     LOG_ERROR("%s:%d %s Operation not supported for this table",
               __func__,
               __LINE__,
-              table_name_.c_str());
+              tableInfoGet()->nameGet().c_str());
     return TDI_NOT_SUPPORTED;
   }
 
@@ -367,9 +365,10 @@ tdi_status_t Table::operationsAllocate(
       std::unique_ptr<TableOperations>(new TableOperations(this, op_type));
   return TDI_SUCCESS;
 }
+
 tdi_status_t Table::tableOperationsExecute(
     const tdi::TableOperations & /*tableOperations*/) const {
   return TDI_NOT_SUPPORTED;
 }
 
-}  // tdi
+}  // namespace tdi
