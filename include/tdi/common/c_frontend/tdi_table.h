@@ -335,8 +335,8 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
-                                      const tdi_target_t *dev_tgt,
-                                      const uint64_t flags,
+                                      const tdi_target_hdl *dev_tgt,
+                                      const tdi_flags_hdl *flags,
                                       const tdi_table_key_hdl *key,
                                       const tdi_table_data_hdl *data);
 
@@ -353,8 +353,8 @@ tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
-                                  const uint64_t flags,
+                                  const tdi_target_hdl *dev_tgt,
+                                  const tdi_flags_hdl *flags,
                                   const tdi_table_key_hdl *key);
 
 /**
@@ -372,8 +372,8 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
                               const tdi_session_hdl *session,
-                              const tdi_target_t *dev_tgt,
-                              const uint64_t flags);
+                              const tdi_target_hdl *dev_tgt,
+                              const tdi_flags_hdl *flags);
 
 /**
  * @brief Get an entry from the table
@@ -390,8 +390,8 @@ tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
-                                  const uint64_t flags,
+                                  const tdi_target_hdl *dev_tgt,
+                                  const tdi_flags_hdl *flags,
                                   const tdi_table_key_hdl *key,
                                   tdi_table_data_hdl *data);
 
@@ -411,8 +411,8 @@ tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
                                             const tdi_session_hdl *session,
-                                            const tdi_target_t *dev_tgt,
-                                            const uint64_t flags,
+                                            const tdi_target_hdl *dev_tgt,
+                                            const tdi_flags_hdl *flags,
                                             const uint32_t entry_handle,
                                             tdi_table_key_hdl *key,
                                             tdi_table_data_hdl *data);
@@ -432,8 +432,8 @@ tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
                                         const tdi_session_hdl *session,
-                                        const tdi_target_t *dev_tgt,
-                                        const uint64_t flags,
+                                        const tdi_target_hdl *dev_tgt,
+                                        const tdi_flags_hdl *flags,
                                         tdi_table_key_hdl *key,
                                         tdi_table_data_hdl *data);
 
@@ -453,10 +453,10 @@ tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
-                                      const tdi_target_t *dev_tgt_in,
-                                      const uint64_t flags,
+                                      const tdi_target_hdl *dev_tgt_in,
+                                      const tdi_flags_hdl *flags,
                                       const uint32_t entry_handle,
-                                      tdi_target_t *dev_tgt_out,
+                                      tdi_target_hdl *dev_tgt_out,
                                       tdi_table_key_hdl *key);
 
 /**
@@ -473,8 +473,8 @@ tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
                                          const tdi_session_hdl *session,
-                                         const tdi_target_t *dev_tgt,
-                                         const uint64_t flags,
+                                         const tdi_target_hdl *dev_tgt,
+                                         const tdi_flags_hdl *flags,
                                          const tdi_table_key_hdl *key,
                                          uint32_t *entry_handle);
 
@@ -501,8 +501,8 @@ tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
                                          const tdi_session_hdl *session,
-                                         const tdi_target_t *dev_tgt,
-                                         const uint64_t flags,
+                                         const tdi_target_hdl *dev_tgt,
+                                         const tdi_flags_hdl *flags,
                                          const tdi_table_key_hdl *key,
                                          tdi_table_key_hdl **output_keys,
                                          tdi_table_data_hdl **output_data,
@@ -522,8 +522,8 @@ tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
-                                  const uint64_t flags,
+                                  const tdi_target_hdl *dev_tgt,
+                                  const tdi_flags_hdl *flags,
                                   uint32_t *count);
 /**
  * @brief Set the default Entry of the table
@@ -546,8 +546,8 @@ tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
                                           const tdi_session_hdl *session,
-                                          const tdi_target_t *dev_tgt,
-                                          const uint64_t flags,
+                                          const tdi_target_hdl *dev_tgt,
+                                          const tdi_flags_hdl *flags,
                                           const tdi_table_data_hdl *data);
 
 /**
@@ -571,8 +571,8 @@ tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
                                           const tdi_session_hdl *session,
-                                          const tdi_target_t *dev_tgt,
-                                          const uint64_t flags,
+                                          const tdi_target_hdl *dev_tgt,
+                                          const tdi_flags_hdl *flags,
                                           tdi_table_data_hdl *data);
 
 /**
@@ -590,8 +590,8 @@ tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
                                             const tdi_session_hdl *session,
-                                            const tdi_target_t *dev_tgt,
-                                            const uint64_t flags);
+                                            const tdi_target_hdl *dev_tgt,
+                                            const tdi_flags_hdl *flags);
 
 /**
  * @brief The maximum size of the table. Note that this size might
@@ -609,8 +609,8 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
                                  const tdi_session_hdl *session,
-                                 const tdi_target_t *dev_tgt,
-                                 const uint64_t flags,
+                                 const tdi_target_hdl *dev_tgt,
+                                 const tdi_flags_hdl *flags,
                                  size_t *size);
 
 #else
@@ -630,7 +630,7 @@ tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
+                                  const tdi_target_hdl *dev_tgt,
                                   const tdi_table_key_hdl *key,
                                   const tdi_table_data_hdl *data);
 
@@ -648,7 +648,7 @@ tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
+                                  const tdi_target_hdl *dev_tgt,
                                   const tdi_table_key_hdl *key,
                                   const tdi_table_data_hdl *data);
 
@@ -668,7 +668,7 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
-                                      const tdi_target_t *dev_tgt,
+                                      const tdi_target_hdl *dev_tgt,
                                       const tdi_table_key_hdl *key,
                                       const tdi_table_data_hdl *data,
                                       const tdi_entry_mod_inc_flag_e flag);
@@ -686,7 +686,7 @@ tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
+                                  const tdi_target_hdl *dev_tgt,
                                   const tdi_table_key_hdl *key);
 
 /**
@@ -701,7 +701,7 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
                               const tdi_session_hdl *session,
-                              const tdi_target_t *dev_tgt);
+                              const tdi_target_hdl *dev_tgt);
 
 /**
  * @brief Get an entry from the table
@@ -719,7 +719,7 @@ tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
+                                  const tdi_target_hdl *dev_tgt,
                                   const tdi_table_key_hdl *key,
                                   tdi_table_data_hdl *data,
                                   tdi_entry_read_flag_e flag);
@@ -741,7 +741,7 @@ tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
                                             const tdi_session_hdl *session,
-                                            const tdi_target_t *dev_tgt,
+                                            const tdi_target_hdl *dev_tgt,
                                             const uint32_t entry_handle,
                                             tdi_table_key_hdl *key,
                                             tdi_table_data_hdl *data,
@@ -763,7 +763,7 @@ tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
                                         const tdi_session_hdl *session,
-                                        const tdi_target_t *dev_tgt,
+                                        const tdi_target_hdl *dev_tgt,
                                         tdi_table_key_hdl *key,
                                         tdi_table_data_hdl *data,
                                         tdi_entry_read_flag_e flag);
@@ -784,9 +784,9 @@ tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
-                                      const tdi_target_t *dev_tgt_in,
+                                      const tdi_target_hdl *dev_tgt_in,
                                       const uint32_t entry_handle,
-                                      tdi_target_t *dev_tgt_out,
+                                      tdi_target_hdl *dev_tgt_out,
                                       tdi_table_key_hdl *key);
 
 /**
@@ -803,7 +803,7 @@ tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
                                          const tdi_session_hdl *session,
-                                         const tdi_target_t *dev_tgt,
+                                         const tdi_target_hdl *dev_tgt,
                                          const tdi_table_key_hdl *key,
                                          uint32_t *entry_handle);
 
@@ -832,7 +832,7 @@ tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
                                          const tdi_session_hdl *session,
-                                         const tdi_target_t *dev_tgt,
+                                         const tdi_target_hdl *dev_tgt,
                                          const tdi_table_key_hdl *key,
                                          tdi_table_key_hdl **output_keys,
                                          tdi_table_data_hdl **output_data,
@@ -854,7 +854,7 @@ tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
-                                  const tdi_target_t *dev_tgt,
+                                  const tdi_target_hdl *dev_tgt,
                                   uint32_t *count,
                                   tdi_entry_read_flag_e flag);
 
@@ -879,7 +879,7 @@ tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
                                           const tdi_session_hdl *session,
-                                          const tdi_target_t *dev_tgt,
+                                          const tdi_target_hdl *dev_tgt,
                                           const tdi_table_data_hdl *data);
 
 /**
@@ -904,7 +904,7 @@ tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
                                           const tdi_session_hdl *session,
-                                          const tdi_target_t *dev_tgt,
+                                          const tdi_target_hdl *dev_tgt,
                                           tdi_table_data_hdl *data,
                                           const tdi_entry_read_flag_e flag);
 
@@ -923,7 +923,7 @@ tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
                                             const tdi_session_hdl *session,
-                                            const tdi_target_t *dev_tgt);
+                                            const tdi_target_hdl *dev_tgt);
 
 /**
  * @brief The maximum size of the table. Note that this size might
@@ -941,7 +941,7 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
                                  const tdi_session_hdl *session,
-                                 const tdi_target_t *dev_tgt,
+                                 const tdi_target_hdl *dev_tgt,
                                  size_t *size);
 #endif /* TDI_GENERIC_FLAGS */
 
@@ -2188,8 +2188,8 @@ tdi_status_t tdi_table_attributes_deallocate(
 tdi_status_t tdi_table_attributes_set(
     const tdi_table_hdl *table_hdl,
     const tdi_session_hdl *session,
-    const tdi_target_t *dev_tgt,
-    const uint64_t flags,
+    const tdi_target_hdl *dev_tgt,
+    const tdi_flags_hdl *flags,
     const tdi_table_attributes_hdl *tbl_attr);
 
 /**
@@ -2209,8 +2209,8 @@ tdi_status_t tdi_table_attributes_set(
  */
 tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
                                        const tdi_session_hdl *session,
-                                       const tdi_target_t *dev_tgt,
-                                       const uint64_t flags,
+                                       const tdi_target_hdl *dev_tgt,
+                                       const tdi_flags_hdl *flags,
                                        tdi_table_attributes_hdl *tbl_attr);
 #else
 /**
@@ -2231,7 +2231,7 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
 tdi_status_t tdi_table_attributes_set(
     const tdi_table_hdl *table_hdl,
     const tdi_session_hdl *session,
-    const tdi_target_t *dev_tgt,
+    const tdi_target_hdl *dev_tgt,
     const tdi_table_attributes_hdl *tbl_attr);
 
 /**
@@ -2252,7 +2252,7 @@ tdi_status_t tdi_table_attributes_set(
  */
 tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
                                        const tdi_session_hdl *session,
-                                       const tdi_target_t *dev_tgt,
+                                       const tdi_target_hdl *dev_tgt,
                                        tdi_table_attributes_hdl *tbl_attr);
 #endif
 
