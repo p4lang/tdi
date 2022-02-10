@@ -1074,8 +1074,6 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
   return TDI_SUCCESS;
 }
 
-#ifdef _TDI_FROM_BFRT
-// disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
                                     const tdi_id_t field_id,
                                     tdi_key_field_type_t *field_type_ret) {
@@ -1097,15 +1095,14 @@ tdi_status_t tdi_key_field_data_type_get(const tdi_table_hdl *table_hdl,
   *field_type_ret = static_cast<tdi_data_type_t>(keyFieldInfo->dataTypeGet());
   return TDI_SUCCESS;
 }
-#endif
 
 tdi_status_t tdi_key_field_id_get(const tdi_table_hdl *table_hdl,
                                   const char *key_field_name,
                                   tdi_id_t *field_id) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  const tdi::TableInfo *tableInfo;
-  tableInfo = table->tableInfoGet();
-  *field_id = tableInfo->keyFieldIdGet(key_field_name);
+  auto tableInfo = table->tableInfoGet();
+  auto keyFieldInfo = tableInfo->keyFieldGet(key_field_name);
+  *field_id = keyFieldInfo->idGet();
   if (*field_id == 0) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1276,6 +1273,7 @@ tdi_status_t tdi_container_data_field_list_get(
 
   return TDI_SUCCESS;
 }
+
 tdi_status_t tdi_container_data_field_list_size_get(
     const tdi_table_hdl *table_hdl,
     tdi_id_t container_field_id,
@@ -1315,8 +1313,8 @@ tdi_status_t tdi_data_field_list_with_action_get(
 
   auto table = reinterpret_cast<const tdi::Table*>(table_hdl);
   auto tableInfo = table->tableInfoGet();
-  std::vector<tdi_id_t> field_ids;
-  field_ids = tableInfo->dataFieldIdListGet(action_id);
+  //std::vector<tdi_id_t> field_ids;
+  auto field_ids = tableInfo->dataFieldIdListGet(action_id);
   for (auto it = field_ids.begin(); it != field_ids.end(); ++it) {
     tdi_id_t field_id = *it;
     id_vec_ret[it - field_ids.begin()] = field_id;
@@ -1521,8 +1519,6 @@ tdi_status_t tdi_data_field_type_get(const tdi_table_hdl *table_hdl,
   return TDI_SUCCESS;
 }
 
-#ifdef _TDI_FROM_BFRT
-// disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_data_field_type_with_action_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
@@ -1531,12 +1527,9 @@ tdi_status_t tdi_data_field_type_with_action_get(
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
-
-  // disable it now, will enable it once the method is available in the code class
   *field_type_ret = dataFieldInfo->dataTypeGet();
   return TDI_SUCCESS;
 }
-#endif
 
 tdi_status_t tdi_data_field_num_allowed_choices_get(
     const tdi_table_hdl *table_hdl,
@@ -1552,19 +1545,19 @@ tdi_status_t tdi_data_field_num_allowed_choices_get(
   return TDI_SUCCESS;
 }
 
-#ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_data_field_allowed_choices_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     const char *choices[]) {
-  std::vector<std::reference_wrapper<const std::string>> cpp_choices;
+  std::vector<std::string> cpp_choices;
+  //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<const char *[]>(
       table_hdl, field_id, &cpp_choices, choices);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
   for (auto iter = cpp_choices.begin(); iter != cpp_choices.end(); iter++) {
-    choices[iter - cpp_choices.begin()] = iter->get().c_str();
+    choices[iter - cpp_choices.begin()] = iter->c_str();
   }
   return TDI_SUCCESS;
 }
@@ -1574,7 +1567,8 @@ tdi_status_t tdi_data_field_num_allowed_choices_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num_choices) {
-  std::vector<std::reference_wrapper<const std::string>> cpp_choices;
+  std::vector<std::string> cpp_choices;
+  //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<uint32_t *>(
       table_hdl, field_id, &cpp_choices, num_choices, action_id);
   if (sts != TDI_SUCCESS) {
@@ -1589,14 +1583,15 @@ tdi_status_t tdi_data_field_allowed_choices_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     const char *choices[]) {
-  std::vector<std::reference_wrapper<const std::string>> cpp_choices;
+  std::vector<std::string> cpp_choices;
+  //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<const char *[]>(
       table_hdl, field_id, &cpp_choices, choices, action_id);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
   for (auto iter = cpp_choices.begin(); iter != cpp_choices.end(); iter++) {
-    choices[iter - cpp_choices.begin()] = iter->get().c_str();
+    choices[iter - cpp_choices.begin()] = iter->c_str();
   }
   return TDI_SUCCESS;
 }
@@ -1605,28 +1600,26 @@ tdi_status_t tdi_data_field_num_annotations_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     uint32_t *num_annotations) {
-  tdi::AnnotationSet annotations;
+  //tdi::AnnotationSet annotations;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status = table->dataFieldAnnotationsGet(field_id, &annotations);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
+  auto annotations = dataFieldInfo->annotationsGet();
   *num_annotations = annotations.size();
   return TDI_SUCCESS;
 }
+
 tdi_status_t tdi_data_field_annotations_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     tdi_annotation_t *annotations_c) {
-  tdi::AnnotationSet annotations;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status = table->dataFieldAnnotationsGet(field_id, &annotations);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
+  auto annotations = dataFieldInfo->annotationsGet();
   int i = 0;
   for (const auto &annotation : annotations) {
-    annotations_c[i++] = convert_annotation(annotation.get());
+    annotations_c[i++] = convert_annotation(annotation);
   }
   return TDI_SUCCESS;
 }
@@ -1636,31 +1629,26 @@ tdi_status_t tdi_data_field_num_annotations_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num_annotations) {
-  tdi::AnnotationSet annotations;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status =
-      table->dataFieldAnnotationsGet(field_id, action_id, &annotations);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
+  auto annotations = dataFieldInfo->annotationsGet();
   *num_annotations = annotations.size();
   return TDI_SUCCESS;
 }
+
 tdi_status_t tdi_data_field_annotations_with_action_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     tdi_annotation_t *annotations_c) {
-  tdi::AnnotationSet annotations;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status =
-      table->dataFieldAnnotationsGet(field_id, action_id, &annotations);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
+  auto annotations = dataFieldInfo->annotationsGet();
   int i = 0;
   for (const auto &annotation : annotations) {
-    annotations_c[i++] = convert_annotation(annotation.get());
+    annotations_c[i++] = convert_annotation(annotation);
   }
   return TDI_SUCCESS;
 }
@@ -1669,25 +1657,22 @@ tdi_status_t tdi_data_field_num_oneof_siblings_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     uint32_t *num_oneof_siblings) {
-  std::set<tdi_id_t> oneof_siblings;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status = table->dataFieldOneofSiblingsGet(field_id, &oneof_siblings);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
+  auto oneof_siblings = dataFieldInfo->oneofSiblingsGet();
   *num_oneof_siblings = oneof_siblings.size();
   return TDI_SUCCESS;
 }
+
 tdi_status_t tdi_data_field_oneof_siblings_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     tdi_id_t *oneof_siblings_c) {
-  std::set<tdi_id_t> oneof_siblings;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status = table->dataFieldOneofSiblingsGet(field_id, &oneof_siblings);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
+  auto oneof_siblings = dataFieldInfo->oneofSiblingsGet();
   int i = 0;
   for (const auto &oneof_sibling : oneof_siblings) {
     oneof_siblings_c[i++] = oneof_sibling;
@@ -1700,28 +1685,23 @@ tdi_status_t tdi_data_field_num_oneof_siblings_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num_oneof_siblings) {
-  std::set<tdi_id_t> oneof_siblings;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status =
-      table->dataFieldOneofSiblingsGet(field_id, action_id, &oneof_siblings);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
+  auto oneof_siblings = dataFieldInfo->oneofSiblingsGet();
   *num_oneof_siblings = oneof_siblings.size();
   return TDI_SUCCESS;
 }
+
 tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     tdi_id_t *oneof_siblings_c) {
-  std::set<tdi_id_t> oneof_siblings;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tdi_status =
-      table->dataFieldOneofSiblingsGet(field_id, action_id, &oneof_siblings);
-  if (tdi_status != TDI_SUCCESS) {
-    return tdi_status;
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
+  auto oneof_siblings = dataFieldInfo->oneofSiblingsGet();
   int i = 0;
   for (const auto &oneof_sibling : oneof_siblings) {
     oneof_siblings_c[i++] = oneof_sibling;
@@ -1729,6 +1709,8 @@ tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
   return TDI_SUCCESS;
 }
 
+#ifdef _TDI_FROM_BFRT
+// disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
                                           uint32_t *num) {
   if (num == nullptr) {
@@ -1743,13 +1725,12 @@ tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
   }
 
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  std::vector<tdi_id_t> action_id;
-  tdi_status_t sts = table->actionIdListGet(&action_id);
-  if (sts == TDI_SUCCESS) {
-    *num = action_id.size();
-  }
+  auto tableInfo = table->tableInfoGet();
+  auto action_ids = tableInfo->actionIdListGet();
+  //std::vector<tdi_id_t> action_id;
+  *num = action_ids.size();
 
-  return sts;
+  return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
@@ -1766,18 +1747,16 @@ tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
   }
 
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  std::vector<tdi_id_t> action_ids;
-  tdi_status_t sts = table->actionIdListGet(&action_ids);
-  if (sts == TDI_SUCCESS) {
-    for (auto it = action_ids.begin(); it != action_ids.end(); ++it) {
-      tdi_id_t action_id = *it;
-      id_vec_ret[it - action_ids.begin()] = action_id;
-    }
+  //std::vector<tdi_id_t> action_ids;
+  auto tableInfo = table->tableInfoGet();
+  auto action_ids = tableInfo->actionIdListGet();
+  for (auto it = action_ids.begin(); it != action_ids.end(); ++it) {
+    tdi_id_t action_id = *it;
+    id_vec_ret[it - action_ids.begin()] = action_id;
   }
-
-  return sts;
+  return TDI_SUCCESS;
 }
-#endif
+#endif 
 
 #ifdef _TDI_FROM_BFRT
 // disable it now, will enable it once the method is available in the code class
@@ -1942,9 +1921,8 @@ tdi_status_t tdi_table_operations_execute(
     const tdi_table_hdl *table_hdl,
     const tdi_table_operations_hdl *tbl_ops) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tableInfo = table->tableInfoGet();
-  tbl_ops = reinterpret_cast<const tdi::TableOperations *>(tableInfo->tableOperationsExecute());
-      //*reinterpret_cast<const tdi::TableOperations *>(tbl_ops));
+  return (table->tableOperationsExecute(
+      reinterpret_cast<const tdi::TableOperations *>(tbl_ops)));
 }
 #endif
 
