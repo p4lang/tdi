@@ -21,8 +21,8 @@
 #include <regex>
 
 #include <tdi/common/tdi_info.hpp>
-#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_json_parser/tdi_cjson.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
@@ -41,7 +41,6 @@ tdi_status_t Annotation::fullNameGet(std::string *full_name) const {
   return TDI_SUCCESS;
 }
 
-
 std::vector<tdi_id_t> TableInfo::keyFieldIdListGet() const {
   std::vector<tdi_id_t> id_vec;
   for (const auto &kv : table_key_map_) {
@@ -51,22 +50,16 @@ std::vector<tdi_id_t> TableInfo::keyFieldIdListGet() const {
   return id_vec;
 }
 
-tdi_id_t TableInfo::keyFieldIdGet(const std::string &name) const {
-  auto found = std::find_if(
-      table_key_map_.begin(),
-      table_key_map_.end(),
-      [&name](const std::pair<const tdi_id_t, std::unique_ptr<KeyFieldInfo>>
-                  &map_item) { return (name == map_item.second->nameGet()); });
-  if (found != table_key_map_.end()) {
-    return (*found).second->idGet();
+const KeyFieldInfo *TableInfo::keyFieldGet(const std::string &name) const {
+  if (name_key_map_.find(name) == name_key_map_.end()) {
+    LOG_ERROR("%s:%d %s Field \"%s\" not found in key field list",
+              __func__,
+              __LINE__,
+              nameGet().c_str(),
+              name.c_str());
+    return nullptr;
   }
-
-  LOG_ERROR("%s:%d %s Field \"%s\" not found in key field list",
-            __func__,
-            __LINE__,
-            nameGet().c_str(),
-            name.c_str());
-  return 0;
+  return name_key_map_.at(name);
 }
 
 const KeyFieldInfo *TableInfo::keyFieldGet(const tdi_id_t &field_id) const {
@@ -109,6 +102,31 @@ std::vector<tdi_id_t> TableInfo::dataFieldIdListGet() const {
   return this->dataFieldIdListGet(0);
 }
 
+const DataFieldInfo *TableInfo::dataFieldGet(const std::string &name,
+                                             const tdi_id_t &action_id) const {
+  if (action_id &&
+      table_action_map_.find(action_id) != table_action_map_.end()) {
+    auto action_info = table_action_map_.at(action_id).get();
+    if (action_info->data_fields_names_.find(name) !=
+        action_info->data_fields_names_.end()) {
+      return action_info->data_fields_names_.at(name);
+    }
+  }
+  if (name_data_map_.find(name) != name_data_map_.end()) {
+    return name_data_map_.at(name);
+  }
+  LOG_ERROR("%s:%d %s Field \"%s\" not found in data field list",
+            __func__,
+            __LINE__,
+            nameGet().c_str(),
+            name.c_str());
+  return nullptr;
+}
+
+const DataFieldInfo *TableInfo::dataFieldGet(const std::string &name) const {
+  return dataFieldGet(name, 0);
+}
+
 const DataFieldInfo *TableInfo::dataFieldGet(const tdi_id_t &field_id,
                                              const tdi_id_t &action_id) const {
   if (action_id &&
@@ -122,11 +140,40 @@ const DataFieldInfo *TableInfo::dataFieldGet(const tdi_id_t &field_id,
   if (table_data_map_.find(field_id) != table_data_map_.end()) {
     return table_data_map_.at(field_id).get();
   }
+  LOG_ERROR("%s:%d %s Field \"%d\" not found in data field list",
+            __func__,
+            __LINE__,
+            nameGet().c_str(),
+            field_id);
   return nullptr;
 }
 
 const DataFieldInfo *TableInfo::dataFieldGet(const tdi_id_t &field_id) const {
   return dataFieldGet(field_id, 0);
+}
+
+const ActionInfo *TableInfo::actionGet(const std::string &name) const {
+  if (name_action_map_.find(name) != name_action_map_.end()) {
+    return name_action_map_.at(name);
+  }
+  LOG_ERROR("%s:%d %s Action  \"%s\" not found",
+            __func__,
+            __LINE__,
+            nameGet().c_str(),
+            name.c_str());
+  return nullptr;
+}
+
+const ActionInfo *TableInfo::actionGet(const tdi_id_t &action_id) const {
+  if (table_action_map_.find(action_id) != table_action_map_.end()) {
+    return table_action_map_.at(action_id).get();
+  }
+  LOG_ERROR("%s:%d %s Action  \"%d\" not found",
+            __func__,
+            __LINE__,
+            nameGet().c_str(),
+            action_id);
+  return nullptr;
 }
 
 #if 0
@@ -253,7 +300,6 @@ const TableDataField *Table::getDataFieldHelper(
   }
   return nullptr;
 }
-
 
 #endif
 

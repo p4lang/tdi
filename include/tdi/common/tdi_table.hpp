@@ -630,6 +630,19 @@ class Table {
   /** @} */  // End of group Operations
   const TableInfo *tableInfoGet() const { return table_info_; }
 
+  /**
+   * @brief Are Action IDs applicable for this table? This is
+   * not always equivalent to whether actions are present or not.
+   * It depends upon table type. For example, for Match Action
+   * Tables, this should always return true even if no actions
+   * exist for a specific MAT
+   *
+   * @retval True : If Action ID applicable
+   * @retval False : If not
+   *
+   */
+  virtual bool actionIdApplicable() const { return false; };
+
  protected:
   Table(const TableInfo *table_info) : table_info_(table_info){};
 
