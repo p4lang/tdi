@@ -143,7 +143,15 @@ TdiInfo::TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
                 __LINE__,
                 kv.first.c_str());
     } else {
-      tableMap[kv.first] = std::move(factory->makeTable(kv.second.get()));
+      auto table = factory->makeTable(kv.second.get());
+      if (!table) {
+        LOG_ERROR("%s:%d Error creating Table:%s",
+                  __func__,
+                  __LINE__,
+                  kv.first.c_str());
+        continue;
+      }
+      tableMap[kv.first] = std::move(table);
     }
   }
 }
