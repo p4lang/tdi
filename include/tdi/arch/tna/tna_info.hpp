@@ -49,28 +49,25 @@ const std::string RANGE = "LPM";
 
 namespace tna {
 
-
-class TdiInfoTnaMapper : public TdiInfoMapper {
+class TdiInfoMapper : public tdi::TdiInfoMapper {
  public:
-
-  TdiInfoTnaMapper() {
+  TdiInfoMapper() {
     // Match types
     matchEnumMapAdd(tdi_json::values::tna::ATCAM,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TNA_ATCAM));
     matchEnumMapAdd(tdi_json::values::tna::RANGE,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TNA_RANGE));
   }
-
 };
 
 /**
  * @brief Class to help create the correct Table object with the
  * help of a map. Targets should override
  */
-class TableFactory {
+class TableFactory : public tdi::TableFactory {
  public:
-  std::unique_ptr<tdi::Table> makeTable(
-      const tdi::TableInfo * /*table_info*/) const {
+  virtual std::unique_ptr<tdi::Table> makeTable(
+      const tdi::TableInfo * /*table_info*/) const override {
     // No tables in TNA currently. Will eventually have Selector, Action profile
     // etc
     return nullptr;

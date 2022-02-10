@@ -121,7 +121,7 @@ class TdiInfoMapper {
  */
 class TableFactory {
  public:
-  std::unique_ptr<tdi::Table> makeTable(
+  virtual std::unique_ptr<tdi::Table> makeTable(
       const tdi::TableInfo * /*table_info*/) const {
     // No tables in core currently
     return nullptr;
