@@ -28,6 +28,17 @@ extern "C" {
 #endif
 
 /**
+ * @brief Get the TdiDevice object corresponding to the (device_id)
+ *
+ * @param[in] dev_id Device ID
+ * @param[out] tdi_device Device Obj associated with the Device.
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
+                            const tdi_device_hdl **device_hdl_ret);
+
+/**
  * @brief Get the TdiInfo object corresponding to the (device_id,
  * program name)
  *

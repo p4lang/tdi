@@ -21,6 +21,16 @@
 // c_frontend includes
 #include <tdi/common/c_frontend/tdi_init.h>
 
+tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
+		            const tdi_device_hdl **device_hdl_ret) {
+  tdi_status_t sts = TDI_SUCCESS;
+  const tdi::Device *device = nullptr;
+  tdi::DevMgr &devMgrObj = tdi::DevMgr::getInstance();
+  sts = devMgrObj.deviceGet(dev_id, &device);
+  *device_hdl_ret = reinterpret_cast<const tdi_device_hdl *>(device);
+  return sts;
+}
+
 tdi_status_t tdi_info_get(const tdi_dev_id_t dev_id,
                            const char *prog_name,
                            const tdi_info_hdl **info_hdl_ret) {
