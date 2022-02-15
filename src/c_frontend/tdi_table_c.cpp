@@ -42,7 +42,7 @@ tdi_status_t key_field_allowed_choices_get_helper(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t &field_id,
     //std::vector<std::reference_wrapper<const std::string>> *cpp_choices,
-    std::vector<std::string> *cpp_choices,
+    const std::vector<std::string> **cpp_choices,
     T out_param) {
   if (out_param == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
@@ -53,7 +53,7 @@ tdi_status_t key_field_allowed_choices_get_helper(
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   const tdi::TableInfo *tableInfo = table->tableInfoGet();
   const tdi::KeyFieldInfo *keyFieldInfo = tableInfo->keyFieldGet(field_id);
-  *cpp_choices = keyFieldInfo->choicesGet();
+  *cpp_choices = &keyFieldInfo->choicesGet();
   return TDI_SUCCESS;
 }
 
@@ -62,7 +62,7 @@ tdi_status_t data_field_allowed_choices_get_helper(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t &field_id,
     //std::vector<std::reference_wrapper<const std::string>> *cpp_choices,
-    std::vector<std::string> *cpp_choices,
+    const std::vector<std::string> **cpp_choices,
     T out_param,
     const tdi_id_t &action_id = 0) {
   if (out_param == nullptr) {
@@ -75,7 +75,7 @@ tdi_status_t data_field_allowed_choices_get_helper(
   const tdi::TableInfo *tableInfo = table->tableInfoGet();
   const tdi::DataFieldInfo *dataFieldInfo = tableInfo->dataFieldGet(field_id);
   if (!action_id) {
-    *cpp_choices = dataFieldInfo->allowedChoicesGet();
+    *cpp_choices = &dataFieldInfo->allowedChoicesGet();
     //sts = tableDataInfo->dataFieldAllowedChoicesGet(field_id, cpp_choices);
   } else {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
@@ -1159,13 +1159,13 @@ tdi_status_t tdi_key_field_num_allowed_choices_get(
     const tdi_id_t field_id,
     uint32_t *num_choices) {
   //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
-  std::vector<std::string> cpp_choices;
+  const std::vector<std::string> *cpp_choices;
   tdi_status_t sts = ::key_field_allowed_choices_get_helper<uint32_t *>(
       table_hdl, field_id, &cpp_choices, num_choices);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  *num_choices = cpp_choices.size();
+  *num_choices = cpp_choices->size();
   return TDI_SUCCESS;
 }
 
@@ -1174,15 +1174,15 @@ tdi_status_t tdi_key_field_allowed_choices_get(
     const tdi_id_t field_id,
     const char *choices[]) {
   //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
-  std::vector<std::string> cpp_choices;
+  const std::vector<std::string> *cpp_choices;
   tdi_status_t sts = ::key_field_allowed_choices_get_helper<const char *[]>(
       table_hdl, field_id, &cpp_choices, choices);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  for (auto iter = cpp_choices.begin(); iter != cpp_choices.end(); iter++) {
+  for (auto iter = cpp_choices->begin(); iter != cpp_choices->end(); iter++) {
     //choices[iter - cpp_choices.begin()] = iter->get().c_str();
-    choices[iter - cpp_choices.begin()] = iter->c_str();
+    choices[iter - cpp_choices->begin()] = iter->c_str();
   }
   return TDI_SUCCESS;
 }
@@ -1535,13 +1535,13 @@ tdi_status_t tdi_data_field_num_allowed_choices_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     uint32_t *num_choices) {
-  std::vector<std::string> cpp_choices;
+  const std::vector<std::string> *cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<uint32_t *>(
       table_hdl, field_id, &cpp_choices, num_choices);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  *num_choices = cpp_choices.size();
+  *num_choices = cpp_choices->size();
   return TDI_SUCCESS;
 }
 
@@ -1549,15 +1549,15 @@ tdi_status_t tdi_data_field_allowed_choices_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     const char *choices[]) {
-  std::vector<std::string> cpp_choices;
+  const std::vector<std::string> *cpp_choices;
   //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<const char *[]>(
       table_hdl, field_id, &cpp_choices, choices);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  for (auto iter = cpp_choices.begin(); iter != cpp_choices.end(); iter++) {
-    choices[iter - cpp_choices.begin()] = iter->c_str();
+  for (auto iter = cpp_choices->begin(); iter != cpp_choices->end(); iter++) {
+    choices[iter - cpp_choices->begin()] = iter->c_str();
   }
   return TDI_SUCCESS;
 }
@@ -1567,14 +1567,14 @@ tdi_status_t tdi_data_field_num_allowed_choices_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num_choices) {
-  std::vector<std::string> cpp_choices;
+  const std::vector<std::string> *cpp_choices;
   //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<uint32_t *>(
       table_hdl, field_id, &cpp_choices, num_choices, action_id);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  *num_choices = cpp_choices.size();
+  *num_choices = cpp_choices->size();
   return TDI_SUCCESS;
 }
 
@@ -1583,15 +1583,15 @@ tdi_status_t tdi_data_field_allowed_choices_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     const char *choices[]) {
-  std::vector<std::string> cpp_choices;
+  const std::vector<std::string> *cpp_choices;
   //std::vector<std::reference_wrapper<const std::string>> cpp_choices;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<const char *[]>(
       table_hdl, field_id, &cpp_choices, choices, action_id);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  for (auto iter = cpp_choices.begin(); iter != cpp_choices.end(); iter++) {
-    choices[iter - cpp_choices.begin()] = iter->c_str();
+  for (auto iter = cpp_choices->begin(); iter != cpp_choices->end(); iter++) {
+    choices[iter - cpp_choices->begin()] = iter->c_str();
   }
   return TDI_SUCCESS;
 }
