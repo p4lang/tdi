@@ -32,7 +32,7 @@ extern "C" {
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_session_create(tdi_session_hdl **session);
+tdi_status_t tdi_session_create(const tdi_device_hdl *device_hdl, tdi_session_hdl **session);
 
 /**
  * @brief Destroy a session

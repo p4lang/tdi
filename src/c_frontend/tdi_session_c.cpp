@@ -13,24 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdio.h>
-//#include <tdi/common/c_frontend/tdi_table.h>
 #include <tdi/common/c_frontend/tdi_session.h>
-
-#ifdef __cplusplus
-}
-#endif
 #include <tdi/common/tdi_init.hpp>
 #include <tdi/common/tdi_session.hpp>
 //#include <tdi_common/tdi_session_impl.hpp>
 #include <tdi/common/tdi_utils.hpp>
 
 #include "tdi_state_c.hpp"
-
 tdi_status_t tdi_session_create(const tdi_device_hdl *device_hdl, tdi_session_hdl **session) {
   auto sess = reinterpret_cast <std::shared_ptr<tdi::Session> *>(session);
   auto device = reinterpret_cast <const tdi::Device *> (device_hdl);
