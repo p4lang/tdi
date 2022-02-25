@@ -97,7 +97,7 @@ class Device {
   const std::vector<tdi::ProgramConfig> device_config_;
   const std::vector<tdi_mgr_type_e> mgr_type_list_;
   const void *cookie_;
-  std::map<std::string, std::unique_ptr<TdiInfo>> tdi_info_map_;
+  std::map<std::string, std::unique_ptr<const TdiInfo>> tdi_info_map_;
 };
 
 /**

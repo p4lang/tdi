@@ -77,11 +77,11 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryAdd(const tdi::Session &session,
-                                     const tdi::Target &dev_tgt,
-                                     const tdi::Flags &flags,
-                                     const tdi::TableKey &key,
-                                     const tdi::TableData &data) const;
+  virtual tdi_status_t entryAdd(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                const tdi::TableKey &key,
+                                const tdi::TableData &data) const;
 
   /**
    * @brief Modify an existing entry of the table
@@ -94,30 +94,11 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryMod(const tdi::Session &session,
-                                     const tdi::Target &dev_tgt,
-                                     const tdi::Flags &flags,
-                                     const tdi::TableKey &key,
-                                     const tdi::TableData &data) const;
-
-  /**
-   * @brief Modify only a part of an existing entry of the table.
-   *            - Either add or delete the given data to the existing entry.
-   *
-   * @param[in] session Session Object
-   * @param[in] dev_tgt Device target
-   * @param[in] flags Call flags
-   * @param[in] key Entry Key
-   * @param[in] data Entry Data
-   * @param[in] flag Modify inc flag (ADD or DEL)
-   *
-   * @return Status of the API call
-   */
-  virtual tdi_status_t tableEntryModInc(const tdi::Session &session,
-                                        const tdi::Target &dev_tgt,
-                                        const tdi::Flags &flags,
-                                        const tdi::TableKey &key,
-                                        const tdi::TableData &data) const;
+  virtual tdi_status_t entryMod(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                const tdi::TableKey &key,
+                                const tdi::TableData &data) const;
 
   /**
    * @brief Delete an entry of the table
@@ -129,10 +110,10 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryDel(const tdi::Session &session,
-                                     const tdi::Target &dev_tgt,
-                                     const tdi::Flags &flags,
-                                     const tdi::TableKey &key) const;
+  virtual tdi_status_t entryDel(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                const tdi::TableKey &key) const;
 
   /**
    * @brief Clear a table. Delete all entries. This API also resets default
@@ -146,12 +127,13 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableClear(const tdi::Session &session,
-                                  const tdi::Target &dev_tgt,
-                                  const tdi::Flags &flags) const;
+  virtual tdi_status_t clear(const tdi::Session &session,
+                             const tdi::Target &dev_tgt,
+                             const tdi::Flags &flags) const;
 
   /**
-   * @brief Set the default Entry of the table
+   * @brief Set the default Entry of the table. Data fields which aren't
+   * set by the user and are not mandatory, are defaulted to default value
    *
    * @details There can be a P4 defined default entry with parameters. This API
    * modifies any existing default entry to the one passed in here. Note that
@@ -168,10 +150,29 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableDefaultEntrySet(const tdi::Session &session,
-                                            const tdi::Target &dev_tgt,
-                                            const tdi::Flags &flags,
-                                            const tdi::TableData &data) const;
+  virtual tdi_status_t defaultEntrySet(const tdi::Session &session,
+                                       const tdi::Target &dev_tgt,
+                                       const tdi::Flags &flags,
+                                       const tdi::TableData &data) const;
+
+  /**
+   * @brief Modify the default entry of the table. Similar to defaultEntrySet
+   * but fields which aren't set by the user, are left with previous values
+   *
+   * @details If there exists a default action, then only that action can be
+   * used in the modify just like in set.
+   *
+   * @param[in] session Session Object
+   * @param[in] dev_tgt Device target
+   * @param[in] flags Call flags
+   * @param[in] data Entry Data
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t defaultEntryMod(const tdi::Session &session,
+                                       const tdi::Target &dev_tgt,
+                                       const tdi::Flags &flags,
+                                       const tdi::TableData &data) const;
 
   /**
    * @brief Reset the default Entry of the table
@@ -185,19 +186,19 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableDefaultEntryReset(const tdi::Session &session,
-                                              const tdi::Target &dev_tgt,
-                                              const tdi::Flags &flags) const;
+  virtual tdi_status_t defaultEntryReset(const tdi::Session &session,
+                                         const tdi::Target &dev_tgt,
+                                         const tdi::Flags &flags) const;
 
   /**
    * @brief Get the default Entry of the table
    *
-   * @details The default entry returned will be the one programmed or the P4
-   * defined one, if it exists. Note that, when the entry is obtained from
-   * software, the P4 defined default entry will not be available if the default
-   * entry was not programmed ever. However, when the entry is obtained from
-   * hardware, the P4 defined default entry will be returned even if the default
-   * entry was not programmed ever.
+   * @details The default entry returned will be the one programmed or the
+   * P4/json defined one, if it exists. Note that, when the entry is obtained
+   * from software, the P4 defined default entry will not be available if the
+   * default entry was not programmed ever. However, when the entry is obtained
+   * from hardware, the P4 defined default entry will be returned even if the
+   * default entry was not programmed explicitly.
    *
    * @param[in] session Session Object
    * @param[in] dev_tgt Device target
@@ -207,10 +208,10 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableDefaultEntryGet(const tdi::Session &session,
-                                            const tdi::Target &dev_tgt,
-                                            const tdi::Flags &flags,
-                                            tdi::TableData *data) const;
+  virtual tdi_status_t defaultEntryGet(const tdi::Session &session,
+                                       const tdi::Target &dev_tgt,
+                                       const tdi::Flags &flags,
+                                       tdi::TableData *data) const;
 
   /**
    * @brief Get an entry from the table
@@ -224,11 +225,11 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryGet(const tdi::Session &session,
-                                     const tdi::Target &dev_tgt,
-                                     const tdi::Flags &flags,
-                                     const tdi::TableKey &key,
-                                     tdi::TableData *data) const;
+  virtual tdi_status_t entryGet(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                const tdi::TableKey &key,
+                                tdi::TableData *data) const;
 
   /**
    * @brief Get an entry from the table by handle
@@ -243,12 +244,12 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryGet(const tdi::Session &session,
-                                     const tdi::Target &dev_tgt,
-                                     const tdi::Flags &flags,
-                                     const tdi_handle_t &entry_handle,
-                                     tdi::TableKey *key,
-                                     tdi::TableData *data) const;
+  virtual tdi_status_t entryGet(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                const tdi_handle_t &entry_handle,
+                                tdi::TableKey *key,
+                                tdi::TableData *data) const;
 
   /**
    * @brief Get an entry key from the table by handle
@@ -263,12 +264,12 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryKeyGet(const tdi::Session &session,
-                                        const tdi::Target &dev_tgt,
-                                        const tdi::Flags &flags,
-                                        const tdi_handle_t &entry_handle,
-                                        tdi::Target *entry_tgt,
-                                        tdi::TableKey *key) const;
+  virtual tdi_status_t entryKeyGet(const tdi::Session &session,
+                                   const tdi::Target &dev_tgt,
+                                   const tdi::Flags &flags,
+                                   const tdi_handle_t &entry_handle,
+                                   tdi::Target *entry_tgt,
+                                   tdi::TableKey *key) const;
 
   /**
    * @brief Get an entry handle from the table
@@ -281,11 +282,11 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryHandleGet(const tdi::Session &session,
-                                           const tdi::Target &dev_tgt,
-                                           const tdi::Flags &flags,
-                                           const tdi::TableKey &key,
-                                           tdi_handle_t *entry_handle) const;
+  virtual tdi_status_t entryHandleGet(const tdi::Session &session,
+                                      const tdi::Target &dev_tgt,
+                                      const tdi::Flags &flags,
+                                      const tdi::TableKey &key,
+                                      tdi_handle_t *entry_handle) const;
 
   /**
    * @brief Get the first entry of the table
@@ -299,11 +300,11 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryGetFirst(const tdi::Session &session,
-                                          const tdi::Target &dev_tgt,
-                                          const tdi::Flags &flags,
-                                          tdi::TableKey *key,
-                                          tdi::TableData *data) const;
+  virtual tdi_status_t entryGetFirst(const tdi::Session &session,
+                                     const tdi::Target &dev_tgt,
+                                     const tdi::Flags &flags,
+                                     tdi::TableKey *key,
+                                     tdi::TableData *data) const;
 
   /**
    * @brief Get next N entries of the table following the entry that is
@@ -323,13 +324,13 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableEntryGetNext_n(const tdi::Session &session,
-                                           const tdi::Target &dev_tgt,
-                                           const tdi::Flags &flags,
-                                           const tdi::TableKey &key,
-                                           const uint32_t &n,
-                                           keyDataPairs *key_data_pairs,
-                                           uint32_t *num_returned) const;
+  virtual tdi_status_t entryGetNextN(const tdi::Session &session,
+                                     const tdi::Target &dev_tgt,
+                                     const tdi::Flags &flags,
+                                     const tdi::TableKey &key,
+                                     const uint32_t &n,
+                                     keyDataPairs *key_data_pairs,
+                                     uint32_t *num_returned) const;
 
   /**
    * @brief Current Usage of the table
@@ -341,15 +342,18 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableUsageGet(const tdi::Session &session,
-                                     const tdi::Target &dev_tgt,
-                                     const tdi::Flags &flags,
-                                     uint32_t *count) const;
+  virtual tdi_status_t usageGet(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                uint32_t *count) const;
   /**
    * @brief The maximum size of the table. Note that this size might
    * be different than present in tdi.json especially for Match Action
-   * Tables. This is because sometimes MATs might reserve some space for
-   * atomic modfies and hence might be 1 or 2 < json size
+   * Tables. This is because sometimes some tables in runtime might have
+   * different sizes. For example MATs in some targets  might reserve
+   * some space for atomic modfies and hence might be 1 or 2 < json size.
+   *
+   * To get the json size, use TableInfo::sizeGet()
    *
    * @param[in] session Session Object
    * @param[in] dev_tgt Device target
@@ -358,10 +362,10 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableSizeGet(const tdi::Session &session,
-                                    const tdi::Target &dev_tgt,
-                                    const tdi::Flags &flags,
-                                    size_t *size) const;
+  virtual tdi_status_t sizeGet(const tdi::Session &session,
+                               const tdi::Target &dev_tgt,
+                               const tdi::Flags &flags,
+                               size_t *size) const;
   /** @} */  // End of group Table
              /**
               * @brief Allocate key for the table
@@ -381,14 +385,15 @@ class Table {
    * @return Status of the API call. Error is returned if the key object is not
    *associated with the table.
    */
-  tdi_status_t keyReset(tdi::TableKey *key) const;
+  virtual tdi_status_t keyReset(tdi::TableKey *key) const;
 
   //// Data APIs
   /**
    * @name Data APIs
    * There are 2 base versions of every Data API. One, which takes in an
    * action_id and another which doesn't. If action_id is specified it will
-   * always be set.
+   * always be set. Action IDs in Data objects can only be specified/set
+   * during reset/allocate
    *
    * @{
    */
@@ -448,11 +453,11 @@ class Table {
    * @brief Reset the data object previously allocated using dataAllocate on the
    * table
    *
-   * @details Calling this API resets the action-id in the object to an
-   * invalid value. Typically this needs to be done when doing an entry get,
+   * @details Calling this API resets the action-id in the object to
+   * 0 Typically this needs to be done when doing an entry get,
    * since the caller does not know the action-id associated with the entry.
    * Using the data object for an entry add on a table where action-id is
-   * applicable will result in an error.
+   * expected to be non-0 will result in an error.
    *
    * @param[in/out] data Pointer to the data object allocated using dataAllocate
    * on the table.
@@ -485,8 +490,8 @@ class Table {
    * @brief Reset the data object previously allocated using dataAllocate on the
    *table
    *
-   * @details Calling this API resets the action-id in the object to an
-   * invalid value. Typically this needs to be done when doing an entry get,
+   * @details Calling this API resets the action-id in the object to
+   * 0 Typically this needs to be done when doing an entry get,
    * since the caller does not know the action-id associated with the entry.
    * Using the data object for an entry add on a table where action-id is
    * applicable will result in an error. The data object will contain the passed
@@ -530,6 +535,8 @@ class Table {
   virtual tdi_status_t dataReset(const std::vector<tdi_id_t> &fields,
                                  const tdi_id_t &action_id,
                                  tdi::TableData *data) const;
+
+  /** @} */  // End of group Data
 
   // table attribute APIs
   /**
@@ -641,7 +648,7 @@ class Table {
    * @retval False : If not
    *
    */
-  virtual bool actionIdApplicable() const { return false; };
+  virtual bool actionIdApplicable() const { return false; }
 
  protected:
   Table(const TableInfo *table_info) : table_info_(table_info){};

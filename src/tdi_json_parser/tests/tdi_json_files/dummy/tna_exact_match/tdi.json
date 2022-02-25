@@ -1,0 +1,357 @@
+{
+  "schema_version" : "1.0.0",
+  "tables" : [
+    {
+      "name" : "pipe.SwitchIngress.forward",
+      "id" : 37882547,
+      "table_type" : "MatchAction_Direct",
+      "size" : 1024,
+      "annotations" : [],
+      "depends_on" : [],
+      "has_const_default_action" : true,
+      "key" : [
+        {
+          "id" : 1,
+          "name" : "hdr.ethernet.dst_addr",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "bytes",
+            "width" : 48
+          }
+        }
+      ],
+      "action_specs" : [
+        {
+          "id" : 32848556,
+          "name" : "SwitchIngress.hit",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 17988458,
+          "name" : "SwitchIngress.miss",
+          "action_scope" : "DefaultOnly",
+          "annotations" : [
+            {
+              "name" : "@defaultonly"
+            }
+          ],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "drop",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 3
+              }
+            }
+          ]
+        }
+      ],
+      "data" : [],
+      "supported_operations" : [],
+      "attributes" : ["EntryScope"]
+    },
+    {
+      "name" : "pipe.SwitchIngress.ipRoute",
+      "id" : 34746517,
+      "table_type" : "MatchAction_Direct",
+      "size" : 1024,
+      "annotations" : [],
+      "depends_on" : [],
+      "has_const_default_action" : false,
+      "key" : [
+        {
+          "id" : 1,
+          "name" : "vrf",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "bytes",
+            "width" : 16
+          }
+        },
+        {
+          "id" : 2,
+          "name" : "hdr.ipv4.dst_addr",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "bytes",
+            "width" : 32
+          }
+        }
+      ],
+      "action_specs" : [
+        {
+          "id" : 31369524,
+          "name" : "SwitchIngress.route",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "srcMac",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 48
+              }
+            },
+            {
+              "id" : 2,
+              "name" : "dstMac",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 48
+              }
+            },
+            {
+              "id" : 3,
+              "name" : "dst_port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 32755069,
+          "name" : "SwitchIngress.nat",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "srcAddr",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 32
+              }
+            },
+            {
+              "id" : 2,
+              "name" : "dstAddr",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 32
+              }
+            },
+            {
+              "id" : 3,
+              "name" : "dst_port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 21257015,
+          "name" : "NoAction",
+          "action_scope" : "DefaultOnly",
+          "annotations" : [
+            {
+              "name" : "@defaultonly"
+            }
+          ],
+          "data" : []
+        }
+      ],
+      "data" : [
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65553,
+            "name" : "$COUNTER_SPEC_BYTES",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65554,
+            "name" : "$COUNTER_SPEC_PKTS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65545,
+            "name" : "$METER_SPEC_CIR_KBPS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 18446744073709551615
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65546,
+            "name" : "$METER_SPEC_PIR_KBPS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 18446744073709551615
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65547,
+            "name" : "$METER_SPEC_CBS_KBITS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 18446744073709551615
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65548,
+            "name" : "$METER_SPEC_PBS_KBITS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 18446744073709551615
+            }
+          }
+        }
+      ],
+      "supported_operations" : ["SyncCounters"],
+      "attributes" : ["MeterByteCountAdjust", "EntryScope"]
+    },
+    {
+      "name" : "pipe.SwitchIngress.forward_timeout",
+      "id" : 39585591,
+      "table_type" : "MatchAction_Direct",
+      "size" : 200000,
+      "annotations" : [],
+      "depends_on" : [],
+      "has_const_default_action" : true,
+      "key" : [
+        {
+          "id" : 1,
+          "name" : "hdr.ethernet.dst_addr",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "bytes",
+            "width" : 48
+          }
+        }
+      ],
+      "action_specs" : [
+        {
+          "id" : 32848556,
+          "name" : "SwitchIngress.hit",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 29846138,
+          "name" : "SwitchIngress.nop",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : []
+        }
+      ],
+      "data" : [],
+      "supported_operations" : [],
+      "attributes" : ["EntryScope"]
+    }
+  ],
+  "learn_filters" : []
+}
