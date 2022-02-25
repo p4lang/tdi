@@ -30,7 +30,6 @@ namespace tdi {
 
 namespace {
 
-#if 0
 std::vector<std::string> splitString(const std::string &s,
                                      const std::string &delimiter) {
   size_t pos = 0;
@@ -114,7 +113,6 @@ void populateFullNameMap(
     (*fullNameMap).erase(name);
   }
 }
-#endif
 
 }  // anonymous namespace
 
@@ -151,9 +149,19 @@ TdiInfo::TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
                   kv.first.c_str());
         continue;
       }
+      if (tableIdMap.find(table->tableInfoGet()->idGet()) != tableIdMap.end()) {
+        LOG_ERROR("%s:%d Table:%s ID %d Already exists",
+                  __func__,
+                  __LINE__,
+                  kv.first.c_str(),
+                  table->tableInfoGet()->idGet());
+      } else {
+        tableIdMap[table->tableInfoGet()->idGet()] = table.get();
+      }
       tableMap[kv.first] = std::move(table);
     }
   }
+  populateFullNameMap<tdi::Table>(tableMap, &fullTableMap);
 }
 
 tdi_status_t TdiInfo::tablesGet(
@@ -194,8 +202,9 @@ tdi_status_t TdiInfo::tableFromIdGet(const tdi_id_t &id,
     LOG_ERROR("%s:%d Table_id \"%d\" not found", __func__, __LINE__, id);
     return TDI_OBJECT_NOT_FOUND;
   } else {
-    return tableFromNameGet(it->second, table_ret);
+    *table_ret = it->second;
   }
+  return TDI_SUCCESS;
 }
 
 tdi_status_t TdiInfo::learnsGet(
@@ -223,11 +232,14 @@ tdi_status_t TdiInfo::learnFromNameGet(std::string name,
 
 tdi_status_t TdiInfo::learnFromIdGet(tdi_id_t id,
                                      const Learn **learn_ret) const {
-  if (this->learnIdMap.find(id) == this->learnIdMap.end()) {
+  auto it = learnIdMap.find(id);
+  if (it == learnIdMap.end()) {
     LOG_ERROR("%s:%d Learn_id \"%d\" not found", __func__, __LINE__, id);
     return TDI_OBJECT_NOT_FOUND;
+  } else {
+    *learn_ret = it->second;
   }
-  return this->learnFromNameGet(learnIdMap.at(id), learn_ret);
+  return TDI_SUCCESS;
 }
 
 #ifdef _TDI_FROM_BFRT

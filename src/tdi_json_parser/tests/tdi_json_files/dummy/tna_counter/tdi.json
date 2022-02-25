@@ -1,0 +1,305 @@
+{
+  "schema_version" : "1.0.0",
+  "tables" : [
+    {
+      "name" : "pipe.SwitchIngress.forward",
+      "id" : 37882547,
+      "table_type" : "MatchAction_Direct",
+      "size" : 1024,
+      "annotations" : [],
+      "depends_on" : [],
+      "has_const_default_action" : true,
+      "key" : [
+        {
+          "id" : 1,
+          "name" : "hdr.ethernet.src_addr",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Ternary",
+          "type" : {
+            "type" : "bytes",
+            "width" : 48
+          }
+        },
+        {
+          "id" : 65537,
+          "name" : "$MATCH_PRIORITY",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "uint32"
+          }
+        }
+      ],
+      "action_specs" : [
+        {
+          "id" : 32848556,
+          "name" : "SwitchIngress.hit",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 29846138,
+          "name" : "SwitchIngress.nop",
+          "action_scope" : "DefaultOnly",
+          "annotations" : [
+            {
+              "name" : "@defaultonly"
+            }
+          ],
+          "data" : []
+        }
+      ],
+      "data" : [
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65553,
+            "name" : "$COUNTER_SPEC_BYTES",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65554,
+            "name" : "$COUNTER_SPEC_PKTS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        }
+      ],
+      "supported_operations" : ["SyncCounters"],
+      "attributes" : ["EntryScope"]
+    },
+    {
+      "name" : "pipe.SwitchIngress.forward_exact",
+      "id" : 36837593,
+      "table_type" : "MatchAction_Direct",
+      "size" : 1024,
+      "annotations" : [],
+      "depends_on" : [],
+      "has_const_default_action" : true,
+      "key" : [
+        {
+          "id" : 1,
+          "name" : "hdr.ethernet.src_addr",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "bytes",
+            "width" : 48
+          }
+        }
+      ],
+      "action_specs" : [
+        {
+          "id" : 17552080,
+          "name" : "SwitchIngress.hit_forward_exact",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 29846138,
+          "name" : "SwitchIngress.nop",
+          "action_scope" : "DefaultOnly",
+          "annotations" : [
+            {
+              "name" : "@defaultonly"
+            }
+          ],
+          "data" : []
+        }
+      ],
+      "data" : [
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65553,
+            "name" : "$COUNTER_SPEC_BYTES",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65554,
+            "name" : "$COUNTER_SPEC_PKTS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        }
+      ],
+      "supported_operations" : ["SyncCounters"],
+      "attributes" : ["EntryScope"]
+    },
+    {
+      "name" : "pipe.SwitchIngress.forward_dst",
+      "id" : 47352963,
+      "table_type" : "MatchAction_Direct",
+      "size" : 1024,
+      "annotations" : [],
+      "depends_on" : [],
+      "has_const_default_action" : true,
+      "key" : [
+        {
+          "id" : 1,
+          "name" : "hdr.ethernet.dst_addr",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : false,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "bytes",
+            "width" : 48
+          }
+        }
+      ],
+      "action_specs" : [
+        {
+          "id" : 18149393,
+          "name" : "SwitchIngress.hit_dst",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "data" : [
+            {
+              "id" : 1,
+              "name" : "port",
+              "repeated" : false,
+              "mandatory" : true,
+              "read_only" : false,
+              "annotations" : [],
+              "type" : {
+                "type" : "bytes",
+                "width" : 9
+              }
+            }
+          ]
+        },
+        {
+          "id" : 29846138,
+          "name" : "SwitchIngress.nop",
+          "action_scope" : "DefaultOnly",
+          "annotations" : [
+            {
+              "name" : "@defaultonly"
+            }
+          ],
+          "data" : []
+        }
+      ],
+      "data" : [],
+      "supported_operations" : [],
+      "attributes" : ["EntryScope"]
+    },
+    {
+      "name" : "pipe.SwitchIngress.indirect_counter",
+      "id" : 2198822006,
+      "table_type" : "Counter",
+      "size" : 512,
+      "annotations" : [],
+      "depends_on" : [],
+      "key" : [
+        {
+          "id" : 65556,
+          "name" : "$COUNTER_INDEX",
+          "repeated" : false,
+          "annotations" : [],
+          "mandatory" : true,
+          "match_type" : "Exact",
+          "type" : {
+            "type" : "uint32"
+          }
+        }
+      ],
+      "data" : [
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65553,
+            "name" : "$COUNTER_SPEC_BYTES",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        },
+        {
+          "mandatory" : false,
+          "read_only" : false,
+          "singleton" : {
+            "id" : 65554,
+            "name" : "$COUNTER_SPEC_PKTS",
+            "repeated" : false,
+            "annotations" : [],
+            "type" : {
+              "type" : "uint64",
+              "default_value" : 0
+            }
+          }
+        }
+      ],
+      "supported_operations" : ["Sync"],
+      "attributes" : []
+    }
+  ],
+  "learn_filters" : []
+}

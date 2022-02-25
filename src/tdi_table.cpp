@@ -22,11 +22,11 @@
 namespace tdi {
 const std::string tdiNullStr = "";
 
-tdi_status_t Table::tableEntryAdd(const Session & /*session*/,
-                                  const Target & /*dev_tgt*/,
-                                  const Flags & /*flags*/,
-                                  const TableKey & /*key*/,
-                                  const TableData & /*data*/) const {
+tdi_status_t Table::entryAdd(const Session & /*session*/,
+                             const Target & /*dev_tgt*/,
+                             const Flags & /*flags*/,
+                             const TableKey & /*key*/,
+                             const TableData & /*data*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table Entry add not supported",
             __func__,
             __LINE__,
@@ -34,11 +34,11 @@ tdi_status_t Table::tableEntryAdd(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryMod(const Session & /*session*/,
-                                  const Target & /*dev_tgt*/,
-                                  const Flags & /*flags*/,
-                                  const TableKey & /*key*/,
-                                  const TableData & /*data*/) const {
+tdi_status_t Table::entryMod(const Session & /*session*/,
+                             const Target & /*dev_tgt*/,
+                             const Flags & /*flags*/,
+                             const TableKey & /*key*/,
+                             const TableData & /*data*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table entry mod not supported",
             __func__,
             __LINE__,
@@ -46,22 +46,10 @@ tdi_status_t Table::tableEntryMod(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryModInc(const Session & /*session*/,
-                                     const Target & /*dev_tgt*/,
-                                     const Flags & /*flags*/,
-                                     const TableKey & /*key*/,
-                                     const TableData & /*data*/) const {
-  LOG_ERROR("%s:%d %s ERROR : Table entry modify incremental not supported",
-            __func__,
-            __LINE__,
-            tableInfoGet()->nameGet().c_str());
-  return TDI_NOT_SUPPORTED;
-}
-
-tdi_status_t Table::tableEntryDel(const Session & /*session*/,
-                                  const Target & /*dev_tgt*/,
-                                  const Flags & /*flags*/,
-                                  const TableKey & /*key*/) const {
+tdi_status_t Table::entryDel(const Session & /*session*/,
+                             const Target & /*dev_tgt*/,
+                             const Flags & /*flags*/,
+                             const TableKey & /*key*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table entry Delete not supported",
             __func__,
             __LINE__,
@@ -69,9 +57,9 @@ tdi_status_t Table::tableEntryDel(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableClear(const Session & /*session*/,
-                               const Target & /*dev_tgt*/,
-                               const Flags & /*flags*/) const {
+tdi_status_t Table::clear(const Session & /*session*/,
+                          const Target & /*dev_tgt*/,
+                          const Flags & /*flags*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table Clear not supported",
             __func__,
             __LINE__,
@@ -79,10 +67,10 @@ tdi_status_t Table::tableClear(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableDefaultEntrySet(const Session & /*session*/,
-                                         const Target & /*dev_tgt*/,
-                                         const Flags & /*flags*/,
-                                         const TableData & /*data*/) const {
+tdi_status_t Table::defaultEntrySet(const Session & /*session*/,
+                                    const Target & /*dev_tgt*/,
+                                    const Flags & /*flags*/,
+                                    const TableData & /*data*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table default entry set not supported",
             __func__,
             __LINE__,
@@ -90,9 +78,20 @@ tdi_status_t Table::tableDefaultEntrySet(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableDefaultEntryReset(const Session & /* session */,
-                                           const Target & /* dev_tgt */,
-                                           const Flags & /*flags*/) const {
+tdi_status_t Table::defaultEntryMod(const Session & /*session*/,
+                                    const Target & /*dev_tgt*/,
+                                    const Flags & /*flags*/,
+                                    const TableData & /*data*/) const {
+  LOG_ERROR("%s:%d %s ERROR : Table default entry mod not supported",
+            __func__,
+            __LINE__,
+            tableInfoGet()->nameGet().c_str());
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::defaultEntryReset(const Session & /* session */,
+                                      const Target & /* dev_tgt */,
+                                      const Flags & /*flags*/) const {
   LOG_ERROR("%s:%d %s ERROR : Table default entry reset not supported",
             __func__,
             __LINE__,
@@ -100,10 +99,10 @@ tdi_status_t Table::tableDefaultEntryReset(const Session & /* session */,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableDefaultEntryGet(const Session & /* session */,
-                                         const Target & /* dev_tgt */,
-                                         const Flags & /*flags*/,
-                                         TableData * /* data */) const {
+tdi_status_t Table::defaultEntryGet(const Session & /* session */,
+                                    const Target & /* dev_tgt */,
+                                    const Flags & /*flags*/,
+                                    TableData * /* data */) const {
   LOG_ERROR("%s:%d %s ERROR : Table default entry get not supported",
             __func__,
             __LINE__,
@@ -111,11 +110,11 @@ tdi_status_t Table::tableDefaultEntryGet(const Session & /* session */,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryGet(const Session & /*session */,
-                                  const Target & /* dev_tgt */,
-                                  const Flags & /*flags*/,
-                                  const TableKey & /* &key */,
-                                  TableData * /* data */) const {
+tdi_status_t Table::entryGet(const Session & /*session */,
+                             const Target & /* dev_tgt */,
+                             const Flags & /*flags*/,
+                             const TableKey & /* &key */,
+                             TableData * /* data */) const {
   LOG_ERROR("%s:%d %s ERROR Table entry get not supported",
             __func__,
             __LINE__,
@@ -123,11 +122,11 @@ tdi_status_t Table::tableEntryGet(const Session & /*session */,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryGetFirst(const Session & /*session*/,
-                                       const Target & /*dev_tgt*/,
-                                       const Flags & /*flags*/,
-                                       TableKey * /*key*/,
-                                       TableData * /*data*/) const {
+tdi_status_t Table::entryGetFirst(const Session & /*session*/,
+                                  const Target & /*dev_tgt*/,
+                                  const Flags & /*flags*/,
+                                  TableKey * /*key*/,
+                                  TableData * /*data*/) const {
   LOG_ERROR("%s:%d %s ERROR Table entry get first not supported",
             __func__,
             __LINE__,
@@ -135,12 +134,12 @@ tdi_status_t Table::tableEntryGetFirst(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryGet(const Session & /*session*/,
-                                  const Target & /*dev_tgt*/,
-                                  const Flags & /*flags*/,
-                                  const tdi_handle_t & /*entry_handle*/,
-                                  TableKey * /*key*/,
-                                  TableData * /*data*/) const {
+tdi_status_t Table::entryGet(const Session & /*session*/,
+                             const Target & /*dev_tgt*/,
+                             const Flags & /*flags*/,
+                             const tdi_handle_t & /*entry_handle*/,
+                             TableKey * /*key*/,
+                             TableData * /*data*/) const {
   LOG_ERROR("%s:%d %s ERROR Table entry get by handle not supported",
             __func__,
             __LINE__,
@@ -148,12 +147,12 @@ tdi_status_t Table::tableEntryGet(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryKeyGet(const Session & /*session*/,
-                                     const Target & /*dev_tgt*/,
-                                     const Flags & /*flags*/,
-                                     const tdi_handle_t & /*entry_handle*/,
-                                     Target * /*entry_tgt*/,
-                                     TableKey * /*key*/) const {
+tdi_status_t Table::entryKeyGet(const Session & /*session*/,
+                                const Target & /*dev_tgt*/,
+                                const Flags & /*flags*/,
+                                const tdi_handle_t & /*entry_handle*/,
+                                Target * /*entry_tgt*/,
+                                TableKey * /*key*/) const {
   LOG_ERROR("%s:%d %s ERROR Table entry get key not supported",
             __func__,
             __LINE__,
@@ -161,11 +160,11 @@ tdi_status_t Table::tableEntryKeyGet(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryHandleGet(const Session & /*session*/,
-                                        const Target & /*dev_tgt*/,
-                                        const Flags & /*flags*/,
-                                        const TableKey & /*key*/,
-                                        tdi_handle_t * /*entry_handle*/) const {
+tdi_status_t Table::entryHandleGet(const Session & /*session*/,
+                                   const Target & /*dev_tgt*/,
+                                   const Flags & /*flags*/,
+                                   const TableKey & /*key*/,
+                                   tdi_handle_t * /*entry_handle*/) const {
   LOG_ERROR("%s:%d %s ERROR Table entry get handle not supported",
             __func__,
             __LINE__,
@@ -173,13 +172,13 @@ tdi_status_t Table::tableEntryHandleGet(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableEntryGetNext_n(const Session & /*session*/,
-                                        const Target & /*dev_tgt*/,
-                                        const Flags & /*flags*/,
-                                        const TableKey & /*key*/,
-                                        const uint32_t & /*n*/,
-                                        keyDataPairs * /*key_data_pairs*/,
-                                        uint32_t * /*num_returned*/) const {
+tdi_status_t Table::entryGetNextN(const Session & /*session*/,
+                                  const Target & /*dev_tgt*/,
+                                  const Flags & /*flags*/,
+                                  const TableKey & /*key*/,
+                                  const uint32_t & /*n*/,
+                                  keyDataPairs * /*key_data_pairs*/,
+                                  uint32_t * /*num_returned*/) const {
   LOG_ERROR("%s:%d %s ERROR Table entry get next_n not supported",
             __func__,
             __LINE__,
@@ -187,10 +186,10 @@ tdi_status_t Table::tableEntryGetNext_n(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableUsageGet(const Session & /*session*/,
-                                  const Target & /*dev_tgt*/,
-                                  const Flags & /*flags*/,
-                                  uint32_t * /*count*/) const {
+tdi_status_t Table::usageGet(const Session & /*session*/,
+                             const Target & /*dev_tgt*/,
+                             const Flags & /*flags*/,
+                             uint32_t * /*count*/) const {
   LOG_ERROR("%s:%d %s Not supported",
             __func__,
             __LINE__,
@@ -198,10 +197,10 @@ tdi_status_t Table::tableUsageGet(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::tableSizeGet(const Session & /*session*/,
-                                 const Target & /*dev_tgt*/,
-                                 const Flags & /*flags*/,
-                                 size_t *size) const {
+tdi_status_t Table::sizeGet(const Session & /*session*/,
+                            const Target & /*dev_tgt*/,
+                            const Flags & /*flags*/,
+                            size_t *size) const {
   if (nullptr == size) {
     LOG_ERROR("%s:%d Outparam passed is nullptr", __func__, __LINE__);
     return TDI_INVALID_ARG;
