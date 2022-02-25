@@ -39,6 +39,30 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
                             const tdi_device_hdl **device_hdl_ret);
 
 /**
+ * @brief create the Flags corresponding to the device obj and flag
+ *
+ *
+ * @param[in] tdi_device handle of Device object. 
+ * @param[in] flag_value to initialize the Flags.
+ * @param[out] flags_hdl Flags Obj Pointer associated with the Flags.
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_flags_create(const tdi_device_hdl *device_hdl,
+                              const uint64_t flag_value,
+                              const tdi_flags_hdl **flags_hdl);
+
+/**
+ * @brief delete the Flags corresponding to the device obj and flag
+ *
+ *
+ * @param[in] flags_hdl Flags Obj Pointer associated with the Flags.
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_flags_delete(tdi_flags_hdl *flags_hdl);
+
+/**
  * @brief Get the TdiInfo object corresponding to the (device_id,
  * program name)
  *

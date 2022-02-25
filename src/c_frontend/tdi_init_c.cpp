@@ -31,6 +31,34 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
   return sts;
 }
 
+tdi_status_t tdi_flags_create(const tdi_device_hdl *device_hdl,
+	                      const uint64_t flag_value,
+			      const tdi_flags_hdl **flags) {
+  tdi_status_t sts = TDI_SUCCESS;
+  auto *device = reinterpret_cast<const tdi::Device *>(device_hdl);
+  std::unique_ptr<tdi::Flags> flgs;
+  sts = device->createFlags(flag_value, &flgs);
+  if (sts != TDI_SUCCESS) {
+    return sts;
+  }
+  if (flgs == nullptr) {
+    LOG_ERROR("%s:%d Unable to create flags", __func__, __LINE__);
+    return TDI_UNEXPECTED;
+  }
+  *flags = reinterpret_cast<const tdi_flags_hdl*>(flgs.release());
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_flags_delete(tdi_flags_hdl *flags_hdl) {
+  auto flags = reinterpret_cast<tdi::Flags *>(flags_hdl);
+  if (flags == nullptr) {
+    LOG_ERROR("%s:%d null param passed", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  delete flags;
+  return TDI_SUCCESS;
+}
+
 tdi_status_t tdi_info_get(const tdi_dev_id_t dev_id,
                            const char *prog_name,
                            const tdi_info_hdl **info_hdl_ret) {
