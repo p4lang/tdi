@@ -152,7 +152,7 @@ tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   //auto &devMgr=tdi::DevMgr::getInstance();
   //tdi_status_t status=tdi:devMgr->deviceGet(dev_tgt->dev_id, device);
-  return table->tableEntryAdd(
+  return table->entryAdd(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -169,7 +169,7 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
                                   const tdi_table_key_hdl *key,
                                   const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryMod(
+  return table->entryMod(
       *reinterpret_cast<const tdi::Session *>(session),
       //*dev_tgt,
       //flags,
@@ -179,6 +179,7 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
       *reinterpret_cast<const tdi::TableData *>(data));
 }
 
+#if 0
 tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
                                       const tdi_target_hdl *target,
@@ -186,13 +187,14 @@ tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
                                       const tdi_table_key_hdl *key,
                                       const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryModInc(
+  return table->entryModInc(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
       *reinterpret_cast<const tdi::TableKey *>(key),
       *reinterpret_cast<const tdi::TableData *>(data));
 }
+#endif
 
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
@@ -200,7 +202,7 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_flags_hdl *flags,
                                   const tdi_table_key_hdl *key) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryDel(
+  return table->entryDel(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -212,7 +214,7 @@ tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
                               const tdi_target_hdl *target,
                               const tdi_flags_hdl *flags) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableClear(
+  return table->clear(
       *reinterpret_cast<const tdi::Session *>(session), /**dev_tgt, flags*/
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags)
@@ -226,7 +228,7 @@ tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
                                   const tdi_table_key_hdl *key,
                                   tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryGet(
+  return table->entryGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -242,7 +244,7 @@ tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
                                             tdi_table_key_hdl *key,
                                             tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryGet(
+  return table->entryGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -259,7 +261,7 @@ tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
                                       tdi_target_hdl *target_out,
                                       tdi_table_key_hdl *key) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryKeyGet(
+  return table->entryKeyGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target_in),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -275,7 +277,7 @@ tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
                                          const tdi_table_key_hdl *key,
                                          uint32_t *entry_handle) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryHandleGet(
+  return table->entryHandleGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -290,7 +292,7 @@ tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
                                         tdi_table_key_hdl *key,
                                         tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryGetFirst(
+  return table->entryGetFirst(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -316,7 +318,7 @@ tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
         reinterpret_cast<tdi::TableData *>(output_data[i])));
   }
 
-  return table->tableEntryGetNext_n(
+  return table->entryGetNextN(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -332,7 +334,7 @@ tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
                                   const tdi_flags_hdl *flags,
                                   uint32_t *count) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableUsageGet(
+  return table->usageGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -345,7 +347,7 @@ tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
                                           const tdi_flags_hdl *flags,
                                           const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableDefaultEntrySet(
+  return table->defaultEntrySet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -358,7 +360,7 @@ tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
                                           const tdi_flags_hdl *flags,
                                           tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableDefaultEntryGet(
+  return table->defaultEntryGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -370,7 +372,7 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
                                             const tdi_target_hdl *target,
                                             const tdi_flags_hdl *flags) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableDefaultEntryReset(
+  return table->defaultEntryReset(
       *reinterpret_cast<const tdi::Session *>(session), 
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags)
@@ -383,7 +385,7 @@ tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
                                  const tdi_flags_hdl *flags,
                                  size_t *count) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableSizeGet(
+  return table->sizeGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
@@ -396,7 +398,7 @@ tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
                                   const tdi_table_key_hdl *key,
                                   const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryAdd(
+  return table->entryAdd(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key),
@@ -409,13 +411,14 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
                                   const tdi_table_key_hdl *key,
                                   const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryMod(
+  return table->entryMod(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key),
       *reinterpret_cast<const tdi::TableData *>(data));
 }
 
+#if 0
 tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
                                       const tdi_target_hdl *target,
@@ -428,20 +431,21 @@ tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
           ? tdi::Table::TableModIncFlag::MOD_INC_ADD
           : tdi::Table::TableModIncFlag::MOD_INC_DELETE;
 
-  return table->tableEntryModInc(
+  return table->entryModInc(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key),
       *reinterpret_cast<const tdi::TableData *>(data),
       mod_inc_flag);
 }
+#endif
 
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
                                   const tdi_target_hdl *target,
                                   const tdi_table_key_hdl *key) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryDel(
+  return table->entryDel(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key));
@@ -470,7 +474,7 @@ tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
     read_flag = tdi::Table::TableGetFlag::GET_FROM_HW;
   }
 
-  return table->tableEntryGet(
+  return table->entryGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key),
@@ -494,7 +498,7 @@ tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
     read_flag = tdi::Table::TableGetFlag::GET_FROM_HW;
   }
 
-  return table->tableEntryGet(
+  return table->entryGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       read_flag,
@@ -510,7 +514,7 @@ tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
                                       tdi_target_hdl *target_out,
                                       tdi_table_key_hdl *key) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryKeyGet(
+  return table->entryKeyGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target_in),
       static_cast<tdi_handle_t>(entry_handle),
@@ -524,7 +528,7 @@ tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
                                          const tdi_table_key_hdl *key,
                                          uint32_t *entry_handle) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->tableEntryHandleGet(
+  return table->entryHandleGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key),
@@ -546,7 +550,7 @@ tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
     read_flag = tdi::Table::TableGetFlag::GET_FROM_HW;
   }
 
-  return table->tableEntryGetFirst(
+  return table->entryGetFirst(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       read_flag,
@@ -579,7 +583,7 @@ tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
         reinterpret_cast<tdi::TableData *>(output_data[i])));
   }
 
-  return table->tableEntryGetNext_n(
+  return table->entryGetNext_n(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::TableKey *>(key),
