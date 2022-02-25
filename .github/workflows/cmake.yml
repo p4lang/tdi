@@ -37,5 +37,8 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cd build && make && make install
+      run: cd build && make -j$(nproc) && make install
 
+    - name: Tdi Json UT
+      # Build test
+      run: cd build && make CTEST_OUTPUT_ON_FAILURE=1 test
