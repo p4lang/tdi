@@ -13,24 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @file target_init.hpp
- *
- *  @brief Contains common target-specific init function decls
- */
-#ifndef _TARGET_INIT_HPP_
-#define _TARGET_INIT_HPP_
 
-#include <memory>
-#include <vector>
+#include <gtest/gtest.h>
 
-// tdi includes
-#include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_init.hpp>
-
-namespace tdi {
-namespace tna {
-namespace dummy {}  // namespace dummy
-}  // namespace tna
-}  // namespace tdi
-
-#endif  // _TARGET_INIT_HPP_
+int main(int argc, char *argv[]) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

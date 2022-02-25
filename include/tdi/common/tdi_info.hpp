@@ -139,8 +139,6 @@ class TableFactory {
  */
 class TdiInfo {
  public:
-  TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
-          const tdi::TableFactory *factory);
   /**
    * @brief Destructor destroys all metadata contained in this object.
    */
@@ -226,6 +224,8 @@ class TdiInfo {
   std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
 
  private:
+  TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
+          const tdi::TableFactory *factory);
   // This is the map which is to be queried when a name lookup for a table
   // happens. Multiple names can point to the same table because multiple
   // names can exist for a table. Example, switchingress.forward and forward
@@ -233,17 +233,18 @@ class TdiInfo {
   std::map<std::string, const tdi::Table *> fullTableMap;
 
   /* Reverse map in case lookup from ID is needed*/
-  std::map<tdi_id_t, std::string> tableIdMap;
+  std::map<tdi_id_t, const tdi::Table *> tableIdMap;
 
   // Learn Map
   std::map<std::string, std::unique_ptr<tdi::Learn>> learnMap;
   std::map<std::string, const tdi::Learn *> fullLearnMap;
-  std::map<tdi_id_t, std::string> learnIdMap;
+  std::map<tdi_id_t, const tdi::Learn *> learnIdMap;
 
   // Set of optimized out table names. Tables that may be present
-  // in TDI.json but Device decided not to have a table object present
+  // in TDI.json but target decided not to have a table object present
   // for it at all.
-  std::set<std::string> invalid_table_names;
+  // Target can add tables to this set if needed
+  mutable std::set<std::string> invalid_table_names;
   std::unique_ptr<TdiInfoParser> tdi_info_parser_;
 };
 
