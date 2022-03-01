@@ -179,22 +179,18 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
       *reinterpret_cast<const tdi::TableData *>(data));
 }
 
-#if 0
-tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
-                                      const tdi_session_hdl *session,
-                                      const tdi_target_hdl *target,
-                                      const tdi_flags_hdl *flags,
-                                      const tdi_table_key_hdl *key,
-                                      const tdi_table_data_hdl *data) {
+tdi_status_t tdi_table_default_entry_mod(const tdi_table_hdl *table_hdl,
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *target,
+                                         const tdi_flags_hdl *flags,
+                                         const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return table->entryModInc(
+  return table->defaultEntryMod(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
-      *reinterpret_cast<const tdi::TableKey *>(key),
       *reinterpret_cast<const tdi::TableData *>(data));
 }
-#endif
 
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
@@ -418,27 +414,17 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
       *reinterpret_cast<const tdi::TableData *>(data));
 }
 
-#if 0
-tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
-                                      const tdi_session_hdl *session,
-                                      const tdi_target_hdl *target,
-                                      const tdi_table_key_hdl *key,
-                                      const tdi_table_data_hdl *data,
-                                      const tdi_entry_mod_inc_flag_e flag) {
+tdi_status_t tdi_table_default_entry_mod(const tdi_table_hdl *table_hdl,
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *target,
+                                         const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  const tdi::Table::TableModIncFlag mod_inc_flag =
-      (flag == MOD_INC_ADD)
-          ? tdi::Table::TableModIncFlag::MOD_INC_ADD
-          : tdi::Table::TableModIncFlag::MOD_INC_DELETE;
 
-  return table->entryModInc(
+  return table->defaultEntryMod(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
-      *reinterpret_cast<const tdi::TableKey *>(key),
-      *reinterpret_cast<const tdi::TableData *>(data),
-      mod_inc_flag);
+      *reinterpret_cast<const tdi::TableData *>(data));
 }
-#endif
 
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,

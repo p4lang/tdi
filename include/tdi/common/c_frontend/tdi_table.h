@@ -320,25 +320,21 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
                                   const tdi_table_data_hdl *data);
 
 /**
- * @brief Modify only a part of an existing entry of the table.
- *            - Either add or delete the given data to the existing entry.
+ * @brief Modify only an existing default entry of the table.
  *
  * @param[in] table_hdl Table object
  * @param[in] session Session Object
  * @param[in] dev_tgt Device target
  * @param[in] flags Call flags
- * @param[in] key Entry Key
  * @param[in] data Entry Data
- * @param[in] flag Modify inc flag (ADD or DEL)
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
-                                      const tdi_session_hdl *session,
-                                      const tdi_target_hdl *dev_tgt,
-                                      const tdi_flags_hdl *flags,
-                                      const tdi_table_key_hdl *key,
-                                      const tdi_table_data_hdl *data);
+tdi_status_t tdi_table_default_entry_mod(const tdi_table_hdl *table_hdl,
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *target,
+                                         const tdi_flags_hdl *flags,
+                                         const tdi_table_data_hdl *data);
 
 /**
  * @brief Delete an entry of the table
@@ -653,25 +649,20 @@ tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
                                   const tdi_table_data_hdl *data);
 
 /**
- * @brief Modify only a part of an existing entry of the table.
- *            - Either add or delete the given data to the existing entry.
+ * @brief Modify only an existing default entry of the table.
  * @deprecated Please use function version with new flags argument.
  *
  * @param[in] table_hdl Table object
  * @param[in] session Session Object
  * @param[in] dev_tgt Device target
- * @param[in] key Entry Key
  * @param[in] data Entry Data
- * @param[in] flag Modify inc flag (ADD or DEL)
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_entry_mod_inc(const tdi_table_hdl *table_hdl,
-                                      const tdi_session_hdl *session,
-                                      const tdi_target_hdl *dev_tgt,
-                                      const tdi_table_key_hdl *key,
-                                      const tdi_table_data_hdl *data,
-                                      const tdi_entry_mod_inc_flag_e flag);
+tdi_status_t tdi_table_default_entry_mod(const tdi_table_hdl *table_hdl,
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *target,
+                                         const tdi_table_data_hdl *data);
 
 /**
  * @brief Delete an entry of the table
