@@ -87,7 +87,7 @@ typedef enum table_entry_scope {
  * @param[in] key Table Key
  * @param[in] cookie User provided cookie during cb registration
  */
-typedef tdi_status_t (*tdi_idle_tmo_expiry_cb)(tdi_target_t *dev_tgt,
+typedef tdi_status_t (*tdi_idle_tmo_expiry_cb)(tdi_target_hdl *dev_tgt,
                                                 tdi_table_key_hdl *key,
                                                 void *cookie);
 
@@ -98,7 +98,7 @@ typedef tdi_status_t (*tdi_idle_tmo_expiry_cb)(tdi_target_t *dev_tgt,
  * @param[in] port_up If port is up
  * @param[in] cookie User provided cookie during cb registration
  */
-typedef tdi_status_t (*tdi_port_status_chg_cb)(tdi_target_t *dev_tgt,
+typedef tdi_status_t (*tdi_port_status_chg_cb)(tdi_target_hdl *dev_tgt,
                                                 tdi_table_key_hdl *key,
                                                 bool port_up,
                                                 void *cookie);
@@ -116,7 +116,7 @@ typedef tdi_status_t (*tdi_port_status_chg_cb)(tdi_target_t *dev_tgt,
  * @param[in] is_add If the operation was add or del
  */
 typedef void (*tdi_selector_table_update_cb)(const tdi_session_hdl *session,
-                                               const tdi_target_t *dev_tgt,
+                                               const tdi_target_hdl *dev_tgt,
                                                const void *cookie,
                                                const tdi_id_t sel_grp_id,
                                                const tdi_id_t act_mbr_id,

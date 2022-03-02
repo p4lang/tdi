@@ -40,7 +40,7 @@ extern "C" {
  * @param[in] cookie Optional user Cookie registered
  */
 typedef tdi_status_t (*tdi_cb_function)(
-    const tdi_target_t *tdi_tgt,
+    const tdi_target_hdl *tdi_tgt,
     const tdi_session_hdl *session,
     tdi_learn_data_hdl **learnData,
     uint32_t num,
@@ -61,7 +61,7 @@ typedef tdi_status_t (*tdi_cb_function)(
  */
 tdi_status_t tdi_learn_callback_register(const tdi_learn_hdl *learn,
                                           const tdi_session_hdl *session,
-                                          const tdi_target_t *dev_tgt,
+                                          const tdi_target_hdl *dev_tgt,
                                           const tdi_cb_function callback_fn,
                                           const void *cookie);
 
@@ -76,7 +76,7 @@ tdi_status_t tdi_learn_callback_register(const tdi_learn_hdl *learn,
  */
 tdi_status_t tdi_learn_callback_deregister(const tdi_learn_hdl *learn,
                                             const tdi_session_hdl *session,
-                                            const tdi_target_t *dev_tgt);
+                                            const tdi_target_hdl *dev_tgt);
 
 /**
  * @brief Notify the device that the learn_msg was received and

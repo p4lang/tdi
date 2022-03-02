@@ -1557,6 +1557,7 @@ tdi_status_t tdi_data_field_list_with_action_get(
 tdi_status_t tdi_data_field_id_get(const tdi_table_hdl *table_hdl,
                                     const char *name,
                                     tdi_id_t *field_id);
+
 /**
  * @brief Get the field ID of a Data Field from a name and
  * action ID
@@ -1587,6 +1588,7 @@ tdi_status_t tdi_data_field_id_with_action_get(
 tdi_status_t tdi_data_field_size_get(const tdi_table_hdl *table_hdl,
                                       const tdi_id_t field_id,
                                       size_t *field_size);
+
 /**
  * @brief Get the Size of a field with field ID and action ID.
  * For container fields this
@@ -1858,6 +1860,7 @@ tdi_status_t tdi_data_field_allowed_choices_with_action_get(
  */
 tdi_status_t tdi_data_field_num_annotations_get(
     const tdi_table_hdl *table_hdl, const tdi_id_t field_id, uint32_t *num);
+
 /**
  * @brief Get array of annotations on a data field
  *
@@ -1885,6 +1888,7 @@ tdi_status_t tdi_data_field_num_annotations_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num);
+
 /**
  * @brief Get array of annotations on a data field
  *
@@ -1912,6 +1916,7 @@ tdi_status_t tdi_data_field_annotations_with_action_get(
  */
 tdi_status_t tdi_data_field_num_oneof_siblings_get(
     const tdi_table_hdl *table_hdl, const tdi_id_t field_id, uint32_t *num);
+
 /**
  * @brief Get the IDs of oneof siblings of a field. If a field is part of a
  * oneof , for example, consider $ACTION_MEMBER_ID and $SELECTOR_GROUP_ID. then
@@ -1927,6 +1932,7 @@ tdi_status_t tdi_data_field_oneof_siblings_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     tdi_id_t *oneof_siblings_c);
+
 /**
  * @brief Get Size of array of IDs of oneof siblings of a field
  *
@@ -1942,6 +1948,7 @@ tdi_status_t tdi_data_field_num_oneof_siblings_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num);
+
 /**
  * @brief Get the IDs of oneof siblings of a field. If a field is part of a
  * oneof , for example, consider $ACTION_MEMBER_ID and $SELECTOR_GROUP_ID. then
@@ -2057,6 +2064,7 @@ tdi_status_t tdi_action_annotations_get(const tdi_table_hdl *table_hdl,
 tdi_status_t tdi_table_entry_scope_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     tdi_table_attributes_hdl **tbl_attr_hdl_ret);
+
 #ifdef _TDI_FROM_BFRT
 /**
  * @brief Allocate attribute object for Idle entry
@@ -2107,6 +2115,7 @@ tdi_status_t tdi_table_port_stats_poll_intv_attributes_allocate(
 tdi_status_t tdi_table_pre_device_config_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
+
 /**
  * @brief Allocate attribute object for dynamic hashing
  *
@@ -2118,6 +2127,7 @@ tdi_status_t tdi_table_pre_device_config_attributes_allocate(
 tdi_status_t tdi_table_dyn_hashing_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
+
 /**
  * @brief Allocate attribute object for dynamic key mask
  *
@@ -2129,6 +2139,7 @@ tdi_status_t tdi_table_dyn_hashing_attributes_allocate(
 tdi_status_t tdi_table_dyn_key_mask_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
+
 /**
  * @brief Allocate attribute object for meter count byte adjust
  *
@@ -2140,6 +2151,7 @@ tdi_status_t tdi_table_dyn_key_mask_attributes_allocate(
 tdi_status_t tdi_table_meter_byte_count_adjust_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
+
 /**
  * @brief Allocate attribute object for selector update callback
  *
@@ -2161,6 +2173,7 @@ tdi_status_t tdi_table_selector_table_update_cb_attributes_allocate(
  */
 tdi_status_t tdi_table_attributes_deallocate(
     tdi_table_attributes_hdl *tbl_attr_hdl);
+
 #ifdef TDI_GENERIC_FLAGS
 /**
  * @brief Apply an Attribute from an Attribute Object on the
@@ -2204,6 +2217,7 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
                                        const tdi_flags_hdl *flags,
                                        tdi_table_attributes_hdl *tbl_attr);
 #else
+
 /**
  * @brief Apply an Attribute from an Attribute Object on the
  * table. Before using this API, the Attribute object needs to

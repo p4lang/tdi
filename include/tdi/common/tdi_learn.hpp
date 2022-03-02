@@ -109,16 +109,7 @@ class Learn {
    */
   virtual tdi_status_t tdiLearnCallbackDeregister(
       const std::shared_ptr<tdi::Session> /*session*/,
-      const tdi_target_t * /*dev_tgt*/) const {
-    /*
-    if (session==nullptr) {
-      LOG_ERROR("invalid session %d", session);
-      return TDI_INVALID_ARG;
-    }
-    */
-    //uint32_t value;
-    //dev_tgt.getValue(TDI_TARGET_CORE, &value);
-    //LOG_DBG("invalid session %d", dev_tgt);
+      const Target & /*dev_tgt*/) const {
     return TDI_SUCCESS;
   };
 
