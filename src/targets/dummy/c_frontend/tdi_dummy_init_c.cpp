@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tdi/common/tdi_init.hpp>
-#include "target_init.h"
+#include "tdi_dummy_init.h"
 
-tdi_status_t tdi_module_init(const tdi_mgr_type_e* arr, const size_t arr_size) {
+tdi_status_t tdi_module_init(const tdi_mgr_type_e *arr, const size_t arr_size) {
   std::vector<tdi_mgr_type_e> mgr_type_vec(arr, arr + arr_size);
   // Need to call tdi::tna::dummy::Init::tdiModuleInit() instead
   return tdi::Init::tdiModuleInit(mgr_type_vec);
 }
-

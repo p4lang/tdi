@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/** @file tdi_dummy_init.h
+ *
+ *  @brief C frontend for init
+ */
+#ifndef _TDI_DUMMY_INIT_H_
+#define _TDI_DUMMY_INIT_H_
 
-#include "target_init.hpp"
+// tdi includes
+#include <tdi/common/tdi_defs.h>
 
-namespace tdi {
-namespace tna {
-namespace dummy {
+#include "../tdi_dummy_init.hpp"
 
-tdi_status_t DevMgr::deviceAdd(
-      const tdi_dev_id_t & /*device_id*/,
-      const tdi_arch_type_e & /*arch_type*/,
-      std::vector<std::unique_ptr<tdi::ProgramConfig>> & /*device_config*/,
-      void * /*cookie*/) {
-  return TDI_SUCCESS;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+tdi_status_t tdi_module_init(const tdi_mgr_type_e *arr, const size_t arr_size);
+
+#ifdef __cplusplus
 }
+#endif
 
-tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t & /*device_id*/) {
-  return TDI_SUCCESS;
-}
-
-
-} // dummy
-} // tna
-} // tdi
+#endif  // _TDI_DUMMY_INIT_H_

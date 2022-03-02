@@ -20,16 +20,18 @@
 #ifndef _TDI_LEARN_HPP
 #define _TDI_LEARN_HPP
 
-#include <string>
-#include <vector>
+#include <functional>
 #include <map>
 #include <memory>
-#include <functional>
+#include <string>
+#include <vector>
 
 #include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_target.hpp>
-#include <tdi/common/tdi_table_data.hpp>
+#include <tdi/common/tdi_info.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_session.hpp>
+#include <tdi/common/tdi_table_data.hpp>
+#include <tdi/common/tdi_target.hpp>
 
 namespace tdi {
 
@@ -61,7 +63,8 @@ typedef std::function<tdi_status_t(
     const std::shared_ptr<tdi::Session> session,
     std::vector<std::unique_ptr<tdi::LearnData>> learnDataVec,
     tdi_learn_msg_hdl *const learn_msg_hdl,
-    const void *cookie)> tdiCbFunction;
+    const void *cookie)>
+    tdiCbFunction;
 
 /**
  * @brief Class to contain metadata of Learn Obj and perform functions
@@ -126,110 +129,10 @@ class Learn {
     return TDI_SUCCESS;
   };
 
-  const LearnInfo &learnInfoGet() const { return *(learn_info_.get()); }
+  const LearnInfo &learnInfoGet() const { return *(learn_info_); }
 
  private:
-  std::unique_ptr<LearnInfo> learn_info_;
-};
-
-class LearnFieldInfo {
- public:
-  LearnFieldInfo(tdi_id_t id, size_t s, std::string n);
-  ~LearnFieldInfo() = default;
-
-  /**
-   * @brief Get the size of the Learn Data Field
-   *
-   * @param[in] field_id Data field ID
-   * @param[out] size Size of the Data field
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnFieldSizeGet(size_t *size) const;
-
-  /**
-   * @brief Find out whether the Learn Data field is a pointer or not
-   *
-   * @param[in] field_id Data field ID
-   * @param[out] is_ptr Is it a pointer?
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnFieldIsPtrGet(bool *is_ptr) const;
-
-  /**
-   * @brief Get the Name of the Learn Data field
-   *
-   * @param[in] field_id Data Field ID
-   * @param[out] name Data Field Name
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnFieldNameGet(std::string *name) const;
-
-  /**
-   * @brief Get the ID of the Learn Data field
-   *
-   * @param[out] ID Data Field ID
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnFieldIdGet(tdi_id_t *field_id) const;
-
-  const std::string &getName() const { return name_; };
-  const tdi_id_t &getFieldId() const { return field_id_; };
-
- private:
-  tdi_id_t field_id_;
-  size_t size_;
-  std::string name_;
-  bool is_ptr_;
-};
-
-class LearnInfo {
-  /**
-   * @brief Get ID of the learn Object
-   *
-   * @param [out] id ID of the learn Object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnIdGet(tdi_id_t *id) const;
-
-  /**
-   * @brief Get Name of the learn Object
-   *
-   * @param [out] name Name of the learn Object
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnNameGet(std::string *name) const;
-
-  /**
-   * @brief Get the list of IDs of the Data Fields associated with
-   *    the Learn obj
-   *
-   * @param[out] id_vec Vector of IDs to contain the list of IDs
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnFieldIdListGet(std::vector<tdi_id_t> *id_vec) const;
-
-  /**
-   * @brief Get the ID of the Learn data field
-   *
-   * @param[in] name Data field Name
-   * @param[out] field_id Field ID of the Data field
-   *
-   * @return Status of the API call
-   */
-  tdi_status_t learnFieldIdGet(const std::string &name,
-                               tdi_id_t *field_id) const;
-
-  tdi_id_t learn_id_;
-  std::string learn_name_;
-  std::map<tdi_id_t, std::unique_ptr<const LearnFieldInfo>> lrn_fields_;
-  size_t learn_msg_size_;
+  const LearnInfo *learn_info_{nullptr};
 };
 
 }  // namespace tdi

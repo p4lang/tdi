@@ -1,0 +1,5 @@
+###############################################################################
+Steps to run the UT
+###############################################################################
+"make test" from top level tdi directory will run it. Needs TDI_GTEST cmake
+option to be true

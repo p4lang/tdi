@@ -13,24 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @file target_init.h
- *
- *  @brief C frontend for init
- */
-#ifndef _TARGET_INIT_H_
-#define _TARGET_INIT_H_
 
-// tdi includes
-#include <tdi/common/tdi_defs.h>
+#include <gtest/gtest.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-tdi_status_t tdi_module_init(const tdi_mgr_type_e* arr, const size_t arr_size);
-
-#ifdef __cplusplus
+int main(int argc, char *argv[]) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
-#endif
-
-#endif  // _TARGET_INIT_H_

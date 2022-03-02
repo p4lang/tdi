@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(libtdi VERSION 0.1 LANGUAGES CXX)
 
+ENABLE_TESTING()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
@@ -16,13 +17,14 @@ file(COPY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
   PATTERN "*.am" EXCLUDE)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 include_directories(.)
 
 if(STANDALONE)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-syslibs/include)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third-party/target-utils/include)
-  add_subdirectory(third-party)
 endif()
+add_subdirectory(third-party)
 
 set(C_CXX_FLAGS "-Wall -Wextra -Werror -Wshadow -Wpedantic -Wno-missing-field-initializers ")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-z,defs")
@@ -35,7 +37,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS}")
 
 
 add_subdirectory(src)
-add_subdirectory(tdi_json_parser)
 
 #
 ## Building tdi doxygen

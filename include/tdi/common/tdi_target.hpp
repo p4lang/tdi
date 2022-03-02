@@ -38,39 +38,37 @@ class Device;
 class P4Pipeline {
  public:
   P4Pipeline(const std::string &name,
+             const std::string context_path,
              const std::string &binary_path,
-             const std::vector<std::string> &pipeline_info_file_paths,
              const std::vector<uint32_t> &scope_vec)
       : name_(name),
+        context_path_(context_path),
         binary_path_(binary_path),
-        pipeline_info_file_paths_(pipeline_info_file_paths),
         scope_vec_(scope_vec){};
   const std::string name_;
-  const std::string binary_path_;
   const std::string context_path_;
-  const std::vector<std::string> pipeline_info_file_paths_;
+  const std::string binary_path_;
   const std::vector<uint32_t> scope_vec_;
 };
 
 /**
  * @brief This class contains Program configuration information
  * like program name, TDI json path and information regarding
- * all the pipeline_profiles of this Program. Maintained in 
+ * all the pipeline_profiles of this Program. Maintained in
  * tdi::Device
  */
 class ProgramConfig {
  public:
   ProgramConfig(const std::string &prog_name,
                 const std::vector<std::string> &tdi_info_file_paths,
-                std::vector<std::unique_ptr<tdi::P4Pipeline>> p4_pipelines)
+                const std::vector<tdi::P4Pipeline> &p4_pipelines)
       : prog_name_(prog_name),
         tdi_info_file_paths_(tdi_info_file_paths),
-        p4_pipelines_(std::move(p4_pipelines)){};
+        p4_pipelines_(p4_pipelines){};
   const std::string prog_name_;
   const std::vector<std::string> tdi_info_file_paths_;
-  const std::vector<std::unique_ptr<tdi::P4Pipeline>> p4_pipelines_;
+  const std::vector<tdi::P4Pipeline> p4_pipelines_;
 };
-
 
 enum tdi_target_core_enum_e {
   TDI_TARGET_DEV_ID = TDI_TARGET_CORE,
@@ -81,11 +79,13 @@ enum tdi_target_core_enum_e {
 class Target {
  public:
   virtual ~Target() = default;
-  virtual tdi_status_t setValue(const tdi_target_e &target, const uint32_t &value);
+  virtual tdi_status_t setValue(const tdi_target_e &target,
+                                const uint32_t &value);
   virtual tdi_status_t getValue(const tdi_target_e &target, uint32_t *value);
 
  protected:
   Target(const tdi_dev_id_t &dev_id) : dev_id_(dev_id){};
+
  private:
   friend class tdi::Device;
   tdi_dev_id_t dev_id_;
@@ -95,18 +95,18 @@ class Target {
  * @brief Can be constructed by \ref tdi::Device::createFlags()
  */
 class Flags {
-  public:
-   virtual ~Flags() = default;
-   tdi_status_t setValue(const tdi_flags_e &flags, const bool &val);
-   tdi_status_t getValue(const tdi_flags_e &flags, bool *val);
-   const uint64_t &getFlags() { return flags_; };
+ public:
+  virtual ~Flags() = default;
+  tdi_status_t setValue(const tdi_flags_e &flags, const bool &val);
+  tdi_status_t getValue(const tdi_flags_e &flags, bool *val);
+  const uint64_t &getFlags() { return flags_; };
 
-  private:
-   friend class Device;
-   Flags(const uint64_t &flags) : flags_(flags){};
-   uint64_t flags_ = 0;
+ private:
+  friend class Device;
+  Flags(const uint64_t &flags) : flags_(flags){};
+  uint64_t flags_ = 0;
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_DEFS_HPP_
