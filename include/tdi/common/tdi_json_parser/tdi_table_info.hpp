@@ -734,7 +734,7 @@ class ActionInfo {
    * @return actionContextInfo object.
    *
    */
-  const ActionContextInfo *ActionContextInfoGet() const {
+  const ActionContextInfo *actionContextInfoGet() const {
     return action_context_info_.get();
   };
 
