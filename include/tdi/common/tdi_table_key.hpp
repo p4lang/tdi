@@ -58,7 +58,7 @@ class KeyFieldValueExact : public KeyFieldValue {
   KeyFieldValueExact(T *value_ptr, const size_t size)
       : value_ptr_(value_ptr), size_(size){};
   T value_ = 0;
-  T *value_ptr_ = nullptr;
+  const uint8_t *value_ptr_ = nullptr;
   size_t size_ = 0;
 };
 
