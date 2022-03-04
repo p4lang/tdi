@@ -35,5 +35,6 @@ add_library(tdi SHARED $<TARGET_OBJECTS:tdi_o>)
 target_link_libraries(tdi PUBLIC target_utils target_sys tdi_json_parser)
 
 add_subdirectory(arch/tna)
+add_subdirectory(arch/psa)
 add_subdirectory(targets/dummy)
 add_subdirectory(tdi_json_parser)

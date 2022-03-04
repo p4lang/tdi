@@ -43,6 +43,7 @@ namespace values {
 namespace core {
 const std::string TABLE_KEY_MATCH_TYPE_EXACT = "Exact";
 const std::string TABLE_KEY_MATCH_TYPE_TERNARY = "Ternary";
+const std::string TABLE_KEY_MATCH_TYPE_RANGE = "Range";
 const std::string TABLE_KEY_MATCH_TYPE_LPM = "LPM";
 }  // namespace core
 }  // namespace values
@@ -69,6 +70,8 @@ class TdiInfoMapper {
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT));
     matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_TERNARY,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY));
+    matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_RANGE,
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE));
     matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_LPM,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM));
   }

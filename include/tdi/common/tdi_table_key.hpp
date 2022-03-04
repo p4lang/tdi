@@ -35,34 +35,13 @@ namespace tdi {
 class Table;
 
 /**
- * @brief Key Field Type. A key can have multiple fields, each with a different
- * type
- */
-enum class KeyFieldType {
-  INVALID = 0,
-  EXACT = 1,
-  TERNARY = 2,
-  RANGE = 3,
-  LPM = 4,
-};
-
-/**
- * @brief Key Field Type String. Used mainly in error messages.
- */
-const std::map<KeyFieldType, const char *> KeyFieldTypeStr = {
-    {KeyFieldType::INVALID, "INVALID"},
-    {KeyFieldType::EXACT, "EXACT"},
-    {KeyFieldType::TERNARY, "TERNARY"},
-    {KeyFieldType::RANGE, "RANGE"},
-    {KeyFieldType::LPM, "LPM"}};
-
-/**
  * @brief Key Field Match Type. A key can have multiple fields,
  * each with a different match type
  */
 enum tdi_match_type_core_e {
   TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
   TDI_MATCH_TYPE_TERNARY,
+  TDI_MATCH_TYPE_RANGE,
   TDI_MATCH_TYPE_LPM,
 };
 
@@ -125,19 +104,6 @@ class KeyFieldValueLPM : public KeyFieldValue {
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
   uint16_t prefix_len_ = 0;
-  size_t size_ = 0;
-};
-
-template<class T>
-class KeyFieldValueOptional: public KeyFieldValue {
- public:
-  KeyFieldValueOptional(T &value, const bool &is_valid)
-      : value_(value), is_valid_(is_valid) {};
-  KeyFieldValueOptional(const uint8_t *value_ptr, const bool is_valid, const size_t size)
-      : value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
-  T value_ = 0;
-  const uint8_t *value_ptr_ = nullptr;
-  bool is_valid_ = 0;
   size_t size_ = 0;
 };
 
