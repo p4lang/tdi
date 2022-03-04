@@ -73,7 +73,7 @@ class LearnInfo {
    * @return Vector of IDs
    *
    */
-  std::vector<tdi_id_t>  dataFieldIdListGet() const;
+  std::vector<tdi_id_t> dataFieldIdListGet() const;
 
   /**
    * @brief Get the field ID of a Data Field from a name.
@@ -92,9 +92,25 @@ class LearnInfo {
    */
   const DataFieldInfo *dataFieldGet(const tdi_id_t &field_id) const;
 
+  /**
+   * @brief Set learnContextInfo object.
+   *
+   * @return learnContextInfo object.
+   *
+   */
   void learnContextInfoSet(
       std::unique_ptr<LearnContextInfo> learn_context_info) {
     learn_context_info_ = std::move(learn_context_info);
+  };
+
+  /**
+   * @brief Get learnContextInfo object.
+   *
+   * @return learnContextInfo object.
+   *
+   */
+  const LearnContextInfo *learnContextInfoGet() const {
+    return learn_context_info_.get();
   };
 
  private:
