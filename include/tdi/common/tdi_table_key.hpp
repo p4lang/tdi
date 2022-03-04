@@ -55,7 +55,7 @@ template<class T>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
   KeyFieldValueExact(T &value) : value_(value){};
-  KeyFieldValueExact(T *value_ptr, const size_t size)
+  KeyFieldValueExact(const uint8_t *value_ptr, const size_t size)
       : value_ptr_(value_ptr), size_(size){};
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
