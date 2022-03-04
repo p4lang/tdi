@@ -293,9 +293,25 @@ class TableInfo {
    */
   const ActionInfo *actionGet(const tdi_id_t &action_id) const;
 
+  /**
+   * @brief Set tableContextInfo object.
+   *
+   * @return tableContextInfo object.
+   *
+   */
   void tableContextInfoSet(
       std::unique_ptr<TableContextInfo> table_context_info) const {
     table_context_info_ = std::move(table_context_info);
+  };
+
+  /**
+   * @brief Get tableContextInfo object.
+   *
+   * @return tableContextInfo object.
+   *
+   */
+  const TableContextInfo *tableContextInfoGet() const {
+    return table_context_info_.get();
   };
 
   std::map<std::string, const KeyFieldInfo *> name_key_map_;
@@ -346,7 +362,7 @@ class TableInfo {
   const std::set<tdi_attributes_type_e> attributes_type_set_;
   const std::set<Annotation> annotations_{};
 
-  mutable std::unique_ptr<TableContextInfo> table_context_info_;
+  mutable std::unique_ptr<TableContextInfo> table_context_info_ = nullptr;
   friend class TdiInfoParser;
 };
 
@@ -423,9 +439,25 @@ class KeyFieldInfo {
 
   /** @} */  // End of group Key
 
+  /**
+   * @brief Set keyFieldContextInfo object.
+   *
+   * @return keyFieldContextInfo object.
+   *
+   */
   void keyFieldContextInfoSet(
       std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const {
     key_field_context_info_ = std::move(key_field_context_info);
+  };
+
+  /**
+   * @brief Get keyFieldContextInfo object.
+   *
+   * @return keyFieldContextInfo object.
+   *
+   */
+  const KeyFieldContextInfo *keyFieldContextInfoGet() const {
+    return key_field_context_info_.get();
   };
 
  private:
@@ -473,7 +505,8 @@ class KeyFieldInfo {
   const bool is_field_slice_{false};
   const bool is_ptr_{false};
   const bool match_priority_{false};
-  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_;
+  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_ =
+      nullptr;
   friend class TdiInfoParser;
 };  // class KeyFieldInfo
 
@@ -583,9 +616,25 @@ class DataFieldInfo {
 
   /** @} */  // End of group Data
 
+  /**
+   * @brief Set dataFieldContextInfo object.
+   *
+   * @return dataFieldContextInfo object.
+   *
+   */
   void dataFieldContextInfoSet(
       std::unique_ptr<DataFieldContextInfo> data_field_context_info) {
     data_field_context_info_ = std::move(data_field_context_info);
+  };
+
+  /**
+   * @brief Get dataFieldContextInfo object.
+   *
+   * @return dataFieldContextInfo object.
+   *
+   */
+  const DataFieldContextInfo *dataFieldContextInfoGet() const {
+    return data_field_context_info_.get();
   };
 
  private:
@@ -634,7 +683,8 @@ class DataFieldInfo {
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
   const std::map<std::string, tdi_id_t> container_names_;
   const std::set<tdi_id_t> oneof_siblings_;
-  mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_;
+  mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_ =
+      nullptr;
   friend class TdiInfoParser;
 };
 
@@ -667,9 +717,25 @@ class ActionInfo {
   };
   /** @} */  // End of group Action IDs
 
+  /**
+   * @brief Set actionContextInfo object.
+   *
+   * @return actionContextInfo object.
+   *
+   */
   void actionContextInfoSet(
       std::unique_ptr<ActionContextInfo> action_context_info) const {
     action_context_info_ = std::move(action_context_info);
+  };
+
+  /**
+   * @brief Get actionContextInfo object.
+   *
+   * @return actionContextInfo object.
+   *
+   */
+  const ActionContextInfo *ActionContextInfoGet() const {
+    return action_context_info_.get();
   };
 
   // Map of table_data_fields with names
@@ -690,7 +756,7 @@ class ActionInfo {
   // Map of table_data_fields
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields_;
   const std::set<tdi::Annotation> annotations_;
-  mutable std::unique_ptr<ActionContextInfo> action_context_info_;
+  mutable std::unique_ptr<ActionContextInfo> action_context_info_ = nullptr;
   friend class TableInfo;
   friend class TdiInfoParser;
 };
