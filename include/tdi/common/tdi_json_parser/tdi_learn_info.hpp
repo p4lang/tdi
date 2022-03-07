@@ -99,7 +99,7 @@ class LearnInfo {
    *
    */
   void learnContextInfoSet(
-      std::unique_ptr<LearnContextInfo> learn_context_info) {
+      std::unique_ptr<LearnContextInfo> learn_context_info) const {
     learn_context_info_ = std::move(learn_context_info);
   };
 

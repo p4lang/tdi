@@ -170,7 +170,7 @@ std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
     const tdi::Cjson &table_key_cjson) {
   // parses the table_key json node and extracts all the relevant
   tdi_id_t id = static_cast<tdi_id_t>(table_key_cjson["id"]);
-  std::string name = table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE];
+  std::string name = table_key_cjson[tdi_json::TABLE_KEY_NAME];
   bool mandatory = table_key_cjson[tdi_json::TABLE_KEY_MANDATORY];
   tdi_match_type_e match_type =
       matchTypeStrToEnum(table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE]);
@@ -337,6 +337,12 @@ std::unique_ptr<ActionInfo> TdiInfoParser::parseAction(
                      name,
                      std::move(data_fields),
                      parseAnnotations(action_json["annotations"])));
+
+  // update relevant map
+  for (const auto &kv : action_info->data_fields_) {
+    const auto data_field = kv.second.get();
+    action_info->data_fields_names_[data_field->nameGet()] = data_field;
+  }
   return action_info;
 }
 
@@ -538,6 +544,23 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
               __LINE__,
               table_id);
   }
+
+  // update relevant maps
+  for (const auto &kv : table_info->table_key_map_) {
+    const auto key_field = kv.second.get();
+    table_info->name_key_map_[key_field->nameGet()] = key_field;
+  }
+
+  for (const auto &kv : table_info->table_action_map_) {
+    const auto action = kv.second.get();
+    table_info->name_action_map_[action->nameGet()] = action;
+  }
+
+  for (const auto &kv : table_info->table_data_map_) {
+    const auto data_field = kv.second.get();
+    table_info->name_data_map_[data_field->nameGet()] = data_field;
+  }
+
   return table_info;
 }
 

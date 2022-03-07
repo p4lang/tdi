@@ -623,7 +623,7 @@ class DataFieldInfo {
    *
    */
   void dataFieldContextInfoSet(
-      std::unique_ptr<DataFieldContextInfo> data_field_context_info) {
+      std::unique_ptr<DataFieldContextInfo> data_field_context_info) const {
     data_field_context_info_ = std::move(data_field_context_info);
   };
 
