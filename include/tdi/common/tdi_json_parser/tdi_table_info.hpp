@@ -362,7 +362,7 @@ class TableInfo {
   const std::set<tdi_attributes_type_e> attributes_type_set_;
   const std::set<Annotation> annotations_{};
 
-  mutable std::unique_ptr<TableContextInfo> table_context_info_ = nullptr;
+  mutable std::unique_ptr<TableContextInfo> table_context_info_;
   friend class TdiInfoParser;
 };
 
@@ -505,8 +505,7 @@ class KeyFieldInfo {
   const bool is_field_slice_{false};
   const bool is_ptr_{false};
   const bool match_priority_{false};
-  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_ =
-      nullptr;
+  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_;
   friend class TdiInfoParser;
 };  // class KeyFieldInfo
 
@@ -683,8 +682,7 @@ class DataFieldInfo {
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
   const std::map<std::string, tdi_id_t> container_names_;
   const std::set<tdi_id_t> oneof_siblings_;
-  mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_ =
-      nullptr;
+  mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_;
   friend class TdiInfoParser;
 };
 
@@ -756,7 +754,7 @@ class ActionInfo {
   // Map of table_data_fields
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields_;
   const std::set<tdi::Annotation> annotations_;
-  mutable std::unique_ptr<ActionContextInfo> action_context_info_ = nullptr;
+  mutable std::unique_ptr<ActionContextInfo> action_context_info_;
   friend class TableInfo;
   friend class TdiInfoParser;
 };
