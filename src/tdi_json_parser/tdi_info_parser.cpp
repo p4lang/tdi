@@ -337,7 +337,6 @@ std::unique_ptr<ActionInfo> TdiInfoParser::parseAction(
                      name,
                      std::move(data_fields),
                      parseAnnotations(action_json["annotations"])));
-
   return action_info;
 }
 
@@ -539,7 +538,6 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
               __LINE__,
               table_id);
   }
-
   return table_info;
 }
 
