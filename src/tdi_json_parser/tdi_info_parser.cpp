@@ -338,11 +338,6 @@ std::unique_ptr<ActionInfo> TdiInfoParser::parseAction(
                      std::move(data_fields),
                      parseAnnotations(action_json["annotations"])));
 
-  // update relevant map
-  for (const auto &kv : action_info->data_fields_) {
-    const auto data_field = kv.second.get();
-    action_info->data_fields_names_[data_field->nameGet()] = data_field;
-  }
   return action_info;
 }
 
@@ -543,22 +538,6 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
               __func__,
               __LINE__,
               table_id);
-  }
-
-  // update relevant maps
-  for (const auto &kv : table_info->table_key_map_) {
-    const auto key_field = kv.second.get();
-    table_info->name_key_map_[key_field->nameGet()] = key_field;
-  }
-
-  for (const auto &kv : table_info->table_action_map_) {
-    const auto action = kv.second.get();
-    table_info->name_action_map_[action->nameGet()] = action;
-  }
-
-  for (const auto &kv : table_info->table_data_map_) {
-    const auto data_field = kv.second.get();
-    table_info->name_data_map_[data_field->nameGet()] = data_field;
   }
 
   return table_info;
