@@ -170,7 +170,7 @@ std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
     const tdi::Cjson &table_key_cjson) {
   // parses the table_key json node and extracts all the relevant
   tdi_id_t id = static_cast<tdi_id_t>(table_key_cjson["id"]);
-  std::string name = table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE];
+  std::string name = table_key_cjson[tdi_json::TABLE_KEY_NAME];
   bool mandatory = table_key_cjson[tdi_json::TABLE_KEY_MANDATORY];
   tdi_match_type_e match_type =
       matchTypeStrToEnum(table_key_cjson[tdi_json::TABLE_KEY_MATCH_TYPE]);
