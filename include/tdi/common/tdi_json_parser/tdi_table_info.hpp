@@ -161,6 +161,7 @@ class KeyFieldInfo {
    * @return field ID
    */
   const tdi_id_t &idGet() const { return field_id_; };
+  
 
   /** @} */  // End of group Key
 
@@ -336,7 +337,7 @@ class DataFieldInfo {
    * @brief Get ID of field
    * @return ID of field
    */
-  const tdi_id_t &idGet() { return field_id_; }
+  const tdi_id_t &idGet() const { return field_id_; }
 
   /** @} */  // End of group Data
 

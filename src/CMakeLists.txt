@@ -8,6 +8,7 @@ set(TDI_SRCS
   tdi_info.cpp
   tdi_target.cpp
   tdi_table.cpp
+  tdi_table_data.cpp
   tdi_table_key.cpp
   tdi_learn.cpp
 )
