@@ -114,7 +114,7 @@ class KeyFieldValueLPM : public KeyFieldValue {
  */
 class TableKey {
  public:
-  TableKey(Table *table) : table_(table){};
+  TableKey(const Table *table) : table_(table){};
   virtual ~TableKey() = default;
 
   /**
@@ -159,7 +159,7 @@ class TableKey {
    */
   virtual tdi_status_t reset();
  private:
-  Table *table_ = nullptr;
+  const Table *table_ = nullptr;
 };
 
 }  // tdi
