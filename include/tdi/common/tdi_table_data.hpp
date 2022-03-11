@@ -46,18 +46,18 @@ class TableData {
  public:
   virtual ~TableData() = default;
 
-  TableData(tdi::Table *table) : TableData(table, 0, 0, {}){};
-  TableData(tdi::Table *table, std::vector<tdi_id_t> active_fields)
+  TableData(const tdi::Table *table) : TableData(table, 0, 0, {}){};
+  TableData(const tdi::Table *table, std::vector<tdi_id_t> active_fields)
       : TableData(table, 0, 0, std::move(active_fields)){};
 
-  TableData(tdi::Table *table, tdi_id_t action_id)
+  TableData(const tdi::Table *table, tdi_id_t action_id)
       : TableData(table, action_id, 0, {}){};
-  TableData(tdi::Table *table,
+  TableData(const tdi::Table *table,
             tdi_id_t action_id,
             std::vector<tdi_id_t> active_fields)
       : TableData(table, action_id, 0, std::move(active_fields)){};
 
-  TableData(tdi::Table *table,
+  TableData(const tdi::Table *table,
             tdi_id_t action_id,
             tdi_id_t container_id,
             std::vector<tdi_id_t> active_fields)
