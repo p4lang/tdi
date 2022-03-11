@@ -36,7 +36,6 @@ namespace tdi {
 class Learn;
 class Table;
 
-
 /**
  * @brief Class to construct data for a table.<br>
  * <B>Creation: </B> Can only be created using one of \ref
@@ -47,24 +46,21 @@ class TableData {
  public:
   virtual ~TableData() = default;
 
-  TableData(tdi::Table *table)
-      : TableData(table, 0, 0, {}){};
-  TableData(tdi::Table *table,
-            std::set<tdi_id_t> active_fields)
+  TableData(tdi::Table *table) : TableData(table, 0, 0, {}){};
+  TableData(tdi::Table *table, std::vector<tdi_id_t> active_fields)
       : TableData(table, 0, 0, std::move(active_fields)){};
 
-  TableData(tdi::Table *table,
-            tdi_id_t action_id)
+  TableData(tdi::Table *table, tdi_id_t action_id)
       : TableData(table, action_id, 0, {}){};
   TableData(tdi::Table *table,
             tdi_id_t action_id,
-            std::set<tdi_id_t> active_fields)
+            std::vector<tdi_id_t> active_fields)
       : TableData(table, action_id, 0, std::move(active_fields)){};
 
   TableData(tdi::Table *table,
             tdi_id_t action_id,
             tdi_id_t container_id,
-            std::set<tdi_id_t> active_fields)
+            std::vector<tdi_id_t> active_fields)
       : table_(table),
         action_id_(action_id),
         container_id_(container_id),
@@ -89,7 +85,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const uint64_t &value);
+                                const uint64_t &value);
 
   /**
    * @brief Set value. Valid on fields of all sizes
@@ -106,8 +102,8 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const uint8_t *value,
-                               const size_t &size);
+                                const uint8_t *value,
+                                const size_t &size);
 
   /**
    * @brief Set value. Valid only on fields with integer array type
@@ -118,7 +114,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const std::vector<tdi_id_t> &arr);
+                                const std::vector<tdi_id_t> &arr);
 
   /**
    * @brief Set value. Valid only on fields with bool array type
@@ -129,7 +125,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const std::vector<bool> &arr);
+                                const std::vector<bool> &arr);
 
   /**
    * @brief Set value. Valid only on fields with string array type
@@ -140,7 +136,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const std::vector<std::string> &arr);
+                                const std::vector<std::string> &arr);
 
   /**
    * @brief Set value. Valid only on fields with float type
@@ -150,8 +146,7 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const float &value);
+  virtual tdi_status_t setValue(const tdi_id_t &field_id, const float &value);
 
   /**
    * @brief Set value. Valid only on fields with bool type
@@ -161,8 +156,7 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const bool &value);
+  virtual tdi_status_t setValue(const tdi_id_t &field_id, const bool &value);
 
   /**
    * @brief Set value. Valid on fields of tdi::TableData type. This is used on
@@ -195,7 +189,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const std::string &str);
+                                const std::string &str);
 
   /** @} */  // End of group Set APIs
 
@@ -212,7 +206,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               uint64_t *value) const;
+                                uint64_t *value) const;
 
   /**
    * @brief Get value. Valid on fields of all sizes
@@ -228,8 +222,8 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               const size_t &size,
-                               uint8_t *value) const;
+                                const size_t &size,
+                                uint8_t *value) const;
 
   /**
    * @brief Get value. Valid on fields of integer array type
@@ -240,7 +234,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               std::vector<tdi_id_t> *arr) const;
+                                std::vector<tdi_id_t> *arr) const;
 
   /**
    * @brief Get value. Valid on fields of bool array type
@@ -251,7 +245,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               std::vector<bool> *arr) const;
+                                std::vector<bool> *arr) const;
 
   /**
    * @brief Get value. Valid on fields of string array type
@@ -262,7 +256,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               std::vector<std::string> *arr) const;
+                                std::vector<std::string> *arr) const;
 
   /**
    * @brief Get value. Valid on fields of float type
@@ -272,8 +266,7 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               float *value) const;
+  virtual tdi_status_t getValue(const tdi_id_t &field_id, float *value) const;
 
   /**
    * @brief Get value. Valid on fields of bool type
@@ -283,8 +276,7 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               bool *value) const;
+  virtual tdi_status_t getValue(const tdi_id_t &field_id, bool *value) const;
 
   /**
    * @brief Get value. Valid on fields of uint64_t array type
@@ -295,7 +287,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               std::vector<uint64_t> *arr) const;
+                                std::vector<uint64_t> *arr) const;
 
   /**
    * @brief Get value. Valid on fields of tdi::TableData type. This is used on
@@ -310,7 +302,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               std::vector<tdi::TableData *> *ret_vec) const;
+                                std::vector<tdi::TableData *> *ret_vec) const;
 
   /**
    * @brief Get value. Valid on fields of string type
@@ -321,7 +313,7 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
-                               std::string *str) const;
+                                std::string *str) const;
 
   /** @} */  // End of group Get APIs
 
@@ -348,7 +340,8 @@ class TableData {
    * @return Status of the API call
    */
   virtual tdi_status_t dataAllocate(
-      const tdi_id_t &container_id, std::unique_ptr<tdi::TableData> *data_ret) const;
+      const tdi_id_t &container_id,
+      std::unique_ptr<tdi::TableData> *data_ret) const;
 
   /**
    * @brief Data Allocate for a container field ID. Container ID
@@ -371,10 +364,9 @@ class TableData {
   /**
    * @brief Get parent Table object.
    *
-   * @param[out] table Pointer to the pointer to tdi::Table to be filled in. <br>
-   *             A table data object can be associated with a parent table
-   *             object. This API <br>
-   *             returns the parent object if it exists.
+   * @param[out] table Pointer to the pointer to tdi::Table to be filled in.
+   * <br> A table data object can be associated with a parent table object. This
+   * API <br> returns the parent object if it exists.
    *
    * @return Status of the API call
    */
@@ -382,10 +374,9 @@ class TableData {
   /**
    * @brief Get parent Learn object.
    *
-   * @param[out] learn Pointer to the pointer to tdi::Learn to be filled in. <br>
-   *             A table data object can be associated with a parent Learn
-   *             object. This API <br>
-   *             returns the parent learn object if it exists.
+   * @param[out] learn Pointer to the pointer to tdi::Learn to be filled in.
+   * <br> A table data object can be associated with a parent Learn object. This
+   * API <br> returns the parent learn object if it exists.
    *
    * @return Status of the API call
    */
@@ -411,15 +402,14 @@ class TableData {
   tdi_status_t isActive(const tdi_id_t &field_id, bool *is_active) const;
 
  private:
-
   // For LearnData, this can be set to nullptr
   const tdi::Table *table_;
   tdi_id_t action_id_{0};
   tdi_id_t container_id_{0};
-  std::set<tdi_id_t> active_fields_{};
+  std::vector<tdi_id_t> active_fields_{};
   bool all_fields_set_{false};
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_TABLE_DATA_HPP
