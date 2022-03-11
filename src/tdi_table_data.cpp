@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <algorithm>
 
 #include <tdi/common/tdi_table_data.hpp>
 #include <tdi/common/tdi_utils.hpp>
@@ -50,19 +51,21 @@ tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/, const float & /*value*/) {
+tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
+                                 const float & /*value*/) {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/, const bool & /*value*/) {
+tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
+                                 const bool & /*value*/) {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
 
 tdi_status_t TableData::setValue(
     const tdi_id_t & /*field_id*/,
-    std::vector<std::unique_ptr<tdi::TableData>>  /*ret_vec*/) {
+    std::vector<std::unique_ptr<tdi::TableData>> /*ret_vec*/) {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
@@ -100,12 +103,14 @@ tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
-tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/, float * /*value*/) const {
+tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
+                                 float * /*value*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/, bool * /*value*/) const {
+tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
+                                 bool * /*value*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
@@ -116,8 +121,9 @@ tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
-                                 std::vector<tdi::TableData *> * /*ret_vec*/) const {
+tdi_status_t TableData::getValue(
+    const tdi_id_t & /*field_id*/,
+    std::vector<tdi::TableData *> * /*ret_vec*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
@@ -160,9 +166,10 @@ tdi_status_t TableData::getParent(const tdi::Learn ** /*learn*/) const {
 }
 tdi_status_t TableData::isActive(const tdi_id_t &field_id,
                                  bool *is_active) const {
-  *is_active = active_fields_.find(field_id) != active_fields_.end();
+  *is_active =
+      std::find(active_fields_.begin(), active_fields_.end(), field_id) !=
+      active_fields_.end();
   return TDI_SUCCESS;
 }
 
-}  // tdi
-
+}  // namespace tdi
