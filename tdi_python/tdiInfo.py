@@ -35,11 +35,11 @@ class TdiInfo:
         sts = self._init_handle()
         if not sts == 0:
             print("TdiInfo init hanle failed for {}!".format(self.name))
-            #return -1
+            return -1
         sts = self._init_tables()
         if not sts == 0:
             print("TdiInfo init tables failed for {}!".format(self.name))
-            #return -1
+            return -1
 
     def _init_handle(self):
         self._handle = self._cintf.handle_type()
@@ -63,7 +63,6 @@ class TdiInfo:
         # Python Tables Object Initialzation
         # print("{:40s} | {:30s} | {:10s}".format("TableName","Table Type","Status"))
         self.tables = {}
-        pdb.set_trace()
         for table in tables:
             tbl_obj = self._cintf.TdiTable(self._cintf, table, self)
             if tbl_obj == -1:
@@ -101,7 +100,6 @@ class TdiInfo:
                 self.tables[new_name] = tbl_obj
                 del self.tables[tbl_obj.name]
                 tbl_obj.name = new_name
-
         return 0
 
     def _init_learns(self):

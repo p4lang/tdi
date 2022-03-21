@@ -218,7 +218,7 @@ class CIntfTdi:
         print("We've found {} p4 programs for device {}:".format(num_names.value, self._dev_id))
         array_type = c_char_p * num_names.value
         p4_names = array_type()
-        # wdai: why don't need to annotation for self._dev_id to c_int(self._dev_id)
+        # why don't need to annotation for self._dev_id to c_int(self._dev_id)
         self._driver.tdi_p4_names_get(self._dev_id, p4_names)
         self.handle_type = POINTER(self.TdiHandle)
         self.sess_type = POINTER(c_uint)
@@ -244,7 +244,7 @@ class CIntfTdi:
         self._session = self.sess_type()
         pdb.set_trace()
         sts = self._driver.tdi_session_create(self._device, byref(self._session))
-        #atexit.register(self._cleanup_session)
+        atexit.register(self._cleanup_session)
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             #return -1
