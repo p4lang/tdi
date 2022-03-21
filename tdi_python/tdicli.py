@@ -37,8 +37,8 @@ from tdiTableEntry import TableEntry, target_check_and_set
 from ipaddress import ip_address as ip
 from netaddr import EUI as mac
 
-# Fixed Tables created at child Nodes of the root 'bfrt' Node.
-_bfrt_fixed_nodes = ["port", "mirror"]
+# Fixed Tables created at child Nodes of the root 'tdi' Node.
+_tdi_fixed_nodes = ["port", "mirror"]
 
 class CIntfTdi:
 
@@ -46,7 +46,6 @@ class CIntfTdi:
         self._dev_id = dev_id
         self._utils = CDLL(install_directory+'/lib/libtarget_utils.so', mode=RTLD_GLOBAL)
         self._driver = CDLL(install_directory+'/lib/libdriver.so')
-        #self._tdi_driver = CDLL(install_directory+'/lib/libtdi.so')
 
         self.TdiTable = table_cls
         self.TdiInfo = info_cls
@@ -60,10 +59,8 @@ class CIntfTdi:
         def tdi_table_entry_get(tbl_hdl, session, dev_tgt, key, data, flag):
             if self.gflags == True:
                 flags = c_uint64(flag)
-                #self._driver.tdi_table_entry_get(tbl_hdl, session, dev_tgt, flags, key, data)
                 return self._driver.tdi_table_entry_get(tbl_hdl, session, dev_tgt, flags, key, data)
             else:
-                #self._driver.tdi_table_entry_get(tbl_hdl, session, dev_tgt, flag, key, data)
                 return self._driver.tdi_table_entry_get(tbl_hdl, session, dev_tgt, key, data, flag)
         setattr(self, 'tdi_table_entry_get', tdi_table_entry_get)
 
@@ -210,24 +207,26 @@ class CIntfTdi:
         '''
 
     def _init_programs(self):
+        # tdi session need _device hdl
+        self.device_type = POINTER(c_uint)
+        self._device = self.device_type()
+        sts = self._driver.tdi_device_get(self._dev_id, byref(self._device))
+
         num_names = c_int(-1)
         self._driver.tdi_num_p4_names_get(self._dev_id, byref(num_names))
-
+        pdb.set_trace()
         print("We've found {} p4 programs for device {}:".format(num_names.value, self._dev_id))
         array_type = c_char_p * num_names.value
         p4_names = array_type()
-        # wdai: why we don't need to convert the self._dev_id to c_int(self._dev_id)
+        # wdai: why don't need to annotation for self._dev_id to c_int(self._dev_id)
         self._driver.tdi_p4_names_get(self._dev_id, p4_names)
-        self.handle_type = POINTER(self.BfRtHandle)
-        self.tdi_handle_type = POINTER(self.TdiHandle)
+        self.handle_type = POINTER(self.TdiHandle)
         self.sess_type = POINTER(c_uint)
-        self.tdi_device_type = POINTER(c_uint)
-        self.tdi_sess_type = POINTER(c_uint)
-        self.annotation_type = self.BfAnnotation
         self.tdi_annotation_type = self.TdiAnnotation
+        self.tdi_flags = POINTER(c_uint)
 
         self.idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
-        self.tdi_idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.tdi_handle_type, c_void_p)
+        self.tdi_idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
 
         self.tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
         self.tdi_tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
@@ -243,18 +242,13 @@ class CIntfTdi:
                 return -1
             self.infos[name] = info
         self._session = self.sess_type()
-        sts = self._driver.tdi_session_create(byref(self._session))
-        # tdi session need _device hdl
-        self._tdi_device = self.tdi_device_type()
-        self._tdi_session = self.tdi_sess_type()
         pdb.set_trace()
-        sts = self._driver.tdi_device_get(self._dev_id, byref(self._tdi_device))
-        sts = self._driver.tdi_session_create(self._tdi_device, byref(self._tdi_session))
-        atexit.register(self._cleanup_session)
+        sts = self._driver.tdi_session_create(self._device, byref(self._session))
+        #atexit.register(self._cleanup_session)
         if not sts == 0:
-            print("Error, unable to create BF Runtime session")
+            print("Error, unable to create TDI Runtime session")
             #return -1
-        self._dev_tgt = self.TdiDevTgt(self._dev_id, 0xFFFF, 0xff, 0xff)
+        self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
 
     def _devcall(self):
         pdb.set_trace()
@@ -313,11 +307,8 @@ class CIntfTdi:
 
     def err_str(self, sts):
         estr = c_char_p()
-        self._driver.tdi_err_str(c_int(sts), byref(estr))
+        self._driver.bf_rt_err_str(c_int(sts), byref(estr))
         return estr.value.decode('ascii')
-
-    class BfRtHandle(Structure):
-        _fields_ = [("unused", c_int)]
     class TdiHandle(Structure):
         _fields_ = [("unused", c_int)]
     
@@ -328,11 +319,13 @@ class CIntfTdi:
             for name, type_ in self._fields_:
                 ret_val += name + ": " + str(getattr(self, name)) + "\n"
             return ret_val
-    class TdiDevTgt(Structure):
+
+    class TdiTargetHandle(Structure):
         _fields_ = [("unused", c_int)]
 
-    class BfAnnotation(Structure):
-        _fields_ = [("name", c_char_p), ("value", c_char_p)]
+    class TdiFlagsHandle(Structure):
+        _fields_ = [("unused", c_int)]
+
     class TdiAnnotation(Structure):
         _fields_ = [("name", c_char_p), ("value", c_char_p)]
 
@@ -344,6 +337,9 @@ class CIntfTdi:
 
     def get_session(self):
         return self._session
+
+    def get_device(self):
+        return self._device
 
     def get_dev_tgt(self):
         return byref(self._dev_tgt)
@@ -508,20 +504,20 @@ class BFContext:
     """
     # BFContext obj() will call obj.__call__()
     def __call__(self):
-        global _bfrt_context
-        for name in _bfrt_context['cur_context']:
+        global _tdi_context
+        for name in _tdi_context['cur_context']:
             delattr(sys.modules['__main__'],name)
 
-        _bfrt_context['cur_context'] = []
+        _tdi_context['cur_context'] = []
         pdb.set_trace()
         for name, child in self._get_children().items():
-            _bfrt_context['cur_context'].append(name)
+            _tdi_context['cur_context'].append(name)
             setattr(sys.modules['__main__'], name, child)
 
         print(self.__doc__)
 
-        _bfrt_context['parent'] = self._parent_node
-        _bfrt_context['cur_node'] = self
+        _tdi_context['parent'] = self._parent_node
+        _tdi_context['cur_node'] = self
 
         tmp = self
         name = []
@@ -569,7 +565,7 @@ class TesterInt:
 
 class BFNode(BFContext):
     """
-    This class represents non-leaf nodes in the BF Runtime CLI's command tree.
+    This class represents non-leaf nodes in the TDI Runtime CLI's command tree.
     Its sole purpose is to organize available commands.
     """
     def __init__(self, name, cintf, parent_node=None):
@@ -687,9 +683,9 @@ class BFNode(BFContext):
                 return sts
             if leaf._c_tbl.table_type_map(leaf._c_tbl.get_type()) in leaf._c_tbl.no_usage_tables():
                 return sts
-            if leaf._c_tbl.get_id() in leaf._c_tbl._bfrt_info.tbl_dep_map:
-                for dep_id in leaf._c_tbl._bfrt_info.tbl_dep_map[leaf._c_tbl.get_id()]:
-                    dep_leaf = leaf._c_tbl._bfrt_info.tbl_id_map[dep_id].frontend
+            if leaf._c_tbl.get_id() in leaf._c_tbl._tdi_info.tbl_dep_map:
+                for dep_id in leaf._c_tbl._tdi_info.tbl_dep_map[leaf._c_tbl.get_id()]:
+                    dep_leaf = leaf._c_tbl._tdi_info.tbl_id_map[dep_id].frontend
                     if dep_leaf is None:
                         print("Error: dep_test initialization did not finish!")
                         return -1
@@ -764,10 +760,10 @@ def _learn_fields_print(dev_id, pipe_id, direction, parser_id, session, data):
 class BFLeaf(BFContext):
     """
     This class creates easy to type, autocompleted python entrypoints to the
-    BF Runtime API. Each instance of the class represents one table. It exposes
+    TDI Runtime API. Each instance of the class represents one table. It exposes
     Add, modify commands for each action type (or one of each for the table if
     said table has no actions). It also exposes get and dump commands for
-    retrieving information from BF Runtime.
+    retrieving information from TDI Runtime.
     """
     def __init__(self, name, c_tbl, cintf, parent_node=None, children=None):
         self._set_name(name)
@@ -1153,7 +1149,7 @@ class BFLeaf(BFContext):
             extra += "add(key_dict={'hdr.ethernet.dst_addr':0x001122334455}, data_dict={'port':5})\n"
 
         docstr = """
-BF Runtime CLI Object for {} table
+TDI Runtime CLI Object for {} table
 
 Key fields:
 {}
@@ -1176,7 +1172,7 @@ Available Commands:
     """
     The following functions create appropriate add, modify, delete, get, dump
     commands for our leaf. These commands are generated based on metadata
-    pulled from the TdiInfo objects exposed by BF Runtime's APIs.
+    pulled from the TdiInfo objects exposed by TDI Runtime's APIs.
     """
     def _init_table_methods(self):
         key_fields = self._c_tbl.key_fields
@@ -1834,10 +1830,10 @@ def {}(self, {}):
 class BFLrnLeaf(BFContext):
     """
     This class creates easy to type, autocompleted python entrypoints to the
-    BF Runtime API. Each instance of the class represents one table. It exposes
+    TDI Runtime API. Each instance of the class represents one table. It exposes
     Add, modify commands for each action type (or one of each for the table if
     said table has no actions). It also exposes get and dump commands for
-    retrieving information from BF Runtime.
+    retrieving information from TDI Runtime.
     """
     def __init__(self, name, c_tbl, cintf, parent_node=None):
         self._set_name(name)
@@ -1919,7 +1915,7 @@ class BFLrnLeaf(BFContext):
             commands += "{}\n".format(name)
 
         docstr = """
-BF Runtime CLI node for {} learn
+TDI Runtime CLI node for {} learn
 
 fields:
 {}
@@ -1931,7 +1927,7 @@ Available Commands:
 
 
 """
-Call this function on the root node of the BF Runtime CLI to generate the
+Call this function on the root node of the TDI Runtime CLI to generate the
 docstrings for the organizational nodes. Note that leaves have already
 generated their docstrings during initialization.
 """
@@ -1980,20 +1976,20 @@ def validate_program_name(p4_name, p_node):
 
     if not p4_pref_ and p4_name_str_ in globals():
         p4_name_res_ = "p4_" + p4_name_str_
-        print_name_warn_("in use by bfrt_python", p4_name_str_, p4_name_res_)
+        print_name_warn_("in use by tdi_python", p4_name_str_, p4_name_res_)
         p4_name_str_ = p4_name_res_
         p4_pref_ = True
     if p4_name_str_ in globals():
-        print("ERROR: The P4 program name '%s' is in use by bfrt_python." %(p4_name_str_), file = sys.stderr)
+        print("ERROR: The P4 program name '%s' is in use by tdi_python." %(p4_name_str_), file = sys.stderr)
         return ""
 
     if p_node is not None and isinstance(p_node, BFNode):
-        if not p4_pref_ and (p4_name_str_ in dir(p_node) or p4_name_str_ in _bfrt_fixed_nodes):
+        if not p4_pref_ and (p4_name_str_ in dir(p_node) or p4_name_str_ in _tdi_fixed_nodes):
             p4_name_res_ = "p4_" + p4_name_str_
             print_name_warn_("reserved for another item in the object tree", p4_name_str_, p4_name_res_)
             p4_name_str_ = p4_name_res_
             p4_pref_ = True
-        if p4_name_str_ in dir(p_node) or p4_name_str_ in _bfrt_fixed_nodes:
+        if p4_name_str_ in dir(p_node) or p4_name_str_ in _tdi_fixed_nodes:
             print("ERROR: The P4 program name '%s' is reserved for another item in the object tree." %(p4_name_str_), file = sys.stderr)
             return ""
     #
@@ -2031,7 +2027,7 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
     # Sort tables in reverse order, so nested table children are added first.
     for table_name, tbl_obj in sorted(tdi_info.tables.items(), reverse=True):
         prefs = table_name.split('.')
-        if prefs[0] in _bfrt_fixed_nodes:
+        if prefs[0] in _tdi_fixed_nodes:
             parent_node = update_node_tree(dev_node, prefs, cintf)
         else:
             parent_node = update_node_tree(p4_node, prefs, cintf)
@@ -2051,7 +2047,7 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
                 BFLeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
             # If it is nested table recreate it with proper list of children and
             # update the parent, but don't modify fixed nodes.
-            elif prefs[0] not in _bfrt_fixed_nodes:
+            elif prefs[0] not in _tdi_fixed_nodes:
                 for c in parent_node._children:
                     if is_node(c) and c._name == prefs[-1]:
                         BFLeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
@@ -2067,10 +2063,10 @@ This function initializes the BF Runtime CLI objects, generating a tree of
 objects that serve as CLI command nodes.
 """
 def populate_tdi(dev_id_list):
-    global bfrt
-    # bfrt node shouldn't have a cintf since cintf is dev dependent
-    bfrt = BFNode("tdi", None)
-    bfrt.device_list =  dev_id_list
+    global tdi
+    # tdi node shouldn't have a cintf since cintf is dev dependent
+    tdi = BFNode("tdi", None)
+    tdi.device_list =  dev_id_list
     # For each device_id, create a cintf and a dev node
     # If only one device is present, then skip creating the
     # device node for now for backward compatibility.
@@ -2085,11 +2081,11 @@ def populate_tdi(dev_id_list):
         if cintf == -1:
             return -1
         if single_device:
-            bfrt = BFNode("tdi", cintf, parent_node=None)
-            bfrt.device_list =  dev_id_list
-            dev_node = bfrt
+            tdi = BFNode("tdi", cintf, parent_node=None)
+            tdi.device_list =  dev_id_list
+            dev_node = tdi
         else:
-            dev_node = BFNode("dev_"+str(dev_id), cintf, parent_node=bfrt)
+            dev_node = BFNode("dev_"+str(dev_id), cintf, parent_node=tdi)
 
         dev_node.devcall = cintf._devcall
         dev_node.set_pipe = cintf._set_pipe
@@ -2106,29 +2102,30 @@ def populate_tdi(dev_id_list):
         dev_node.p4_programs_list = []
         for p4_name, tdi_info in cintf.infos.items():
             print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
+            pdb.set_trace()
             if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
-              print("ERROR: Can't create object tree for bfrt_python.", file = sys.stderr)
+              print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
               return -1
         #
-    set_node_docstrs(bfrt)
+    set_node_docstrs(tdi)
     return 0
 
 """
 This function creates the global state required to manage context switching
-between CLI nodes. Note that it never unloads the bfrt node, so the full
+between CLI nodes. Note that it never unloads the tdi node, so the full
 command tree is still available from any context.
 """
 def setup_context():
-    global _bfrt_context
-    _bfrt_context = {}
-    _bfrt_context['cur_context'] = []
-    _bfrt_context['parent'] = None
-    _bfrt_context['cur_node'] = None
+    global _tdi_context
+    _tdi_context = {}
+    _tdi_context['cur_context'] = []
+    _tdi_context['parent'] = None
+    _tdi_context['cur_node'] = None
 
 """
 This function sets the command line prompt to the parameterized string.
 """
-def set_prompt(next_node='bfrt_python'):
+def set_prompt(next_node='tdi_python'):
     global prompt_node
     prompt_node = next_node
     class NextPrompt(IPython.terminal.prompts.Prompts):
@@ -2147,30 +2144,30 @@ replace the current ones in the global scope. Otherwise, the currently loaded
 commands, if any, are removed and we reset to the "root" scope.
 """
 def set_parent_context():
-    global _bfrt_context
-    if _bfrt_context['parent'] is None:
-        for name in _bfrt_context['cur_context']:
+    global _tdi_context
+    if _tdi_context['parent'] is None:
+        for name in _tdi_context['cur_context']:
             delattr(sys.modules['__main__'], name)
-        _bfrt_context['cur_context'] = []
+        _tdi_context['cur_context'] = []
         set_prompt()
-        _bfrt_context['cur_node'] = None
+        _tdi_context['cur_node'] = None
         return
-    _bfrt_context['parent']()
+    _tdi_context['parent']()
 
 def load_tdi(dev_id_list):
     sts = populate_tdi(dev_id_list)
     if sts == -1:
-        print("BF Runtime CLI init failed.", file = sys.stderr)
+        print("TDI Runtime CLI init failed.", file = sys.stderr)
         return -1
     setup_context()
-    global bfrt
-    bfrt.reload = load_tdi
+    global tdi
+    tdi.reload = load_tdi
     return 0
 
 """
 By default, python uses the C default values for stdin, stdout, stderr.
 Replace these with the terminal connection fd associated with the caller
-of BF Runtime CLI. Also set the working directory to driver's install dir.
+of TDI Runtime CLI. Also set the working directory to driver's install dir.
 """
 def set_io(in_fd, out_fd):
     inf = open(in_fd, closefd=False)
@@ -2198,14 +2195,14 @@ def input_transform(lines):
     new_lines = []
     for line in lines:
         if line == "?\n" or line == ".\n":
-            if(_bfrt_context['cur_node'] == None):
+            if(_tdi_context['cur_node'] == None):
                 new_lines.append(f"?\n")
             else:
-                new_lines.append(f"print(_bfrt_context['cur_node'].__doc__)\n")
+                new_lines.append(f"print(_tdi_context['cur_node'].__doc__)\n")
         elif line == "..\n":
             new_lines.append("set_parent_context()\n")
         elif line == ".?\n":
-            if(_bfrt_context['cur_node'] == None):
+            if(_tdi_context['cur_node'] == None):
                 new_lines.append(f"?\n")
             else:
                 # it grabs the full symbol path and append with ? to display help message
@@ -2220,21 +2217,21 @@ def input_transform(lines):
   instance, which can be used in any way. This allows you to register
   new magics or aliases, for example.
   We use this namesapce to maniuplate what user can type on cli directly
-  During setup_context, command like dump, info will be callable without bfrt prefix
+  During setup_context, command like dump, info will be callable without tdi prefix
 """
 def load_ipython_extension(ipython):
-    sys.modules['__main__']._bfrt_context = _bfrt_context
+    sys.modules['__main__']._tdi_context = _tdi_context
     sys.modules['__main__'].set_parent_context = set_parent_context
-    sys.modules['__main__'].bfrt = bfrt
+    sys.modules['__main__'].tdi = tdi
     ipython.input_transformers_cleanup.append(input_transform)
     IPython.core.usage.interactive_usage = """
-BFRT-PYTHON Usage:
+TDI-PYTHON Usage:
 
 .    : examine the current object (context) with documents/helps (like cd .)
-..   : go up one layer for bfrt object context (like cd ..)
+..   : go up one layer for tdi object context (like cd ..)
 ?    : same as .
-?/?? : examine documents on bfrt objects. e.g. bfrt? or .?
-bfrt : the global symbol for accessing bfrt objects interactively
+?/?? : examine documents on tdi objects. e.g. tdi? or .?
+tdi  : the global symbol for accessing tdi objects interactively
 
 Please checkout ipython syntax for interactive usages.
 Otherwise python syntax/conventions are exacly the same.
@@ -2253,7 +2250,7 @@ def unload_ipython_extension(ipython):
     pass
 
 """
-Initialize BF Runtime CLI, create IPython's configuration, start BF Runtime
+Initialize TDI Runtime CLI, create IPython's configuration, start TDI Runtime
 CLI, and reset python's IO streams before teardown.
 """
 def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=False):

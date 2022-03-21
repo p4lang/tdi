@@ -17,7 +17,7 @@ from __future__ import print_function
 from ctypes import *
 from ipaddress import ip_address as ip
 from netaddr import EUI as mac
-from bfrtTableEntry import TableEntry
+from tdiTableEntry import TableEntry
 import pdb
 import json
 import time
@@ -41,11 +41,12 @@ class TdiTable:
     Note that keys in this object are the c-string representation
     (byte-streams in python) of data, not python strings.
     """
-    def __init__(self, cintf, handle, device_hdl, info):
+    def __init__(self, cintf, handle, info):
         self._cintf = cintf
-        self._bfrt_info = info
+        self._tdi_info = info
         self._handle = handle
-        self._device_hdl = device_hdl
+        # get get_device
+        self._device_hdl = cintf.get_device()
         self.key_field_readables = []
         self.data_field_readables = []
         self.action_readables = {}
@@ -62,9 +63,9 @@ class TdiTable:
         self.annotations = {}
         self.has_const_default_action = False
         self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
-        self.set_supported_attributes_to_supported_commands()
-        self.set_supported_operations_to_supported_commands()
-        self.set_supported_apis_to_supported_commands()
+        #self.set_supported_attributes_to_supported_commands()
+        #self.set_supported_operations_to_supported_commands()
+        #self.set_supported_apis_to_supported_commands()
         self.unimplemented_tables = ["TODO"]
         self.table_type = self.table_type_map((self.get_type()))
         self.table_ready = False if self.table_type in self.unimplemented_tables else True
@@ -116,8 +117,8 @@ class TdiTable:
         if len(self.key_fields) * 2 + len(self.data_fields) > (255-10):
             self.compress_input = True
 
-    def set_frontend(self, bfrt_leaf):
-        self.frontend = bfrt_leaf
+    def set_frontend(self, tdi_leaf):
+        self.frontend = tdi_leaf
 
     def set_id(self, tdi_id):
         self.tdi_id = tdi_id
@@ -328,7 +329,7 @@ class TdiTable:
         def _parse_int_arr(self, value):
             if value is None:
                 if self.name.decode('ascii') == "$ACTION_MEMBER_STATUS":
-                    from bfrtcli import TesterInt
+                    from tdicli import TesterInt
                     return True, TesterInt(True, self.size)
                 if self.read_only:
                     return True, None
@@ -1838,7 +1839,7 @@ class TdiTable:
                                                        n,
                                                        byref(num_returned))
         if not sts == 0 and not sts == 6:
-            # Once we are done reading all the entries from the table, bfrt will
+            # Once we are done reading all the entries from the table, tdi will
             # return an BF_OBJECT_NOT_FOUND error
             raise TdiTableError("Error: entry_get_next {} failed on table {}. [{}]".format(n, self.name, self._cintf.err_str(sts)), self, sts)
             return -1, -1
