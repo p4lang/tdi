@@ -29,6 +29,7 @@
 #include <tdi/common/tdi_table_data.hpp>
 #include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_operations.hpp>
+#include <tdi/common/c_frontend/tdi_table.h>
 #ifdef _TDI_FROM_BFRT
 #include <tdi_common/tdi_pipe_mgr_intf.hpp>
 #include <tdi_common/tdi_table_data_impl.hpp>
@@ -1429,7 +1430,6 @@ tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
   }
   return TDI_SUCCESS;
 }
-
 #ifdef _TDI_FROM_BFRT
 // disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
@@ -1477,7 +1477,7 @@ tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
   }
   return TDI_SUCCESS;
 }
-#endif 
+#endif
 
 #ifdef _TDI_FROM_BFRT
 // disable it now, will enable it once the method is available in the code class

@@ -23,7 +23,7 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
-//#include <tdi/common/c_frontend/tdi_table_operations.h>
+#include <tdi/common/c_frontend/tdi_table_operations.h>
 //#include <tdi/common/c_frontend/tdi_table_attributes.h>
 
 #ifdef __cplusplus
@@ -1422,7 +1422,7 @@ tdi_status_t tdi_data_field_type_with_action_get(
     const tdi_table_hdl *table_hdl,
     const tdi_id_t field_id,
     const tdi_id_t action_id,
-    tdi_data_type_t *field_type_ret);
+    tdi_field_data_type_e *field_type_ret);
 
 /**
  * @brief Get size of list of all the allowed values that a particular field can
@@ -1889,6 +1889,7 @@ tdi_status_t tdi_table_attributes_supported(
     const tdi_table_hdl *table_hdl,
     tdi_table_attributes_type_t *attributes,
     uint32_t *num_returned);
+#endif
 
 /********************* Operations APIs ***********************/
 
@@ -1956,7 +1957,6 @@ tdi_status_t tdi_table_operations_supported(
     const tdi_table_hdl *table_hdl,
     tdi_table_operations_mode_t *operations,
     uint32_t *num_returned);
-#endif
 #ifdef __cplusplus
 }
 #endif
