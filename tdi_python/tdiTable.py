@@ -64,8 +64,8 @@ class TdiTable:
         self.has_const_default_action = False
         self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
         #self.set_supported_attributes_to_supported_commands()
-        #self.set_supported_operations_to_supported_commands()
-        #self.set_supported_apis_to_supported_commands()
+        self.set_supported_operations_to_supported_commands()
+        self.set_supported_apis_to_supported_commands()
         self.unimplemented_tables = ["TODO"]
         self.table_type = self.table_type_map((self.get_type()))
         self.table_ready = False if self.table_type in self.unimplemented_tables else True
@@ -84,7 +84,7 @@ class TdiTable:
             raise TdiTableError("Table init name failed.", None, -1)
         self.name = table_name.value.decode('ascii')
         #Unify the table name for BFNode (command nodes)
-        if self.table_type in ["PORT_CFG", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
+        if self.table_type in ["PORT", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
             self.name = "port.{}".format(self.name.lower().replace("$",""))
         if self.table_type in ["PRE_MGID", "PRE_NODE", "PRE_ECMP", "PRE_LAG", "PRE_PRUNE", "PRE_PORT", "MIRROR_CFG"]:
             self.name = self.name.lower().replace("$","")
@@ -102,10 +102,12 @@ class TdiTable:
         if not sts == 0:
             print("CLI Error: Init key fields for table {} failed.".format(self.name))
             raise TdiTableError("Table init field failed.", None, -1)
+        '''
         sts = self._init_actions()
         if not sts == 0:
             print("CLI Error: Init actions for table {} failed.".format(self.name))
             raise TdiTableError("Table init field failed.", None, -1)
+        '''
         sts = self._init_data()
         if not sts == 0:
             print("CLI Error: Init data fields for table {} failed.".format(self.name))
@@ -169,9 +171,11 @@ class TdiTable:
             # Annotations are not supported.
             if self.category == "data" and self.is_cont_field == False:
                 if self.action_id is None:
+                    print("This is None for table "+self.name)
                     nannotations_func = self.table._cintf.get_driver().tdi_data_field_num_annotations_get
                     get_annotations_func = self.table._cintf.get_driver().tdi_data_field_annotations_get
                 else:
+                    print("This is action id "+str(self.action_id)+" for table "+str(self.name))
                     nannotations_func = self.table._cintf.get_driver().tdi_data_field_num_annotations_with_action_get
                     get_annotations_func = self.table._cintf.get_driver().tdi_data_field_annotations_with_action_get
             else:
@@ -195,9 +199,11 @@ class TdiTable:
             if sts != 0:
                 print("Error: get annotations for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
+            #pdb.set_trace()
             for ann in annotations_arr:
-                annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
-            self.annotations = annotations
+                print("num ann {} table name {}  field name = {} annotations = {} {} ".format(str(num_annotations.value), self.table.name,  str(self.name), str(ann.name), str(ann.value.decode('ascii'))))
+                #annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
+            #self.annotations = annotations
 
         def _init_choices(self):
             nchoices_func = None
@@ -666,159 +672,160 @@ class TdiTable:
 
     @staticmethod
     def table_type_map(table_type):
-        if table_type == 0:
+        TDI_TABLE_TYPE_DEVICE=0x0800
+        if table_type == TDI_TABLE_TYPE_DEVICE+0:
             return "MATCH_DIRECT"
-        elif table_type == 1:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+1:
             return "MATCH_INDIRECT"
-        elif table_type == 2:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+2:
             return "MATCH_INDIRECT_SELECTOR"
-        elif table_type == 3:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+3:
             return "ACTION_PROFILE"
-        elif table_type == 4:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+4:
             return "SELECTOR"
-        elif table_type == 5:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+5:
             return "COUNTER"
-        elif table_type == 6:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+6:
             return "METER"
-        elif table_type == 7:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+7:
             return "REGISTER"
-        elif table_type == 8:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+8:
             return "LPF"
-        elif table_type == 9:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+9:
             return "WRED"
-        elif table_type == 10:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+10:
             return "PVS"
-        elif table_type == 11:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+11:
             return "PORT_METADATA"
-        elif table_type == 12:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+12:
             return "DYN_HASH_CFG"
-        elif table_type == 13:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+13:
             return "SNAPSHOT_CFG"          # /** Snapshot. */
-        elif table_type == 14:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+14:
             return "SNAPSHOT_LIVENESS" # /** Snapshot field Liveness */
-        elif table_type == 15:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+15:
             return "PORT_CFG"
-        elif table_type == 16:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+16:
             return "PORT_STAT"
-        elif table_type == 17:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+17:
             return "PORT_HDL_INFO"
-        elif table_type == 18:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+18:
             return "PORT_FRONT_PANEL_IDX_INFO"
-        elif table_type == 19:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+19:
             return "PORT_STR_INFO"
-        elif table_type == 20:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+20:
             return "PKTGEN_PORT_CFG"     # /** Pktgen Port Configuration table */
-        elif table_type == 21:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+21:
             return "PKTGEN_APP_CFG"      # /** Pktgen Application Configuration table */
-        elif table_type == 22:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+22:
             return "PKTGEN_PKT_BUFF_CFG" # /** Pktgen Packet Buffer Configuration table */
-        elif table_type == 23:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+23:
             return "PKTGEN_PORT_MASK_CFG" # /** Pktgen Port Mask Configuration table */
-        elif table_type == 24:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+24:
             return "PKTGEN_PORT_DOWN_REPLAY_CFG" # /** Pktgen Port Down Replay Configuration table*/
-        elif table_type == 25:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+25:
             return "PRE_MGID"
-        elif table_type == 26:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+26:
             return "PRE_NODE"
-        elif table_type == 27:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+27:
             return "PRE_ECMP"
-        elif table_type == 28:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+28:
             return "PRE_LAG"
-        elif table_type == 29:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+29:
             return "PRE_PRUNE"
-        elif table_type == 30:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+30:
             return "MIRROR_CFG"
-        elif table_type == 31:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+31:
             return "TM_PPG_OBSOLETE" # retired
-        elif table_type == 32:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+32:
             return "PRE_PORT"
-        elif table_type == 33:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+33:
             return "DYN_HASH_ALGO"
-        elif table_type == 34:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+34:
             return "TM_POOL_CFG"
-        elif table_type == 35:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+35:
             return "TM_POOL_SKID"
-        elif table_type == 36:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+36:
             return "DEV_CFG"
-        elif table_type == 37:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+37:
             return "TM_POOL_APP"
-        elif table_type == 38:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+38:
             return "TM_QUEUE_CFG"
-        elif table_type == 39:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+39:
             return "TM_QUEUE_MAP"
-        elif table_type == 40:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+40:
             return "TM_QUEUE_COLOR"
-        elif table_type == 41:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+41:
             return "TM_QUEUE_BUFFER"
-        elif table_type == 42:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+42:
             return "TM_PORT_GROUP_CFG"
-        elif table_type == 43:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+43:
             return "TM_PORT_GROUP"
-        elif table_type == 44:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+44:
             return "TM_POOL_COLOR"
-        elif table_type == 45:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+45:
             return "SNAPSHOT_PHV"
-        elif table_type == 46:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+46:
             return "SNAPSHOT_TRIG"
-        elif table_type == 47:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+47:
             return "SNAPSHOT_DATA"
-        elif table_type == 48:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+48:
             return "TM_POOL_APP_PFC"
-        elif table_type == 49:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+49:
             return "TM_COUNTER_IG_PORT"
-        elif table_type == 50:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+50:
             return "TM_COUNTER_EG_PORT"
-        elif table_type == 51:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+51:
             return "TM_COUNTER_QUEUE"
-        elif table_type == 52:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+52:
             return "TM_COUNTER_POOL"
-        elif table_type == 53:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+53:
            return "TM_PORT_CFG"
-        elif table_type == 54:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+54:
             return "TM_PORT_BUFFER"
-        elif table_type == 55:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+55:
             return "TM_PORT_FLOWCONTROL"
-        elif table_type == 56:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+56:
             return "TM_COUNTER_PIPE"
-        elif table_type == 57:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+57:
             return "DBG_CNT"
-        elif table_type == 58:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+58:
             return "LOG_DBG_CNT"
-        elif table_type == 59:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+59:
             return "TM_CFG"
-        elif table_type == 60:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+60:
             return "TM_PIPE_MULTICAST_FIFO"
-        elif table_type == 61:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+61:
             return "TM_MIRROR_DPG"
-        elif table_type == 62:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+62:
             return "TM_PORT_DPG"
-        elif table_type == 63:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+63:
             return "TM_PPG_CFG"
-        elif table_type == 64:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+64:
             return "REG_PARAM"
-        elif table_type == 65:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+65:
             return "TM_COUNTER_PORT_DPG"
-        elif table_type == 66:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+66:
             return "TM_COUNTER_MIRROR_PORT_DPG"
-        elif table_type == 67:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+67:
             return "TM_COUNTER_PPG"
-        elif table_type == 68:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+68:
             return "DYN_HASH_COMPUTE"
-        elif table_type == 69:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+69:
             return "SELECTOR_GET_MEMBER"
-        elif table_type == 70:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+70:
             return "TM_QUEUE_SCHED_CFG"
-        elif table_type == 71:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+71:
             return "TM_QUEUE_SCHED_SHAPING"
-        elif table_type == 72:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+72:
             return "TM_PORT_SCHED_CFG"
-        elif table_type == 73:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+73:
             return "TM_PORT_SCHED_SHAPING"
-        elif table_type == 74:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+74:
             return "TM_PIPE_CFG"
-        elif table_type == 75:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+75:
             return "TM_PIPE_SCHED_CFG"
-        elif table_type == 76:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+76:
             return "INVLD"
         else:
             return "TODO"
@@ -991,7 +998,10 @@ class TdiTable:
     """
     def _init_data(self):
         self.data_fields = {}
+        '''
         if len(self.actions) == 0:
+        '''
+        if 1:
             num_ids = c_uint(-1)
             sts = self._cintf.get_driver().tdi_data_field_id_list_size_get(self._handle, byref(num_ids))
             if not sts == 0:
@@ -1007,6 +1017,7 @@ class TdiTable:
                 return sts
             for field_id in field_ids:
                 self._init_data_fields(self.data_fields, self.data_field_readables, field_id)
+        '''
         else:
             for name, info in self.actions.items():
                 action_readable = ""
@@ -1032,6 +1043,7 @@ class TdiTable:
                 data_field_readables = self.action_data_readables[name]
                 for field_id in field_ids:
                     self._init_data_fields(data_fields, data_field_readables, field_id, info["id"], name)
+        '''
         return 0
 
     """
@@ -1042,10 +1054,13 @@ class TdiTable:
     def _init_actions(self):
         self.actions = {}
         self.action_id_name_map = {}
+        '''
         is_action_applicable = c_bool()
         self._cintf.get_driver().tdi_action_id_applicable(self._handle, byref(is_action_applicable))
         if (not is_action_applicable.value):
             return 0
+        '''
+        #pdb.set_trace()
         num_ids = c_uint(-1)
         sts = self._cintf.get_driver().tdi_action_id_list_size_get(self._handle, byref(num_ids))
         if not sts == 0 or num_ids.value == 0:
@@ -1231,6 +1246,8 @@ class TdiTable:
             if content[name] is None:
                 continue
             sts = -1
+            print("data_type="+self.data_type_map(info.data_type))
+            #pdb.set_trace()
             if self.data_type_map(info.data_type) == "BYTE_STREAM":
                 value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                 sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
@@ -1298,7 +1315,7 @@ class TdiTable:
             """
             if not sts == 0:
                 raise TdiTableError("CLI Error: set data field failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return sts
+                #return sts
         return 0
 
     """
@@ -1452,12 +1469,12 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_flags_create(self._device_hdl, flags_value, byref(flags_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: flags create failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
+            #return -1
 
         if not sts == 0:
             print("CLI Error: table key field set failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
             self._cintf.get_driver().tdi_flags_delete(flags_handle)
-            return -1
+            #return -1
         return flags_handle
 
     def _make_call_data(self, data_content, action):
@@ -1484,21 +1501,24 @@ class TdiTable:
     def _call_add_mod(self, key_content, data_content, action, c_func, flags=0):
         key_handle = self._make_call_keys(key_content)
         data_handle = self._make_call_data(data_content, action)
-        flags_handle = self._make_call_flags(flags)
-        if key_handle == -1 or data_handle == -1 or flags_handle == -1:
+        #flags_handle = self._make_call_flags(flags)
+        #if key_handle == -1 or data_handle == -1 or flags_handle == -1:
+        if key_handle == -1 or data_handle == -1:
             # If one was -1 but the other was created, then it must be freed
             if key_handle != -1:
                 self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
             if data_handle != -1:
                 self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
+            '''
             if flags_handle != -1:
                 self._cintf.get_driver().tdi_flags_delete(flags_handle)
+            '''
             return -1
 
-        sts = c_func(self._handle, self._cintf.get_session(), self._cintf.get_dev_tgt(), flags, key_handle, data_handle)
+        sts = c_func(self._handle, self._cintf.get_session(), self._cintf.get_device(), self._cintf.get_flags(), key_handle, data_handle)
         self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
-        self._cintf.get_driver().tdi_flags_delete(flags_handle)
+        #self._cintf.get_driver().tdi_flags_delete(flags_handle)
         return sts
 
     """
@@ -1644,6 +1664,7 @@ class TdiTable:
             raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
     def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
+        #pdb.set_trace()
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
             return -1
@@ -1658,7 +1679,8 @@ class TdiTable:
         flag = 0
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_create(self._device, flag,  byref(flags_handle))
+        flags_handle = self._cintf.handle_type()
+        sts = self._cintf.get_driver().tdi_flags_create(self._device_hdl, flag,  byref(flags_handle))
         if not sts == 0:
             return -1
 
@@ -1797,7 +1819,7 @@ class TdiTable:
         if from_hw:
             flag = c_int(1)
         flags_handle = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_flags_create(self._device, flag, byref(flags_handle))
+        sts = self._cintf.get_driver().tdi_flags_create(self._device_hdl, flag, byref(flags_handle))
         sts = self._cintf.tdi_table_entry_get_first(self._handle,
                                                       self._cintf.get_session(),
                                                       self._cintf.get_dev_tgt(),
@@ -1827,7 +1849,7 @@ class TdiTable:
         if from_hw:
             flag = c_int(1)
         flags_handle = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_flags_create(self._device, flag, byref(flags_handle))
+        sts = self._cintf.get_driver().tdi_flags_create(self._device_hdl, flag, byref(flags_handle))
         num_returned = c_uint(0)
         sts = self._cintf.tdi_table_entry_get_next_n(self._handle,
                                                        self._cintf.get_session(),
@@ -1855,7 +1877,7 @@ class TdiTable:
         if from_hw:
             flag = 1
         flags_handle = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_flags_create(self._device, flag, byref(flags_handle))
+        sts = self._cintf.get_driver().tdi_flags_create(self._device_hdl, flag, byref(flags_handle))
         table_type = self.table_type_map(self.get_type())
         if table_type == -1:
             return -1
@@ -1881,6 +1903,8 @@ class TdiTable:
     def get_type(self):
         table_type = c_int(-1)
         sts = self._cintf.get_driver().tdi_table_type_get(self._handle, byref(table_type))
+        #print("table name= "+str(self.name)+" table_type="+str(table_type))
+        print("table_type=0x%x" % table_type.value)
         if not sts == 0:
             raise TdiTableError("Error: get table_type failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         return table_type.value
@@ -1937,6 +1961,7 @@ class TdiTable:
 
 
     def set_supported_apis_to_supported_commands(self):
+        #pdb.set_trace()
         num_api = c_uint(0)
         sts = self._cintf.get_driver().tdi_table_num_api_supported(self._handle, byref(num_api))
         if sts != 0:
@@ -1944,6 +1969,9 @@ class TdiTable:
         arr_type = c_uint * num_api.value
         api_arr = arr_type()
         sts = self._cintf.get_driver().tdi_table_api_supported(self._handle, byref(api_arr), byref(num_api))
+        self.supported_commands.append("add")
+        self.supported_commands.append("mod")
+        self.supported_commands.append("get")
         if sts != 0:
             raise TdiTableError("Error: apis supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         for i in range(len(api_arr)):

@@ -64,6 +64,7 @@ class TdiInfo:
         # print("{:40s} | {:30s} | {:10s}".format("TableName","Table Type","Status"))
         self.tables = {}
         for table in tables:
+            #pdb.set_trace()
             tbl_obj = self._cintf.TdiTable(self._cintf, table, self)
             if tbl_obj == -1:
                 print("CLI Error: bad table object init")
@@ -81,8 +82,9 @@ class TdiInfo:
                 tbl_obj.set_has_const_default_action(has_const_default_action)
                 self.tables[tbl_obj.name] = tbl_obj
                 self.tbl_id_map[tbl_id.value] = tbl_obj
+        '''
         # Tables Dependencies Initialzation
-        pdb.set_trace()
+        #pdb.set_trace()
         for tbl_id, tbl_obj in self.tbl_id_map.items():
             num_deps = c_int()
             self._cintf.get_driver().tdi_num_tables_this_table_depends_on_get(self._handle, tbl_id, byref(num_deps))
@@ -100,6 +102,7 @@ class TdiInfo:
                 self.tables[new_name] = tbl_obj
                 del self.tables[tbl_obj.name]
                 tbl_obj.name = new_name
+        '''
         return 0
 
     def _init_learns(self):
