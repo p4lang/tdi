@@ -401,13 +401,22 @@ class TableData {
    */
   tdi_status_t isActive(const tdi_id_t &field_id, bool *is_active) const;
 
- private:
+  const bool &allFieldsSetGet() const { return all_fields_set_; };
+  const std::vector<tdi_id_t> &activeFieldsGet() const {
+    return active_fields_;
+  };
+
+ protected:
   // For LearnData, this can be set to nullptr
   const tdi::Table *table_;
+  // For TableData, this can be set to nullptr
+  const tdi::Learn *learn_;
+  bool all_fields_set_{false};
+
+ private:
   tdi_id_t action_id_{0};
   tdi_id_t container_id_{0};
   std::vector<tdi_id_t> active_fields_{};
-  bool all_fields_set_{false};
 };
 
 }  // namespace tdi

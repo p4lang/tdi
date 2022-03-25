@@ -81,29 +81,28 @@ class Target {
   virtual ~Target() = default;
   virtual tdi_status_t setValue(const tdi_target_e &target,
                                 const uint32_t &value);
-  virtual tdi_status_t getValue(const tdi_target_e &target, uint32_t *value);
+  virtual tdi_status_t getValue(const tdi_target_e &target,
+                                uint32_t *value) const;
 
  protected:
   Target(const tdi_dev_id_t &dev_id) : dev_id_(dev_id){};
-
- private:
-  friend class tdi::Device;
   tdi_dev_id_t dev_id_;
+
+  friend class tdi::Device;
 };
 
 /**
- * @brief Can be constructed by \ref tdi::Device::createFlags()
+ * @brief Simple wrapper over a uin64_t flags. Each bit is controlled by
+ * tdi_flags_e values.
+ * Can be constructed by \ref tdi::Device::createFlags()
  */
 class Flags {
  public:
+  Flags(const uint64_t &flags) : flags_(flags){};
   virtual ~Flags() = default;
   tdi_status_t setValue(const tdi_flags_e &flags, const bool &val);
-  tdi_status_t getValue(const tdi_flags_e &flags, bool *val);
+  tdi_status_t getValue(const tdi_flags_e &flags, bool *val) const;
   const uint64_t &getFlags() { return flags_; };
-
- private:
-  friend class Device;
-  Flags(const uint64_t &flags) : flags_(flags){};
   uint64_t flags_ = 0;
 };
 

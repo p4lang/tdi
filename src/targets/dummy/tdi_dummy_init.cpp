@@ -47,7 +47,8 @@ Device::Device(const tdi_dev_id_t &device_id,
     auto tdi_info_parser = std::unique_ptr<TdiInfoParser>(
         new TdiInfoParser(std::move(tdi_info_mapper)));
     tdi_info_parser->parseTdiInfo(program_config.tdi_info_file_paths_);
-    auto tdi_info = tdi::TdiInfo::makeTdiInfo(std::move(tdi_info_parser),
+    auto tdi_info = tdi::TdiInfo::makeTdiInfo(program_config.prog_name_,
+                                              std::move(tdi_info_parser),
                                               table_factory.get());
     tdi_info_map_[program_config.prog_name_] = std::move(tdi_info);
   }

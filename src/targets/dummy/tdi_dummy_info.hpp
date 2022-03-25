@@ -73,6 +73,7 @@ class TdiInfoMapper : public tdi::tna::TdiInfoMapper {
 class TableFactory : public tdi::tna::TableFactory {
  public:
   virtual std::unique_ptr<tdi::Table> makeTable(
+      const TdiInfo *tdi_info,
       const tdi::TableInfo *table_info) const override {
     if (!table_info) {
       LOG_ERROR("%s:%d No table info received", __func__, __LINE__);
@@ -82,22 +83,28 @@ class TableFactory : public tdi::tna::TableFactory {
         static_cast<tdi_dummy_table_type_e>(table_info->tableTypeGet());
     switch (table_type) {
       case TDI_DUMMY_TABLE_TYPE_MATCH_DIRECT:
-        return std::unique_ptr<tdi::Table>(new MatchActionDirect(table_info));
+        return std::unique_ptr<tdi::Table>(
+            new MatchActionDirect(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_MATCH_INDIRECT:
       case TDI_DUMMY_TABLE_TYPE_MATCH_INDIRECT_SELECTOR:
-        return std::unique_ptr<tdi::Table>(new MatchActionIndirect(table_info));
+        return std::unique_ptr<tdi::Table>(
+            new MatchActionIndirect(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_ACTION_PROFILE:
-        return std::unique_ptr<tdi::Table>(new ActionProfile(table_info));
+        return std::unique_ptr<tdi::Table>(
+            new ActionProfile(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_SELECTOR:
-        return std::unique_ptr<tdi::Table>(new Selector(table_info));
+        return std::unique_ptr<tdi::Table>(new Selector(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_COUNTER:
-        return std::unique_ptr<tdi::Table>(new CounterIndirect(table_info));
+        return std::unique_ptr<tdi::Table>(
+            new CounterIndirect(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_METER:
-        return std::unique_ptr<tdi::Table>(new MeterIndirect(table_info));
+        return std::unique_ptr<tdi::Table>(
+            new MeterIndirect(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_PORT_CFG:
-        return std::unique_ptr<tdi::Table>(new PortConfigure(table_info));
+        return std::unique_ptr<tdi::Table>(
+            new PortConfigure(tdi_info, table_info));
       case TDI_DUMMY_TABLE_TYPE_PORT_STAT:
-        return std::unique_ptr<tdi::Table>(new PortStat(table_info));
+        return std::unique_ptr<tdi::Table>(new PortStat(tdi_info, table_info));
       default:
         return nullptr;
     }

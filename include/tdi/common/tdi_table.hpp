@@ -650,10 +650,16 @@ class Table {
    */
   virtual bool actionIdApplicable() const { return false; }
 
+  const TdiInfo *tdiInfoGet() const { return tdi_info_; };
+
  protected:
-  Table(const TableInfo *table_info) : table_info_(table_info){};
+  Table(const TdiInfo *tdi_info, const TableInfo *table_info)
+      : tdi_info_(tdi_info), table_info_(table_info){};
 
  private:
+  // Backpinter to the TdiInfo
+  const TdiInfo *tdi_info_;
+  // The TableInfo class containing all the metadata from tdi.json
   const TableInfo *table_info_;
   friend tdi::TdiInfo;
 };  // end of tdi::Table

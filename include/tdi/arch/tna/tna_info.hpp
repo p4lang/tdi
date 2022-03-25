@@ -54,9 +54,9 @@ class TdiInfoMapper : public tdi::TdiInfoMapper {
   TdiInfoMapper() {
     // Match types
     matchEnumMapAdd(tdi_json::values::tna::ATCAM,
-                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TNA_ATCAM));
+                    static_cast<tdi_match_type_e>(TDI_TNA_MATCH_TYPE_ATCAM));
     matchEnumMapAdd(tdi_json::values::tna::RANGE,
-                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TNA_RANGE));
+                    static_cast<tdi_match_type_e>(TDI_TNA_MATCH_TYPE_RANGE));
   }
 };
 
@@ -67,6 +67,7 @@ class TdiInfoMapper : public tdi::TdiInfoMapper {
 class TableFactory : public tdi::TableFactory {
  public:
   virtual std::unique_ptr<tdi::Table> makeTable(
+      const TdiInfo * /*tdi_info*/,
       const tdi::TableInfo * /*table_info*/) const override {
     // No tables in TNA currently. Will eventually have Selector, Action profile
     // etc

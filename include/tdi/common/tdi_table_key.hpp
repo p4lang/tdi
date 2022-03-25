@@ -44,32 +44,41 @@ enum tdi_match_type_core_e {
   TDI_MATCH_TYPE_LPM,
 };
 
-
 class KeyFieldValue {
-  public:
+ public:
   virtual ~KeyFieldValue() = default;
+
+ protected:
+  KeyFieldValue(tdi_match_type_e match_type) : match_type_(match_type){};
+
+ private:
+  tdi_match_type_e match_type_;
 };
 
-template<class T>
+template <class T>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
-  KeyFieldValueExact(T &value) : value_(value){};
+  KeyFieldValueExact(T &value)
+      : KeyFieldValue(TDI_MATCH_TYPE_EXACT), value_(value){};
   KeyFieldValueExact(uint8_t *value_ptr, size_t &size)
-      : value_ptr_(value_ptr), size_(size){};
+      : KeyFieldValue(TDI_MATCH_TYPE_EXACT),
+        value_ptr_(value_ptr),
+        size_(size){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
   size_t size_ = 0;
 };
 
-template<class T>
+template <class T>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
   KeyFieldValueTernary(T &value, T &mask)
-      : value_(value), mask_(mask){};
-  KeyFieldValueTernary(uint8_t *value_ptr,
-                       uint8_t *mask_ptr,
-                       size_t &size)
-      : value_ptr_(value_ptr), mask_ptr_(mask_ptr), size_(size){};
+      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY), value_(value), mask_(mask){};
+  KeyFieldValueTernary(uint8_t *value_ptr, uint8_t *mask_ptr, size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY),
+        value_ptr_(value_ptr),
+        mask_ptr_(mask_ptr),
+        size_(size){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
   T mask_ = 0;
@@ -77,13 +86,18 @@ class KeyFieldValueTernary : public KeyFieldValue {
   size_t size_ = 0;
 };
 
-template<class T>
+template <class T>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
   KeyFieldValueLPM(T &value, uint16_t &prefix_len)
-      : value_(value), prefix_len_(prefix_len) {};
+      : KeyFieldValue(TDI_MATCH_TYPE_LPM),
+        value_(value),
+        prefix_len_(prefix_len){};
   KeyFieldValueLPM(uint8_t *value_ptr, uint16_t &prefix_len, size_t &size)
-      : value_ptr_(value_ptr), prefix_len_(prefix_len), size_(size) {};
+      : KeyFieldValue(TDI_MATCH_TYPE_LPM),
+        value_ptr_(value_ptr),
+        prefix_len_(prefix_len),
+        size_(size){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
   uint16_t prefix_len_ = 0;
@@ -111,10 +125,10 @@ class TableKey {
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const tdi::KeyFieldValue &&field_value);
+                                const tdi::KeyFieldValue &&field_value);
 
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const tdi::KeyFieldValue &field_value);
+                                const tdi::KeyFieldValue &field_value);
 
   /**
    * @brief Get value. Only valid on fields of \ref tdi::KeyFieldType "EXACT"
@@ -126,7 +140,6 @@ class TableKey {
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
                                 tdi::KeyFieldValue *value) const;
-
 
   /**
    * @brief Get the Table Object associated with this Key Object
@@ -140,13 +153,14 @@ class TableKey {
   /**
    * @brief Reset the TableKey object
    *
-   * @return 
+   * @return
    */
   virtual tdi_status_t reset();
+
  private:
   const Table *table_ = nullptr;
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_TABLE_KEY_HPP

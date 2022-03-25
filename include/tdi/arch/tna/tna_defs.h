@@ -50,9 +50,14 @@ typedef enum {
  * @brief Key Field Match Type. A key can have multiple fields,
  * each with a different match type
  */
-enum tdi_match_type_tna_e {
-  TDI_MATCH_TYPE_TNA_RANGE = TDI_MATCH_TYPE_ARCH,
-  TDI_MATCH_TYPE_TNA_ATCAM,
+enum tdi_tna_match_type_e {
+  TDI_TNA_MATCH_TYPE_RANGE = TDI_MATCH_TYPE_ARCH,
+  TDI_TNA_MATCH_TYPE_ATCAM,
+};
+
+enum tdi_tna_target_e {
+  TDI_TNA_TARGET_PIPE_ID = TDI_TARGET_ARCH,
+  TDI_TNA_TARGET_DIRECTION,
 };
 
 #ifdef __cplusplus
