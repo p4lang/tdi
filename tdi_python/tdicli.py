@@ -179,7 +179,7 @@ class CIntfTdi:
 
         def tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data):
             if self.gflags == True:
-                flags = c_uint64(flags)
+                #flags = c_uint64(flags)
                 return self._driver.tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data)
             else:
                 return self._driver.tdi_table_entry_add(tbl_hdl, session, dev_tgt, key, data)
@@ -187,8 +187,7 @@ class CIntfTdi:
 
         def tdi_table_entry_mod(tbl_hdl, session, dev_tgt, flags, key, data):
             if self.gflags == True:
-                cflags = c_uint64(flags)
-                return self._driver.tdi_table_entry_mod(tbl_hdl, session, dev_tgt, cflags, key, data)
+                return self._driver.tdi_table_entry_mod(tbl_hdl, session, dev_tgt, flags, key, data)
             else:
                 return self._driver.tdi_table_entry_mod(tbl_hdl, session, dev_tgt, key, data)
         setattr(self, 'tdi_table_entry_mod', tdi_table_entry_mod)
@@ -214,7 +213,7 @@ class CIntfTdi:
 
         num_names = c_int(-1)
         self._driver.tdi_num_p4_names_get(self._dev_id, byref(num_names))
-        pdb.set_trace()
+        #pdb.set_trace()
         print("We've found {} p4 programs for device {}:".format(num_names.value, self._dev_id))
         array_type = c_char_p * num_names.value
         p4_names = array_type()
@@ -222,8 +221,12 @@ class CIntfTdi:
         self._driver.tdi_p4_names_get(self._dev_id, p4_names)
         self.handle_type = POINTER(self.TdiHandle)
         self.sess_type = POINTER(c_uint)
-        self.tdi_annotation_type = self.TdiAnnotation
-        self.tdi_flags = POINTER(c_uint)
+        self.annotation_type = self.TdiAnnotation
+
+        self.flags_type = POINTER(c_uint)
+        flag=0
+        self._flags = self.flags_type()
+        self._driver.tdi_flags_create(self._device, flag,  byref(self._flags))
 
         self.idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
         self.tdi_idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
@@ -242,7 +245,8 @@ class CIntfTdi:
                 return -1
             self.infos[name] = info
         self._session = self.sess_type()
-        pdb.set_trace()
+        self._flags = self.flags_type()
+        #pdb.set_trace()
         sts = self._driver.tdi_session_create(self._device, byref(self._session))
         atexit.register(self._cleanup_session)
         if not sts == 0:
@@ -509,7 +513,7 @@ class BFContext:
             delattr(sys.modules['__main__'],name)
 
         _tdi_context['cur_context'] = []
-        pdb.set_trace()
+        #pdb.set_trace()
         for name, child in self._get_children().items():
             _tdi_context['cur_context'].append(name)
             setattr(sys.modules['__main__'], name, child)
@@ -582,7 +586,8 @@ class BFNode(BFContext):
         # mask the clear method here to avoid the current missing implementation of clear method
         # self._commands["clear"] = getattr(self, "clear")
         self._commands["info"] = getattr(self, "info")
-        self._commands["tdi_info"] = getattr(self, "tdi_info")
+        self._commands["enable"] = getattr(self, "enable")
+        #self._commands["tdi_info"] = getattr(self, "tdi_info")
     def enable(self):
         print("This is in the BFNode enable\n")
         # This call will stay the same (call old c_frontend libdriver.so) not call libtdi.so
@@ -1182,6 +1187,8 @@ Available Commands:
         self._create_get_handle(key_fields)
         self._create_del(key_fields)
 
+        '''
+        pdb.set_trace()
         for action_name, info in self._c_tbl.actions.items():
             data_fields = info["data_fields"]
             annotations = info["annotations"]
@@ -1192,8 +1199,9 @@ Available Commands:
                 self._create_mod_inc_with_action(key_fields, data_fields, action_name)
                 self._create_entry_with_action(key_fields, data_fields, action_name)
                 self._create_add_with_action(key_fields, data_fields, action_name)
-
         if len(self._c_tbl.actions) == 0:
+        '''
+        if 1:
             data_fields = self._c_tbl.data_fields
             self._create_set_default(data_fields)
             self._create_mod(key_fields, data_fields)
@@ -1996,6 +2004,7 @@ def validate_program_name(p4_name, p_node):
     return p4_name_res_
 
 def update_node_tree(parent_node, prefs, cintf):
+    #pdb.set_trace()
     for p in prefs[:-1]:
         contained = False
         next_node = None
@@ -2026,6 +2035,12 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
 
     # Sort tables in reverse order, so nested table children are added first.
     for table_name, tbl_obj in sorted(tdi_info.tables.items(), reverse=True):
+        print("table_name:"+str(table_name))
+        if table_name == '$PORT':
+            table_name = 'port.port'
+        elif table_name == '$PORT_STAT':
+            table_name = 'port.port_stat'
+
         prefs = table_name.split('.')
         if prefs[0] in _tdi_fixed_nodes:
             parent_node = update_node_tree(dev_node, prefs, cintf)
@@ -2072,7 +2087,7 @@ def populate_tdi(dev_id_list):
     # device node for now for backward compatibility.
     # TODO take care of it later especially when device level
     # APIs are introduced.
-    pdb.set_trace()
+    #pdb.set_trace()
     single_device = True
     if len(dev_id_list) > 1:
         single_device = False
@@ -2102,7 +2117,7 @@ def populate_tdi(dev_id_list):
         dev_node.p4_programs_list = []
         for p4_name, tdi_info in cintf.infos.items():
             print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
-            pdb.set_trace()
+            #pdb.set_trace()
             if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
               print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
               return -1
