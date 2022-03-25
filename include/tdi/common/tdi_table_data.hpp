@@ -400,14 +400,14 @@ class TableData {
    * @return Status of the API call
    */
   tdi_status_t isActive(const tdi_id_t &field_id, bool *is_active) const;
-
+ protected:
+  const tdi::Table *table_;
+  bool all_fields_set_{false};
+  tdi_id_t action_id_{0};
  private:
   // For LearnData, this can be set to nullptr
-  const tdi::Table *table_;
-  tdi_id_t action_id_{0};
   tdi_id_t container_id_{0};
   std::vector<tdi_id_t> active_fields_{};
-  bool all_fields_set_{false};
 };
 
 }  // namespace tdi
