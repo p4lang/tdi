@@ -79,12 +79,13 @@ class TdiTable:
         #
         table_name = c_char_p()
         sts = self._cintf.get_driver().tdi_table_name_get(self._handle, byref(table_name))
+        #pdb.set_trace()
         if not sts == 0:
             print("CLI Error: get table name failed. [{}]".format(self._cintf.err_str(sts)))
             raise TdiTableError("Table init name failed.", None, -1)
         self.name = table_name.value.decode('ascii')
         #Unify the table name for BFNode (command nodes)
-        if self.table_type in ["PORT", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
+        if self.table_type in ["PORT_CFG", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
             self.name = "port.{}".format(self.name.lower().replace("$",""))
         if self.table_type in ["PRE_MGID", "PRE_NODE", "PRE_ECMP", "PRE_LAG", "PRE_PRUNE", "PRE_PORT", "MIRROR_CFG"]:
             self.name = self.name.lower().replace("$","")
@@ -509,6 +510,7 @@ class TdiTable:
             return [value[i] for i in range(len(value))]
 
         def deparse_output(self, value):
+            pdb.set_trace()
             if self.category == "data" and (self.table.data_type_map(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
                                            (self.table.data_type_map(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
                 return self._deparse_int_arr(value)
@@ -626,16 +628,14 @@ class TdiTable:
     @staticmethod
     def key_type_map(key_type):
         if key_type == 0:
-            return "INVALID"
-        elif key_type == 1:
             return "EXACT"
-        elif key_type == 2:
+        elif key_type == 1:
             return "TERNARY"
-        elif key_type == 3:
+        elif key_type == 2:
             return "RANGE"
-        elif key_type == 4:
+        elif key_type == 3:
             return "LPM"
-        elif key_type == 5:
+        elif key_type == 4:
             return "OPTIONAL"
         else:
             return "BFRT_CLI_KEY_TYPE_NOT_IMPLEMENTED"
@@ -702,16 +702,14 @@ class TdiTable:
         elif table_type == TDI_TABLE_TYPE_DEVICE+13:
             return "SNAPSHOT_CFG"          # /** Snapshot. */
         elif table_type == TDI_TABLE_TYPE_DEVICE+14:
-            return "SNAPSHOT_LIVENESS" # /** Snapshot field Liveness */
-        elif table_type == TDI_TABLE_TYPE_DEVICE+15:
             return "PORT_CFG"
-        elif table_type == TDI_TABLE_TYPE_DEVICE+16:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+15:
             return "PORT_STAT"
-        elif table_type == TDI_TABLE_TYPE_DEVICE+17:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+16:
             return "PORT_HDL_INFO"
-        elif table_type == TDI_TABLE_TYPE_DEVICE+18:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+17:
             return "PORT_FRONT_PANEL_IDX_INFO"
-        elif table_type == TDI_TABLE_TYPE_DEVICE+19:
+        elif table_type == TDI_TABLE_TYPE_DEVICE+18:
             return "PORT_STR_INFO"
         elif table_type == TDI_TABLE_TYPE_DEVICE+20:
             return "PKTGEN_PORT_CFG"     # /** Pktgen Port Configuration table */
@@ -1090,11 +1088,12 @@ class TdiTable:
             sts = get_annotations_func(self._handle, action_id, byref(annotations_arr))
             for ann in annotations_arr:
                 annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
-
+            '''
             # Create and insert action info
             self.actions[action_name.value] = {"id" : action_id,
                                                "data_fields" : {},
                                                "annotations" : annotations}
+            '''
             self.action_id_name_map[action_id] = action_name.value
             self.action_data_readables[action_name.value] = []
         return 0
@@ -1325,8 +1324,10 @@ class TdiTable:
     """
     def _set_data_fields(self, content, data_handle, action):
         data_fields = self.data_fields
+        '''
         if action != None:
             data_fields = self.actions[action]["data_fields"]
+        '''
         return self._set_data_field(content, data_handle, data_fields)
 
     def _get_cont_data_fields(self, info, data_handle):
@@ -1441,8 +1442,10 @@ class TdiTable:
 
     def _get_data_fields(self, data_handle, action):
         data_fields = self.data_fields
+        '''
         if action != None:
             data_fields = self.actions[action]["data_fields"]
+        '''
         return self._process_data_fields(data_fields, data_handle)
 
     """
@@ -1613,8 +1616,10 @@ class TdiTable:
             self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
             raise TdiTableError("Error: get_default_entry failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         action = None
+        '''
         if len(self.actions) > 0:
             action = self.action_id_name_map[self._action_from_data(data_handle)]
+        '''
         entry = TableEntry(self, {}, self._get_data_fields(data_handle, action), action)
         entry.push = entry.default_entry_block
         entry.update = entry.default_entry_block
@@ -1622,8 +1627,10 @@ class TdiTable:
         if print_entry:
             stream_printer = self.make_entry_stream_printer()
             action = []
+            '''
             if len(self.actions) > 0:
                 action = [self._action_from_data(data_handle)]
+            '''
             stream_printer(None, [data_handle], action)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
         return entry
@@ -1681,9 +1688,10 @@ class TdiTable:
             flag = 1
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(self._device_hdl, flag,  byref(flags_handle))
+        '''
         if not sts == 0:
             return -1
-
+        '''
         if entry_handle != None:
             key_handle = self._cintf.handle_type()
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
@@ -1707,7 +1715,7 @@ class TdiTable:
                     self._cintf.get_session(),
                     self._cintf.get_dev_tgt(),
                     key_handle, data_handle,
-                    flag_handle)
+                    flags_handle)
 
         if not sts == 0:
             if not (sts == 6 and not print_entry):
@@ -1719,12 +1727,16 @@ class TdiTable:
         if print_entry:
             stream_printer = self.make_entry_stream_printer()
             action = []
+            '''
             if len(self.actions) > 0:
                 action = [self._action_from_data(data_handle)]
+            '''
             stream_printer([key_handle], [data_handle], action)
         action = None
+        '''
         if len(self.actions) > 0:
             action = self.action_id_name_map[self._action_from_data(data_handle)]
+        '''
         entry = TableEntry(self, self._get_key_fields(key_handle), self._get_data_fields(data_handle, action), action)
         self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
@@ -2409,8 +2421,10 @@ class TdiTable:
             self.hit_state_update_cb = None
 
     def _action_from_data(self, data_hdl):
+        '''
         if len(self.actions) < 0:
             return -1
+        '''
         action_id = c_uint(-1)
         sts = self._cintf.get_driver().tdi_data_action_id_get(data_hdl, byref(action_id))
         if not sts == 0:
@@ -2451,10 +2465,11 @@ class TdiTable:
                 return 0;
 
             action_ids = []
+            '''
             if len(self.actions) > 0:
                 for d_hdl in data_hdls:
                     action_ids.append(self._action_from_data(d_hdl))
-
+            '''
             entry_handler(key_hdls, data_hdls, action_ids, print_zero)
             self._deallocate_hdls(key_hdls[:-1], data_hdls)
             prev_key_hdl = key_hdls[-1]
@@ -2491,10 +2506,13 @@ class TdiTable:
         if data_content is None:
             return to_print, True
         data_fields = self.data_fields
+        '''
         if action != None:
             data_fields = self.actions[action]["data_fields"]
             to_print += "Entry data (action : {}):\n".format(action.decode('ascii'))
         else:
+        '''
+        if 1:
             to_print += "Entry data:\n"
         all_zero = True
         for name, val in sorted(data_content.items(), key=lambda i: data_fields[i[0]].id):
@@ -2524,8 +2542,10 @@ class TdiTable:
             for i in range(0, iterval):
                 action = None
                 if action_ids != None:
+                    '''
                     if len(table.actions) > 0:
                         action = table.action_id_name_map[action_ids[i]]
+                    '''
                 key_content = None
                 if key_hdls != None:
                     key = key_hdls[i]
@@ -2565,9 +2585,10 @@ class TdiTable:
         parsed_data = {}
         if data_strs != None:
             data_fields = self.data_fields
+            '''
             if action != None:
                 data_fields = self.actions[action]["data_fields"]
-
+            '''
             for name, input_ in data_strs.items():
                 if isinstance(name, str):
                     name = name.encode('UTF-8')
