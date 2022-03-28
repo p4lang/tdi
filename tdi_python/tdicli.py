@@ -58,7 +58,7 @@ class CIntfTdi:
         self.gflags = self._driver.tdi_generic_flag_support()
         def tdi_table_entry_get(tbl_hdl, session, dev_tgt, key, data, flag):
             if self.gflags == True:
-                flags = c_uint64(flag)
+                flags = self.get_flags()
                 return self._driver.tdi_table_entry_get(tbl_hdl, session, dev_tgt, flags, key, data)
             else:
                 return self._driver.tdi_table_entry_get(tbl_hdl, session, dev_tgt, key, data, flag)
@@ -383,9 +383,10 @@ class TableEntryDumper:
             key = key_hdls[i]
             data = data_hdls[i]
             action = None
+            '''
             if len(self.table.actions) > 0:
                 action = self.table.action_id_name_map[action_ids[i]]
-
+            '''
             key_content = self.table._get_key_fields(key)
             if not isinstance(key_content, dict):
                 return
@@ -852,6 +853,7 @@ class BFLeaf(BFContext):
                                    "read_only": field[4]}]
         if print_info:
             print(tabulate.tabulate(key_rows, headers=headers))
+        '''
         if len(self._c_tbl.actions) == 0:
             data_rows = []
             for info in sorted(self._c_tbl.data_fields.values(), key=lambda x: x.id):
@@ -865,8 +867,11 @@ class BFLeaf(BFContext):
             if print_info:
                 print("\nData Fields:\n{}\n".format(tabulate.tabulate(data_rows, headers=headers)))
         else:
+        '''
+        if 1:
             res["data_fields"] = {}
         print()
+        '''
         for name, act_info in self._c_tbl.actions.items():
             data_rows = []
             res["data_fields"][name.decode('ascii')] = []
@@ -880,6 +885,7 @@ class BFLeaf(BFContext):
                                                               "read_only": field[4]}]
             if print_info:
                 print("Data Fields for action {}:\n{}\n".format(name.decode('ascii'), tabulate.tabulate(data_rows, headers=headers)))
+        '''
         if return_info:
             return res
 
@@ -2032,15 +2038,10 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
         p4_node = BFNode(p4_name_str_, cintf, parent_node=dev_node)
     else:
         p4_name_str_ = p4_name
-
+    #pdb.set_trace()
     # Sort tables in reverse order, so nested table children are added first.
     for table_name, tbl_obj in sorted(tdi_info.tables.items(), reverse=True):
         print("table_name:"+str(table_name))
-        if table_name == '$PORT':
-            table_name = 'port.port'
-        elif table_name == '$PORT_STAT':
-            table_name = 'port.port_stat'
-
         prefs = table_name.split('.')
         if prefs[0] in _tdi_fixed_nodes:
             parent_node = update_node_tree(dev_node, prefs, cintf)
