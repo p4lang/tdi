@@ -803,7 +803,7 @@ tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
 
   auto tableInfo = table->tableInfoGet();
   auto keyFieldInfo = tableInfo->keyFieldGet(field_id);
-  auto keyFieldType = static_cast<tdi_key_field_type_t>(keyFieldInfo->dataTypeGet());
+  auto keyFieldType = static_cast<tdi_key_field_type_t>(keyFieldInfo->matchTypeGet());
   *field_type_ret = static_cast<tdi_key_field_type_t>(keyFieldType);
   return TDI_SUCCESS;
 }

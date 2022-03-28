@@ -34,7 +34,7 @@ tdi_status_t tdi_key_field_set_value(tdi_table_key_hdl *key_hdl,
                                       const tdi_id_t field_id,
                                       const uint64_t value) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueExact <const long unsigned int> keyFieldValue(value);
+  tdi::KeyFieldValueExact <const uint64_t> keyFieldValue(value);
   return key->setValue(field_id, keyFieldValue);
 }
 
@@ -64,7 +64,7 @@ tdi_status_t tdi_key_field_set_value_and_mask(tdi_table_key_hdl *key_hdl,
   
   //return key->setValueandMask(field_id, value, mask);
   //return key->setValue(field_id, value, mask);
-  tdi::KeyFieldValueTernary <const long unsigned int> keyFieldValue(value, mask);
+  tdi::KeyFieldValueTernary <const uint64_t> keyFieldValue(value, mask);
   return key->setValue(field_id, keyFieldValue);
 }
 
@@ -85,7 +85,7 @@ tdi_status_t tdi_key_field_set_value_range(tdi_table_key_hdl *key_hdl,
                                             const uint64_t start,
                                             const uint64_t end) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueRange<const long unsigned int> keyFieldValue(start, end);
+  tdi::KeyFieldValueRange<const uint64_t> keyFieldValue(start, end);
   return key->setValue(field_id, keyFieldValue);
 }
 
@@ -125,8 +125,10 @@ tdi_status_t tdi_key_field_get_value(const tdi_table_key_hdl *key_hdl,
                                       const tdi_id_t field_id,
                                       uint64_t *value) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueExact <long unsigned int> keyFieldValue(*value);
-  return key->getValue(field_id, &keyFieldValue);
+  tdi::KeyFieldValueExact <uint64_t> keyFieldValue(*value);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  *value = keyFieldValue.value_;
+  return(sts);
 }
 
 tdi_status_t tdi_key_field_get_value_ptr(const tdi_table_key_hdl *key_hdl,
@@ -169,7 +171,7 @@ tdi_status_t tdi_key_field_get_value_and_mask(
     uint64_t *value1,
     uint64_t *value2) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueTernary<long unsigned int> keyFieldValue(*value1, *value2);
+  tdi::KeyFieldValueTernary<uint64_t> keyFieldValue(*value1, *value2);
   return key->getValue(field_id, &keyFieldValue);
 }
 
@@ -190,7 +192,7 @@ tdi_status_t tdi_key_field_get_value_range(const tdi_table_key_hdl *key_hdl,
                                             uint64_t *start,
                                             uint64_t *end) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueRange<long unsigned int> keyFieldValue(*start, *end);
+  tdi::KeyFieldValueRange<uint64_t> keyFieldValue(*start, *end);
   return key->getValue(field_id, &keyFieldValue);
 }
 
@@ -211,7 +213,7 @@ tdi_status_t tdi_key_field_get_value_lpm(const tdi_table_key_hdl *key_hdl,
                                           uint64_t *start,
                                           const uint16_t *p_length) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueLPM<long unsigned int> keyFieldValue(*start, *p_length);
+  tdi::KeyFieldValueLPM<uint64_t> keyFieldValue(*start, *p_length);
   return key->getValue(field_id, &keyFieldValue);
 }
 
