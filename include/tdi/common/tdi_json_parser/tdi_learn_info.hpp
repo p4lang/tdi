@@ -116,15 +116,15 @@ class LearnInfo {
  private:
   LearnInfo(tdi_id_t id,
             std::string name,
-            std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map,
+            std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_field_map,
             std::set<Annotation> annotations)
       : id_(id),
         name_(name),
-        learn_data_map_(std::move(learn_data_map)),
+        learn_field_map_(std::move(learn_field_map)),
         annotations_(annotations){};
   tdi_id_t id_;
   std::string name_;
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map_;
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_field_map_;
   std::set<Annotation> annotations_{};
   mutable std::unique_ptr<LearnContextInfo> learn_context_info_;
   friend class TdiInfoParser;

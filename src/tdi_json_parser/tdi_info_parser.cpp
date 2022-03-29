@@ -344,35 +344,29 @@ std::unique_ptr<tdi::LearnInfo> TdiInfoParser::parseLearn(
     const tdi::Cjson &learn_tdi) {
   tdi_id_t learn_id = learn_tdi[tdi_json::LEARN_ID];
   std::string learn_name = learn_tdi[tdi_json::LEARN_NAME];
-  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_data_map;
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> learn_field_map;
 
   LOG_DBG("Learn : %s :: ID :: %d ", learn_name.c_str(), learn_id);
 
-  ////////////////////
-  // getting data   //
-  ////////////////////
-  tdi::Cjson learn_data_cjson = learn_tdi[tdi_json::LEARN_DATA];
-  for (const auto &data_json : learn_data_cjson.getCjsonChildVec()) {
-    std::string data_name;
-    int oneof_size = 1;
-    if ((*data_json)["oneof"].exists()) {
-      oneof_size = (*data_json)["oneof"].array_size();
+  // parse each field
+  int oneof_size = 1;
+  for (const auto &field :
+       learn_tdi[tdi_json::LEARN_FIELDS].getCjsonChildVec()) {
+    auto learn_field = parseDataField(*field, oneof_size);
+    if (learn_field == nullptr) {
+      continue;
     }
-    tdi::Cjson temp;
-    for (int oneof_loop = 0; oneof_loop < oneof_size; oneof_loop++) {
-      auto data_field = parseDataField(*data_json, oneof_loop);
-      tdi_id_t data_field_id = data_field->idGet();
-      if (learn_data_map.find(data_field_id) != learn_data_map.end()) {
-        LOG_ERROR("%s:%d Id \"%u\" Exists for common data of learn %s",
-                  __func__,
-                  __LINE__,
-                  data_field_id,
-                  learn_name.c_str());
-        continue;
-      }
-      // insert data_field in learn
-      learn_data_map[data_field_id] = std::move(data_field);
+    tdi_id_t learn_field_id = learn_field->idGet();
+    if (learn_field_map.find(learn_field_id) != learn_field_map.end()) {
+      LOG_ERROR("%s:%d Id \"%u\" Exists for field of learn %s",
+                __func__,
+                __LINE__,
+                learn_field_id,
+                learn_name.c_str());
+      continue;
     }
+    // insert data_field in learn
+    learn_field_map[learn_field_id] = std::move(learn_field);
   }
 
   //////////////////////////
@@ -381,7 +375,7 @@ std::unique_ptr<tdi::LearnInfo> TdiInfoParser::parseLearn(
   auto learn_info = std::unique_ptr<LearnInfo>(
       new LearnInfo(learn_id,
                     learn_name,
-                    std::move(learn_data_map),
+                    std::move(learn_field_map),
                     parseAnnotations(learn_tdi[tdi_json::LEARN_ANNOTATIONS])));
   if (learn_info == nullptr) {
     LOG_ERROR("%s:%d Error forming learnInfo for learn id %d",
@@ -565,7 +559,7 @@ tdi_status_t TdiInfoParser::parseTdiInfo(
       table_info_map_[table_name] = this->parseTable(*table);
     }
 
-    tdi::Cjson learns_cjson = root_cjson[tdi_json::LEARNS];
+    tdi::Cjson learns_cjson = root_cjson[tdi_json::LEARN_FILTERS];
     for (const auto &learn : learns_cjson.getCjsonChildVec()) {
       // C. parse file to form tdi_learn_info object
       std::string learn_name = static_cast<std::string>((*learn)["name"]);

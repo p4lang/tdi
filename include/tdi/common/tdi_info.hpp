@@ -222,6 +222,8 @@ class TdiInfo {
 
   /* Main P4_info map. object_name --> tdi_info object */
   std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
+  // Learn Map
+  std::map<std::string, std::unique_ptr<tdi::Learn>> learnMap;
 
  private:
   TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
@@ -235,8 +237,6 @@ class TdiInfo {
   /* Reverse map in case lookup from ID is needed*/
   std::map<tdi_id_t, const tdi::Table *> tableIdMap;
 
-  // Learn Map
-  std::map<std::string, std::unique_ptr<tdi::Learn>> learnMap;
   std::map<std::string, const tdi::Learn *> fullLearnMap;
   std::map<tdi_id_t, const tdi::Learn *> learnIdMap;
 
