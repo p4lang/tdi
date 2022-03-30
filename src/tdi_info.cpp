@@ -162,6 +162,37 @@ TdiInfo::TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
     }
   }
   populateFullNameMap<tdi::Table>(tableMap, &fullTableMap);
+
+  // Creating Learn
+  for (const auto &kv : tdi_info_parser_->learnInfoMapGet()) {
+    if (learnMap.find(kv.first) != learnMap.end()) {
+      LOG_ERROR("%s:%d Learn Table:%s Already exists",
+                __func__,
+                __LINE__,
+                kv.first.c_str());
+    } else {
+      auto learn = std::unique_ptr<Learn>(new Learn(kv.second.get()));
+      if (!learn) {
+        LOG_ERROR("%s:%d Error creating Learn Table:%s",
+                  __func__,
+                  __LINE__,
+                  kv.first.c_str());
+        continue;
+      }
+
+      if (learnIdMap.find(learn->learnInfoGet()->idGet()) != learnIdMap.end()) {
+        LOG_ERROR("%s:%d Learn Table:%s ID %d Already exists",
+                  __func__,
+                  __LINE__,
+                  kv.first.c_str(),
+                  learn->learnInfoGet()->idGet());
+      } else {
+        learnIdMap[learn->learnInfoGet()->idGet()] = learn.get();
+      }
+      learnMap[kv.first] = std::move(learn);
+    }
+  }
+  populateFullNameMap<tdi::Learn>(learnMap, &fullLearnMap);
 }
 
 tdi_status_t TdiInfo::tablesGet(
@@ -240,6 +271,16 @@ tdi_status_t TdiInfo::learnFromIdGet(tdi_id_t id,
     *learn_ret = it->second;
   }
   return TDI_SUCCESS;
+}
+
+const std::map<std::string, std::unique_ptr<tdi::Table>> &TdiInfo::tableMapGet()
+    const {
+  return tableMap;
+}
+
+const std::map<std::string, std::unique_ptr<tdi::Learn>> &TdiInfo::learnMapGet()
+    const {
+  return learnMap;
 }
 
 }  // namespace tdi
