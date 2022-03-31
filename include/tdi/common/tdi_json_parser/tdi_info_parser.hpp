@@ -70,11 +70,11 @@ const std::string TABLE_DATA_TYPE_TYPE = "type";
 const std::string TABLE_DATA_TYPE_WIDTH = "width";
 const std::string TABLE_DATA_TYPE_DEFAULT_VALUE = "default_value";
 
-const std::string LEARNS = "learns";
+const std::string LEARN_FILTERS = "learn_filters";
 const std::string LEARN_NAME = "name";
 const std::string LEARN_ID = "id";
 const std::string LEARN_ANNOTATIONS = "annotations";
-const std::string LEARN_DATA = "data";
+const std::string LEARN_FIELDS = "fields";
 
 }  // namespace tdi_json
 
