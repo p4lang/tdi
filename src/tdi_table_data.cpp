@@ -134,11 +134,6 @@ tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t TableData::actionIdGet(tdi_id_t *act_id) const {
-  *act_id = this->action_id_;
-  return TDI_SUCCESS;
-}
-
 tdi_status_t TableData::dataAllocate(
     const tdi_id_t & /*container_id*/,
     std::unique_ptr<tdi::TableData> * /*data_ret*/) const {

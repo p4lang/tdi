@@ -48,6 +48,9 @@ const std::string TABLE_KEY_MATCH_TYPE_LPM = "LPM";
 }  // namespace values
 }  // namespace tdi_json
 
+// Forward declaration
+class TdiInfo;
+
 class TdiInfoMapper {
  public:
   const std::map<std::string, tdi_table_type_e> &tableEnumMapGet() {
@@ -122,6 +125,7 @@ class TdiInfoMapper {
 class TableFactory {
  public:
   virtual std::unique_ptr<tdi::Table> makeTable(
+      const TdiInfo * /*tdi_info*/,
       const tdi::TableInfo * /*table_info*/) const {
     // No tables in core currently
     return nullptr;
@@ -154,6 +158,7 @@ class TdiInfo {
    * @return unique_ptr to TdiInfo
    */
   std::unique_ptr<const TdiInfo> static makeTdiInfo(
+      const std::string &p4_name,
       std::unique_ptr<TdiInfoParser> tdi_info_parser,
       const tdi::TableFactory *factory);
 
@@ -215,6 +220,17 @@ class TdiInfo {
   tdi_status_t learnFromIdGet(tdi_id_t id, const tdi::Learn **learn_ret) const;
 
   /**
+   * @brief Get the p4_name associated with this TdiInfo object. Each TdiInfo is
+   * associated with a P4 program. If no P4 name exists, then the device can
+   * choose to assign an empty string or preferabley a reserved name like
+   * "$SHARED".
+   *
+   * @return std::string P4 name
+   *
+   */
+  const std::string &p4NameGet() const { return p4_name_; };
+
+  /**
    * @brief Get name and tdi::Table map
    *
    * @return map of name and tdi::Table
@@ -235,7 +251,8 @@ class TdiInfo {
   TdiInfo &operator=(TdiInfo &&) = delete;
 
  private:
-  TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
+  TdiInfo(const std::string &p4_name,
+          std::unique_ptr<TdiInfoParser> tdi_info_parser,
           const tdi::TableFactory *factory);
 
   /* Main P4_info map. object_name --> tdi_info object */
@@ -260,6 +277,11 @@ class TdiInfo {
   // for it at all.
   // Target can add tables to this set if needed
   mutable std::set<std::string> invalid_table_names;
+
+  // Each TdiInfo is associated with a P4 program. If no P4 name exists, then
+  // the device can choose to assign an empty string or preferabley a reserved
+  // name like "$SHARED".
+  const std::string p4_name_;
   std::unique_ptr<TdiInfoParser> tdi_info_parser_;
 };
 

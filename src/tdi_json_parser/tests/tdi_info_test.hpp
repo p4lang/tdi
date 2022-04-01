@@ -88,8 +88,10 @@ void setupInternal(T *obj) {
   ASSERT_EQ(status, TDI_SUCCESS)
       << "Failed to parse file : " << program_config.tdi_info_file_paths_[0];
 
-  obj->tdi_info = std::move(tdi::TdiInfo::makeTdiInfo(
-      std::move(tdi_info_parser), table_factory.get()));
+  obj->tdi_info =
+      std::move(tdi::TdiInfo::makeTdiInfo(program_config.prog_name_,
+                                          std::move(tdi_info_parser),
+                                          table_factory.get()));
 
   ASSERT_NE(obj->tdi_info, nullptr) << "Failed to open json files";
 }

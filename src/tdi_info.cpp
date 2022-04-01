@@ -117,11 +117,12 @@ void populateFullNameMap(
 }  // anonymous namespace
 
 std::unique_ptr<const TdiInfo> TdiInfo::makeTdiInfo(
+    const std::string &p4_name,
     std::unique_ptr<TdiInfoParser> tdi_info_parser,
     const tdi::TableFactory *factory) {
   try {
     std::unique_ptr<const TdiInfo> tdi_info(
-        new TdiInfo(std::move(tdi_info_parser), factory));
+        new TdiInfo(p4_name, std::move(tdi_info_parser), factory));
     return tdi_info;
   } catch (...) {
     LOG_ERROR("%s:%d Failed to create TdiInfo", __func__, __LINE__);
@@ -129,9 +130,10 @@ std::unique_ptr<const TdiInfo> TdiInfo::makeTdiInfo(
   }
 }
 
-TdiInfo::TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
+TdiInfo::TdiInfo(const std::string &p4_name,
+                 std::unique_ptr<TdiInfoParser> tdi_info_parser,
                  const tdi::TableFactory *factory)
-    : tdi_info_parser_(std::move(tdi_info_parser)) {
+    : p4_name_(p4_name), tdi_info_parser_(std::move(tdi_info_parser)) {
   // Go over all table_info and learn_info in the parser object and
   // create Table and Learn objects for them
   for (const auto &kv : tdi_info_parser_->tableInfoMapGet()) {
@@ -141,7 +143,7 @@ TdiInfo::TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
                 __LINE__,
                 kv.first.c_str());
     } else {
-      auto table = factory->makeTable(kv.second.get());
+      auto table = factory->makeTable(this, kv.second.get());
       if (!table) {
         LOG_ERROR("%s:%d Error creating Table:%s",
                   __func__,
