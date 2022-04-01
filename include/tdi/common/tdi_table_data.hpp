@@ -320,14 +320,12 @@ class TableData {
   /**
    * @brief Get actionId.
    *
-   * @param[out] act_id Pointer to the action id to be filled in. Applicable for
-   *data<br>
-   *             objects associated with tables for which action id is
-   *applicable
-   *
-   * @return Status of the API call
+   * @return Action ID of this data object. If no action
+   * is currently associated or the table doesn't contain
+   * any actions at all, then action ID returned is 0 which
+   * is an invalid Action ID
    */
-  tdi_status_t actionIdGet(tdi_id_t *act_id) const;
+  const tdi_id_t &actionIdGet() const { return action_id_; };
 
   /**
    * @brief Data Allocate for a container field ID. Container ID
