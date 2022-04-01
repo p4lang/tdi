@@ -157,7 +157,7 @@ class TableKey {
    */
   virtual tdi_status_t reset();
 
- private:
+ protected:
   const Table *table_ = nullptr;
 };
 
