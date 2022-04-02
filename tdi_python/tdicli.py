@@ -192,7 +192,6 @@ class CIntfTdi:
                 return self._driver.tdi_table_entry_mod(tbl_hdl, session, dev_tgt, key, data)
         setattr(self, 'tdi_table_entry_mod', tdi_table_entry_mod)
 
-        '''
         def tdi_table_entry_mod_inc(tbl_hdl, session, dev_tgt, key, data, flag):
             if self.gflags == True:
                 # Translate flag to generic flags, MOD_INC_DEL is 2nd bit.
@@ -203,7 +202,6 @@ class CIntfTdi:
             else:
                 return self._driver.tdi_table_entry_mod_inc(tbl_hdl, session, dev_tgt, key, data, flag)
         setattr(self, 'tdi_table_entry_mod_inc', tdi_table_entry_mod_inc)
-        '''
 
     def _init_programs(self):
         # tdi session need _device hdl
@@ -226,7 +224,7 @@ class CIntfTdi:
         self.flags_type = POINTER(c_uint)
         flag=0
         self._flags = self.flags_type()
-        self._driver.tdi_flags_create(self._device, flag,  byref(self._flags))
+        self._driver.tdi_flags_create(flag,  byref(self._flags))
 
         self.idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
         self.tdi_idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
@@ -252,8 +250,15 @@ class CIntfTdi:
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             #return -1
-        self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
+        #self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
+        pdb.set_trace()
+        self.target_type = POINTER(c_uint)
+        self._target = self.target_type()
+        sts = self._driver.tdi_target_create(self._device, byref(self._target))
 
+        if not sts == 0:
+            print("Error, unable to create TDI Runtime session")
+            return -1
     def _devcall(self):
         pdb.set_trace()
 
@@ -345,8 +350,12 @@ class CIntfTdi:
     def get_device(self):
         return self._device
 
+    def get_target(self):
+        return self._target
+
     def get_dev_tgt(self):
-        return byref(self._dev_tgt)
+        #return byref(self._dev_tgt)
+        return self._target
 
     def get_flags(self):
         return byref(self._flags)
@@ -383,10 +392,10 @@ class TableEntryDumper:
             key = key_hdls[i]
             data = data_hdls[i]
             action = None
-            '''
+
             if len(self.table.actions) > 0:
                 action = self.table.action_id_name_map[action_ids[i]]
-            '''
+
             key_content = self.table._get_key_fields(key)
             if not isinstance(key_content, dict):
                 return
@@ -853,7 +862,7 @@ class BFLeaf(BFContext):
                                    "read_only": field[4]}]
         if print_info:
             print(tabulate.tabulate(key_rows, headers=headers))
-        '''
+
         if len(self._c_tbl.actions) == 0:
             data_rows = []
             for info in sorted(self._c_tbl.data_fields.values(), key=lambda x: x.id):
@@ -867,11 +876,9 @@ class BFLeaf(BFContext):
             if print_info:
                 print("\nData Fields:\n{}\n".format(tabulate.tabulate(data_rows, headers=headers)))
         else:
-        '''
-        if 1:
             res["data_fields"] = {}
         print()
-        '''
+
         for name, act_info in self._c_tbl.actions.items():
             data_rows = []
             res["data_fields"][name.decode('ascii')] = []
@@ -885,7 +892,7 @@ class BFLeaf(BFContext):
                                                               "read_only": field[4]}]
             if print_info:
                 print("Data Fields for action {}:\n{}\n".format(name.decode('ascii'), tabulate.tabulate(data_rows, headers=headers)))
-        '''
+
         if return_info:
             return res
 
@@ -1193,7 +1200,6 @@ Available Commands:
         self._create_get_handle(key_fields)
         self._create_del(key_fields)
 
-        '''
         pdb.set_trace()
         for action_name, info in self._c_tbl.actions.items():
             data_fields = info["data_fields"]
@@ -1206,8 +1212,6 @@ Available Commands:
                 self._create_entry_with_action(key_fields, data_fields, action_name)
                 self._create_add_with_action(key_fields, data_fields, action_name)
         if len(self._c_tbl.actions) == 0:
-        '''
-        if 1:
             data_fields = self._c_tbl.data_fields
             self._create_set_default(data_fields)
             self._create_mod(key_fields, data_fields)
