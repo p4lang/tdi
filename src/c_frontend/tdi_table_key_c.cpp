@@ -43,7 +43,7 @@ tdi_status_t tdi_key_field_set_value_ptr(tdi_table_key_hdl *key_hdl,
                                           const uint8_t *value,
                                           const size_t size) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueExact <const unsigned char> keyFieldValue(value, size);
+  tdi::KeyFieldValueExact <const uint8_t> keyFieldValue(value, size);
   return key->setValue(field_id, keyFieldValue);
 }
 

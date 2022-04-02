@@ -28,15 +28,19 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_table_key.hpp>
 
+enum tdi_psa_match_type_e {
+  TDI_PSA_MATCH_TYPE_OPTIONAL = TDI_MATCH_TYPE_ARCH,
+};
+
 namespace tdi {
 
 template<class T>
 class KeyFieldValueOptional: public KeyFieldValue {
  public:
   KeyFieldValueOptional(T &value, const bool &is_valid)
-      : value_(value), is_valid_(is_valid) {};
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_PSA_MATCH_TYPE_OPTIONAL)), value_(value), is_valid_(is_valid) {};
   KeyFieldValueOptional(const uint8_t *value_ptr, const bool is_valid, const size_t size)
-      : value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_PSA_MATCH_TYPE_OPTIONAL)), value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
   bool is_valid_ = 0;

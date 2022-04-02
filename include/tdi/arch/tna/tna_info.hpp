@@ -42,6 +42,7 @@ namespace tdi_json {
 namespace values {
 namespace tna {
 const std::string ATCAM = "ATCAM";
+const std::string RANGE = "LPM";
 }  // namespace tna
 }  // namespace values
 }  // namespace tdi_json

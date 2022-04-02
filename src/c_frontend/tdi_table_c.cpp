@@ -427,7 +427,7 @@ tdi_status_t tdi_action_id_from_data_get(const tdi_table_data_hdl *data,
                                           tdi_id_t *id_ret) {
   auto data_obj = reinterpret_cast<const tdi::TableData *>(data);
   // disable it now, will enable it once the method is available in the code class
-  return data_obj->actionIdGet(id_ret);
+  *id_ret = data_obj->actionIdGet();
   return TDI_SUCCESS;
 }
 
@@ -1430,7 +1430,7 @@ tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
   }
   return TDI_SUCCESS;
 }
-#ifdef _TDI_FROM_BFRT
+
 // disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
                                           uint32_t *num) {
@@ -1448,7 +1448,6 @@ tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto action_ids = tableInfo->actionIdListGet();
-  //std::vector<tdi_id_t> action_id;
   *num = action_ids.size();
 
   return TDI_SUCCESS;
@@ -1468,7 +1467,6 @@ tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
   }
 
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  //std::vector<tdi_id_t> action_ids;
   auto tableInfo = table->tableInfoGet();
   auto action_ids = tableInfo->actionIdListGet();
   for (auto it = action_ids.begin(); it != action_ids.end(); ++it) {
@@ -1477,9 +1475,7 @@ tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
   }
   return TDI_SUCCESS;
 }
-#endif
 
-#ifdef _TDI_FROM_BFRT
 // disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_action_name_get(const tdi_table_hdl *table_hdl,
                                   const tdi_id_t action_id,
@@ -1508,22 +1504,21 @@ tdi_status_t tdi_action_name_to_id(const tdi_table_hdl *table_hdl,
                                     tdi_id_t *action_id_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
-  *action_id_ret = tableInfo->actionIdGet(action_name);
+  auto actionInfo = tableInfo->actionGet(std::string(action_name));
+  *action_id_ret = actionInfo->idGet();
   return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
                                        bool *ret_val) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  auto tableInfo = table->tableInfoGet();
-  *ret_val = tableInfo->actionIdApplicable();
+  *ret_val = table->actionIdApplicable();
   return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_action_num_annotations_get(const tdi_table_hdl *table_hdl,
                                              const tdi_id_t action_id,
                                              uint32_t *num_annotations) {
-  //tdi::AnnotationSet annotations;
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto actionInfo = tableInfo->actionGet(action_id);
@@ -1545,7 +1540,6 @@ tdi_status_t tdi_action_annotations_get(const tdi_table_hdl *table_hdl,
   }
   return TDI_SUCCESS;
 }
-#endif
 
 #ifdef __TDI_FROM_BFRT
 tdi_status_t tdi_table_attributes_set(

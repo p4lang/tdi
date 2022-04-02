@@ -37,7 +37,7 @@ tdi_status_t Target::setValue(const tdi_target_e &target_field, const uint32_t &
   return TDI_SUCCESS;
 }
 
-tdi_status_t Target::getValue(const tdi_target_e &target_field, uint32_t *value) {
+tdi_status_t Target::getValue(const tdi_target_e &target_field, uint32_t *value) const {
   if (target_field == static_cast<tdi_target_e>(PNA_TARGET_PIPE_ID)) {
     *value = this->pipe_id_;
   } else if (target_field == static_cast<tdi_target_e>(PNA_TARGET_DIRECTION)) {

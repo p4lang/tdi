@@ -18,6 +18,7 @@
 #include <algorithm>
 // tdi includes
 #include <tdi/common/tdi_init.hpp>
+#include <tdi/common/tdi_target.hpp>
 // c_frontend includes
 #include <tdi/common/c_frontend/tdi_init.h>
 
@@ -31,21 +32,18 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
   return sts;
 }
 
-tdi_status_t tdi_flags_create(const tdi_device_hdl *device_hdl,
-	                      const uint64_t flag_value,
+tdi_status_t tdi_flags_create(const uint64_t flag_value,
 			      const tdi_flags_hdl **flags) {
   tdi_status_t sts = TDI_SUCCESS;
-  auto *device = reinterpret_cast<const tdi::Device *>(device_hdl);
-  std::unique_ptr<tdi::Flags> flgs;
-  sts = device->createFlags(flag_value, &flgs);
+  tdi::Flags *flgs = new tdi::Flags(flag_value);
+  *flags = reinterpret_cast<const tdi_flags_hdl *>(flgs);
   if (sts != TDI_SUCCESS) {
     return sts;
   }
-  if (flgs == nullptr) {
+  if (flags == nullptr) {
     LOG_ERROR("%s:%d Unable to create flags", __func__, __LINE__);
     return TDI_UNEXPECTED;
   }
-  *flags = reinterpret_cast<const tdi_flags_hdl*>(flgs.release());
   return TDI_SUCCESS;
 }
 
@@ -106,6 +104,20 @@ tdi_status_t tdi_device_id_list_get(tdi_dev_id_t *device_id_list_out) {
   for (const auto &id : device_id_list) {
     device_id_list_out[i++] = id;
   }
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl, tdi_target_hdl **target_hdl) {
+  const tdi::Device *device = reinterpret_cast<const tdi::Device *>(device_hdl);
+  std::unique_ptr<tdi::Target >target;
+  device->createTarget(&target);
+  *target_hdl = reinterpret_cast<tdi_target_hdl *>(target.release());
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_target_delete(tdi_target_hdl *target_hdl) {
+  const tdi::Target *target = reinterpret_cast<const tdi::Target *>(target_hdl);
+  delete(target);
   return TDI_SUCCESS;
 }
 

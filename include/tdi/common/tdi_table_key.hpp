@@ -60,9 +60,9 @@ template <class T>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
   KeyFieldValueExact(T &value)
-      : KeyFieldValue(TDI_MATCH_TYPE_EXACT), value_(value){};
-  KeyFieldValueExact(uint8_t *value_ptr, size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_EXACT),
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT)), value_(value){};
+  KeyFieldValueExact(const uint8_t *value_ptr, const size_t &size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT)),
         value_ptr_(value_ptr),
         size_(size){};
   T value_ = 0;
@@ -74,9 +74,9 @@ template <class T>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
   KeyFieldValueTernary(T &value, T &mask)
-      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY), value_(value), mask_(mask){};
-  KeyFieldValueTernary(uint8_t *value_ptr, uint8_t *mask_ptr, size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY),
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY)), value_(value), mask_(mask){};
+  KeyFieldValueTernary(const uint8_t *value_ptr, const uint8_t *mask_ptr, const size_t &size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY)),
         value_ptr_(value_ptr),
         mask_ptr_(mask_ptr),
         size_(size){};
@@ -91,11 +91,11 @@ template<class T>
 class KeyFieldValueRange : public KeyFieldValue {
  public:
   KeyFieldValueRange(T &start, T &end)
-      : KeyFieldValue(TDI_MATCH_TYPE_RANGE), start_(start), end_(end){};
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE)), start_(start), end_(end){};
   KeyFieldValueRange(const uint8_t *start_ptr,
                      const uint8_t *end_ptr,
                      const size_t size)
-      : KeyFieldValue(TDI_MATCH_TYPE_RANGE),
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE)),
         start_ptr_(start_ptr),
         end_ptr_(end_ptr),
         size_(size){};
@@ -109,12 +109,12 @@ class KeyFieldValueRange : public KeyFieldValue {
 template <class T>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
-  KeyFieldValueLPM(T &value, uint16_t &prefix_len)
-      : KeyFieldValue(TDI_MATCH_TYPE_LPM),
+  KeyFieldValueLPM(T &value, const uint16_t &prefix_len)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM)),
         value_(value),
         prefix_len_(prefix_len){};
-  KeyFieldValueLPM(uint8_t *value_ptr, uint16_t &prefix_len, size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_LPM),
+  KeyFieldValueLPM(const uint8_t *value_ptr, const uint16_t &prefix_len, const size_t &size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM)),
         value_ptr_(value_ptr),
         prefix_len_(prefix_len),
         size_(size){};
@@ -160,10 +160,7 @@ class TableKey {
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
                                 tdi::KeyFieldValue *value) const;
-<<<<<<< HEAD
-=======
 
->>>>>>> 87ba4c4a236b2696ae5db4b4bb6b3dad1de1cacc
   /**
    * @brief Get the Table Object associated with this Key Object
    *

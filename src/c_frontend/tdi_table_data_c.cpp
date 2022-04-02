@@ -309,7 +309,8 @@ tdi_status_t tdi_data_field_get_value_data_field_array_size(
 tdi_status_t tdi_data_action_id_get(const tdi_table_data_hdl *data_hdl,
                                      uint32_t *action_id) {
   auto data_field = reinterpret_cast<const tdi::TableData *>(data_hdl);
-  return data_field->actionIdGet(action_id);
+  *action_id = data_field->actionIdGet();
+  return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_data_field_is_active(const tdi_table_data_hdl *data_hdl,

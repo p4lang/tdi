@@ -64,6 +64,7 @@ class TdiInfoMapper : public tdi::TdiInfoMapper {
 class TableFactory : public tdi::TableFactory {
  public:
   virtual std::unique_ptr<tdi::Table> makeTable(
+      const TdiInfo * /*tdi_info*/,
       const tdi::TableInfo * /*table_info*/) const override {
     // No tables in PNA currently. Will eventually have Selector, Action profile
     // etc
