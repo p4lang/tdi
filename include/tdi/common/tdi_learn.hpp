@@ -35,6 +35,9 @@
 
 namespace tdi {
 
+// Fwd declaration
+class TdiInfo;
+
 /**
  * @brief Only the below functions in comments are supported for tdi::LearnData.
  * \n Use of anything else will return a TDI_NOT_SUPPORTED error
@@ -129,10 +132,14 @@ class Learn {
     return TDI_SUCCESS;
   };
 
-  const LearnInfo &learnInfoGet() const { return *(learn_info_); }
+  const LearnInfo *learnInfoGet() const { return learn_info_; }
+
+ protected:
+  Learn(const LearnInfo *learn_info) : learn_info_(learn_info){};
 
  private:
   const LearnInfo *learn_info_{nullptr};
+  friend tdi::TdiInfo;
 };
 
 }  // namespace tdi

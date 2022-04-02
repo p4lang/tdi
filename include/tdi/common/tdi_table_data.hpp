@@ -320,14 +320,12 @@ class TableData {
   /**
    * @brief Get actionId.
    *
-   * @param[out] act_id Pointer to the action id to be filled in. Applicable for
-   *data<br>
-   *             objects associated with tables for which action id is
-   *applicable
-   *
-   * @return Status of the API call
+   * @return Action ID of this data object. If no action
+   * is currently associated or the table doesn't contain
+   * any actions at all, then action ID returned is 0 which
+   * is an invalid Action ID
    */
-  tdi_status_t actionIdGet(tdi_id_t *act_id) const;
+  const tdi_id_t &actionIdGet() const { return action_id_; };
 
   /**
    * @brief Data Allocate for a container field ID. Container ID
@@ -400,12 +398,21 @@ class TableData {
    * @return Status of the API call
    */
   tdi_status_t isActive(const tdi_id_t &field_id, bool *is_active) const;
+
+  const bool &allFieldsSetGet() const { return all_fields_set_; };
+  const std::vector<tdi_id_t> &activeFieldsGet() const {
+    return active_fields_;
+  };
+
  protected:
-  const tdi::Table *table_;
-  bool all_fields_set_{false};
-  tdi_id_t action_id_{0};
- private:
   // For LearnData, this can be set to nullptr
+  const tdi::Table *table_;
+  // For TableData, this can be set to nullptr
+  const tdi::Learn *learn_;
+  bool all_fields_set_{false};
+
+ private:
+  tdi_id_t action_id_{0};
   tdi_id_t container_id_{0};
   std::vector<tdi_id_t> active_fields_{};
 };

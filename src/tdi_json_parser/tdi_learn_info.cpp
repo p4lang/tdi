@@ -28,7 +28,7 @@ namespace tdi {
 
 std::vector<tdi_id_t> LearnInfo::dataFieldIdListGet() const {
   std::vector<tdi_id_t> id_vec;
-  for (const auto &kv : learn_data_map_) {
+  for (const auto &kv : learn_field_map_) {
     id_vec.push_back(kv.first);
   }
   std::sort(id_vec.begin(), id_vec.end());
@@ -37,11 +37,11 @@ std::vector<tdi_id_t> LearnInfo::dataFieldIdListGet() const {
 
 tdi_id_t LearnInfo::dataFieldIdGet(const std::string &name) const {
   auto found = std::find_if(
-      learn_data_map_.begin(),
-      learn_data_map_.end(),
+      learn_field_map_.begin(),
+      learn_field_map_.end(),
       [&name](const std::pair<const tdi_id_t, std::unique_ptr<DataFieldInfo>>
                   &map_item) { return (name == map_item.second->nameGet()); });
-  if (found != learn_data_map_.end()) {
+  if (found != learn_field_map_.end()) {
     return (*found).second->idGet();
   }
 
@@ -54,7 +54,7 @@ tdi_id_t LearnInfo::dataFieldIdGet(const std::string &name) const {
 }
 
 const DataFieldInfo *LearnInfo::dataFieldGet(const tdi_id_t &field_id) const {
-  if (learn_data_map_.find(field_id) == learn_data_map_.end()) {
+  if (learn_field_map_.find(field_id) == learn_field_map_.end()) {
     LOG_ERROR("%s:%d %s Field \"%d\" not found in data field list",
               __func__,
               __LINE__,
@@ -62,7 +62,7 @@ const DataFieldInfo *LearnInfo::dataFieldGet(const tdi_id_t &field_id) const {
               field_id);
     return nullptr;
   }
-  return learn_data_map_.at(field_id).get();
+  return learn_field_map_.at(field_id).get();
 }
 
 }  // namespace tdi

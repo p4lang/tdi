@@ -36,11 +36,6 @@ namespace tna {
 
 class Device;
 
-enum tna_target_e {
-  TNA_TARGET_PIPE_ID = TDI_TARGET_ARCH,
-  TNA_TARGET_DIRECTION,
-};
-
 /**
  * @brief Can be constructed by \ref tna::Device::createTarget()
  */
@@ -48,22 +43,20 @@ class Target : public tdi::Target {
  public:
   virtual ~Target() = default;
   virtual tdi_status_t setValue(const tdi_target_e & /*target*/,
-                        const uint32_t & /*value*/) override;
+                                const uint32_t & /*value*/) override;
   virtual tdi_status_t getValue(const tdi_target_e & /*target*/,
-                        uint32_t * /*value*/) override;
+                                uint32_t * /*value*/) const override;
 
  protected:
-  Target(const tdi_dev_id_t &dev_id,
-         const tna_pipe_id_t &pipe_id,
-         const tna_direction_e& direction) :
-    tdi::Target(dev_id), pipe_id_(pipe_id), direction_(direction){};
- private:
-  friend class tdi::tna::Device;
+  Target(tdi_dev_id_t dev_id, tna_pipe_id_t pipe_id, tna_direction_e direction)
+      : tdi::Target(dev_id), pipe_id_(pipe_id), direction_(direction){};
   tna_pipe_id_t pipe_id_;
   tna_direction_e direction_;
+
+  friend class tdi::tna::Device;
 };
 
-}  // tna
-}  // tdi
+}  // namespace tna
+}  // namespace tdi
 
 #endif  // _TNA_DEFS_HPP_

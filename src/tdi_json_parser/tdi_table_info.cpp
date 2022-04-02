@@ -176,6 +176,15 @@ const ActionInfo *TableInfo::actionGet(const tdi_id_t &action_id) const {
   return nullptr;
 }
 
+std::vector<tdi_id_t> TableInfo::actionIdListGet() const {
+  std::vector<tdi_id_t> id_vec;
+  for (const auto &kv : table_action_map_) {
+    id_vec.push_back(kv.first);
+  }
+  std::sort(id_vec.begin(), id_vec.end());
+  return id_vec;
+}
+
 #if 0
 tdi_status_t Table::getDataField(const tdi_id_t &field_id,
                                  const TableDataField **field) const {
