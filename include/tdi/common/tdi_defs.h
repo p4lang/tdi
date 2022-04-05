@@ -169,6 +169,18 @@ enum tdi_match_type_e {
 };
 
 /**
+ * @brief Key Field Match Type. A key can have multiple fields,
+ * each with a different match type. The below are the supported
+ * Core match types
+ */
+enum tdi_match_type_core_e {
+  TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
+  TDI_MATCH_TYPE_TERNARY,
+  TDI_MATCH_TYPE_LPM,
+  TDI_MATCH_TYPE_RANGE,
+};
+
+/**
  * @brief Attributes top level enum and reservation
  */
 enum tdi_attributes_type_e {

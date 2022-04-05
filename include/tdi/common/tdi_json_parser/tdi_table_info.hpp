@@ -107,9 +107,9 @@ class KeyFieldInfo {
   const tdi_match_type_e &matchTypeGet() const { return match_type_; };
 
   /**
-   * @brief Get data type of Key Field
+   * @brief Get the Data type of a Key field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)
    *
-   * @return Field Type (uint64, float, string)
+   * @return Field Type (uint64, float, string etc)
    */
   const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
 
@@ -123,14 +123,16 @@ class KeyFieldInfo {
   /**
    * @brief Is field Slice
    *
-   * @return if the key is a field slice
+   * @return if the key is a field slice of a bigger field
    */
   const bool &isFieldSlice() const { return is_field_slice_; };
 
   /**
-   * @brief Get whether Key Field is of type ptr or not. If the field is
-   * of ptr type, then only ptr sets/gets are applicable on the field. Else
-   * both the ptr versions and the uint64_t versions work
+   * @brief Get whether Key Field is of type ptr or not. This is true for
+   * fields of size>64 bits and false if <=64
+   * If the field is
+   * of ptr type, then only byte array sets/gets are applicable on the field. Else
+   * both the ptr versions and the primitive template versions work
    *
    * @return Boolean type indicating whether Field is of type ptr
    *
