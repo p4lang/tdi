@@ -799,13 +799,13 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
 /* match type get */
 tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
                                     const tdi_id_t field_id,
-                                    tdi_key_field_type_t *field_type_ret) {
+                                    tdi_match_type_e *field_type_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
 
   auto tableInfo = table->tableInfoGet();
   auto keyFieldInfo = tableInfo->keyFieldGet(field_id);
-  auto keyFieldType = static_cast<tdi_key_field_type_t>(keyFieldInfo->matchTypeGet());
-  *field_type_ret = static_cast<tdi_key_field_type_t>(keyFieldType);
+  auto keyFieldType = static_cast<tdi_match_type_e>(keyFieldInfo->matchTypeGet());
+  *field_type_ret = static_cast<tdi_match_type_e>(keyFieldType);
   return TDI_SUCCESS;
 }
 

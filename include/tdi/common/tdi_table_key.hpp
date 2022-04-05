@@ -46,12 +46,6 @@ class Table;
  * from dynamic casting and figure out what match type was used.
  *
  */
-enum tdi_match_type_core_e {
-  TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
-  TDI_MATCH_TYPE_TERNARY,
-  TDI_MATCH_TYPE_RANGE,
-  TDI_MATCH_TYPE_LPM,
-};
 
 class KeyFieldValue {
  public:

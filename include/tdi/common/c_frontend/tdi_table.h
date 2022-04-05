@@ -742,7 +742,7 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
                                     const tdi_id_t field_id,
-                                    tdi_key_field_type_t *field_type);
+                                    tdi_match_type_e *field_type);
 
 /**
  * @brief Get data type of Key Field

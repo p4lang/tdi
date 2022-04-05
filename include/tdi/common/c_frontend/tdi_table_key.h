@@ -24,17 +24,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/**
- * @brief Key Field Type. A key can have multiple fields, each with a different
- * type
- */
-typedef	enum tdi_key_field_type_ {
-  EXACT = 0,
-  TERNARY = 1,
-  RANGE = 2,
-  LPM = 3,
-  OPTIONAL = 4,
-} tdi_key_field_type_t;
 
 /**
  * @brief Set value. Only valid on fields of \ref tdi_key_field_type_t "EXACT"
