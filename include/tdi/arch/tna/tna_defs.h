@@ -51,8 +51,7 @@ typedef enum {
  * each with a different match type
  */
 enum tdi_tna_match_type_e {
-  TDI_TNA_MATCH_TYPE_RANGE = TDI_MATCH_TYPE_ARCH,
-  TDI_TNA_MATCH_TYPE_ATCAM,
+  TDI_TNA_MATCH_TYPE_ATCAM = TDI_MATCH_TYPE_ARCH,
 };
 
 enum tdi_tna_target_e {

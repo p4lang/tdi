@@ -41,8 +41,7 @@ namespace tdi {
 namespace tdi_json {
 namespace values {
 namespace tna {
-const std::string ATCAM = "ATCAM";
-const std::string RANGE = "LPM";
+const std::string TABLE_KEY_MATCH_TYPE_ATCAM = "ATCAM";
 }  // namespace tna
 }  // namespace values
 }  // namespace tdi_json
@@ -53,10 +52,8 @@ class TdiInfoMapper : public tdi::TdiInfoMapper {
  public:
   TdiInfoMapper() {
     // Match types
-    matchEnumMapAdd(tdi_json::values::tna::ATCAM,
+    matchEnumMapAdd(tdi_json::values::tna::TABLE_KEY_MATCH_TYPE_ATCAM,
                     static_cast<tdi_match_type_e>(TDI_TNA_MATCH_TYPE_ATCAM));
-    matchEnumMapAdd(tdi_json::values::tna::RANGE,
-                    static_cast<tdi_match_type_e>(TDI_TNA_MATCH_TYPE_RANGE));
   }
 };
 

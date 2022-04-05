@@ -42,66 +42,106 @@ enum tdi_match_type_core_e {
   TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
   TDI_MATCH_TYPE_TERNARY,
   TDI_MATCH_TYPE_LPM,
+  TDI_MATCH_TYPE_RANGE,
 };
 
+/**
+ * @brief Thin wrapper over Key Field values. Users are free to access the
+ * public data members and manipulate if necessary.
+ * Each derived class has 2 constructors, One is a templatized version of
+ * primitive data types. The other one is byte array version. Both
+ * TableKey::setValue and TableKey::getValue() expect memory to be allocated by
+ * user if byte array versions are being used.
+ *
+ * Note for Target driver developers: match type is being saved so as to save
+ * from dynamic casting and figure out what match type was used.
+ *
+ */
 class KeyFieldValue {
  public:
   virtual ~KeyFieldValue() = default;
+  KeyFieldValue() = delete;
+  const tdi_match_type_e &matchTypeGet() const { return match_type_; };
 
  protected:
-  KeyFieldValue(tdi_match_type_e match_type) : match_type_(match_type){};
+  KeyFieldValue(tdi_match_type_e match_type, size_t size)
+      : match_type_(match_type), size_(size){};
 
  private:
-  tdi_match_type_e match_type_;
+  const tdi_match_type_e match_type_;
+
+ public:
+  // Size in bytes
+  // Accessible publicly
+  size_t size_{0};
 };
 
-template <class T>
+template <class T = uint64_t>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
   KeyFieldValueExact(T &value)
-      : KeyFieldValue(TDI_MATCH_TYPE_EXACT), value_(value){};
-  KeyFieldValueExact(uint8_t *value_ptr, size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_EXACT),
-        value_ptr_(value_ptr),
-        size_(size){};
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT),
+                      sizeof(value)),
+        value_(value){};
+  KeyFieldValueExact(const uint8_t *value_ptr, size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_EXACT, size), value_ptr_(value_ptr){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
-  size_t size_ = 0;
 };
 
-template <class T>
+template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
   KeyFieldValueTernary(T &value, T &mask)
-      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY), value_(value), mask_(mask){};
-  KeyFieldValueTernary(uint8_t *value_ptr, uint8_t *mask_ptr, size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY),
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY),
+                      sizeof(value)),
+        value_(value),
+        mask_(mask){};
+  KeyFieldValueTernary(const uint8_t *value_ptr,
+                       const uint8_t *mask_ptr,
+                       size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY, size),
         value_ptr_(value_ptr),
-        mask_ptr_(mask_ptr),
-        size_(size){};
+        mask_ptr_(mask_ptr){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
   T mask_ = 0;
   uint8_t *mask_ptr_ = nullptr;
-  size_t size_ = 0;
 };
 
-template <class T>
+template <class T = uint64_t>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
   KeyFieldValueLPM(T &value, uint16_t &prefix_len)
-      : KeyFieldValue(TDI_MATCH_TYPE_LPM),
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
+                      sizeof(value)),
         value_(value),
         prefix_len_(prefix_len){};
-  KeyFieldValueLPM(uint8_t *value_ptr, uint16_t &prefix_len, size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_LPM),
+  KeyFieldValueLPM(const uint8_t *value_ptr, uint16_t &prefix_len, size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
         value_ptr_(value_ptr),
-        prefix_len_(prefix_len),
-        size_(size){};
+        prefix_len_(prefix_len){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
   uint16_t prefix_len_ = 0;
-  size_t size_ = 0;
+};
+
+template <class T = uint64_t>
+class KeyFieldValueRange : public KeyFieldValue {
+ public:
+  KeyFieldValueRange(T &low, T &high)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
+                      sizeof(low)),
+        low_(low),
+        high_(high){};
+  KeyFieldValueRange(uint8_t *low_ptr, uint8_t *high_ptr, size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
+        low_ptr_(low_ptr),
+        high_ptr_(high_ptr){};
+  T low_ = 0;
+  T high_ = 0;
+  uint8_t *low_ptr_ = nullptr;
+  uint8_t *high_ptr_ = nullptr;
 };
 
 /**
@@ -124,8 +164,8 @@ class TableKey {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                                const tdi::KeyFieldValue &&field_value);
+  tdi_status_t setValue(const tdi_id_t &field_id,
+                        const tdi::KeyFieldValue &&field_value);
 
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
                                 const tdi::KeyFieldValue &field_value);
