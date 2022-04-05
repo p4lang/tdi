@@ -35,17 +35,6 @@ namespace tdi {
 class Table;
 
 /**
- * @brief Key Field Match Type. A key can have multiple fields,
- * each with a different match type
- */
-enum tdi_match_type_core_e {
-  TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
-  TDI_MATCH_TYPE_TERNARY,
-  TDI_MATCH_TYPE_LPM,
-  TDI_MATCH_TYPE_RANGE,
-};
-
-/**
  * @brief Thin wrapper over Key Field values. Users are free to access the
  * public data members and manipulate if necessary.
  * Each derived class has 2 constructors, One is a templatized version of
