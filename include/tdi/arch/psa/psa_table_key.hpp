@@ -37,14 +37,14 @@ namespace tdi {
 template<class T>
 class KeyFieldValueOptional: public KeyFieldValue {
  public:
-  KeyFieldValueOptional(T &value, const bool &is_valid)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_PSA_MATCH_TYPE_OPTIONAL)), value_(value), is_valid_(is_valid) {};
+  KeyFieldValueOptional(const T &value, const bool &is_valid)
+      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_PSA_MATCH_TYPE_OPTIONAL), value), value_(value), is_valid_(is_valid) {};
   KeyFieldValueOptional(const uint8_t *value_ptr, const bool is_valid, const size_t size)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_PSA_MATCH_TYPE_OPTIONAL)), value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
+      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_PSA_MATCH_TYPE_OPTIONAL), size), value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
-  bool is_valid_ = 0;
-  size_t size_ = 0;
+  const bool is_valid_ = 0;
+  const size_t size_ = 0;
 };
 } // tdi
 #endif  // _PSA_TABLE_KEY_HPP

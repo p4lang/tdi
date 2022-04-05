@@ -35,8 +35,16 @@ namespace tdi {
 class Table;
 
 /**
- * @brief Key Field Match Type. A key can have multiple fields,
- * each with a different match type
+ * @brief Thin wrapper over Key Field values. Users are free to access the
+ * public data members and manipulate if necessary.
+ * Each derived class has 2 constructors, One is a templatized version of
+ * primitive data types. The other one is byte array version. Both
+ * TableKey::setValue and TableKey::getValue() expect memory to be allocated by
+ * user if byte array versions are being used.
+ *
+ * Note for Target driver developers: match type is being saved so as to save
+ * from dynamic casting and figure out what match type was used.
+ *
  */
 enum tdi_match_type_core_e {
   TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
@@ -48,80 +56,92 @@ enum tdi_match_type_core_e {
 class KeyFieldValue {
  public:
   virtual ~KeyFieldValue() = default;
+  KeyFieldValue() = delete;
+  const tdi_match_type_core_e &matchTypeGet() const { return match_type_; };
 
  protected:
-  KeyFieldValue(tdi_match_type_e match_type) : match_type_(match_type){};
+  KeyFieldValue(tdi_match_type_core_e match_type, const size_t &size)
+      : match_type_(match_type), size_(size){};
 
  private:
-  tdi_match_type_e match_type_;
+  const tdi_match_type_core_e match_type_;
+
+ public:
+  // Size in bytes
+  // Accessible publicly
+  size_t size_{0};
 };
 
-template <class T>
+template <class T = uint64_t>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
-  KeyFieldValueExact(T &value)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT)), value_(value){};
+  KeyFieldValueExact(const T &value)
+      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_MATCH_TYPE_EXACT),
+                      sizeof(value)),
+        value_(value){};
   KeyFieldValueExact(const uint8_t *value_ptr, const size_t &size)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT)),
-        value_ptr_(value_ptr),
-        size_(size){};
+      : KeyFieldValue(TDI_MATCH_TYPE_EXACT, size), value_ptr_(value_ptr){};
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
-  size_t size_ = 0;
 };
 
-template <class T>
+template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
-  KeyFieldValueTernary(T &value, T &mask)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY)), value_(value), mask_(mask){};
-  KeyFieldValueTernary(const uint8_t *value_ptr, const uint8_t *mask_ptr, const size_t &size)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY)),
+  KeyFieldValueTernary(const T &value, const T &mask)
+      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_MATCH_TYPE_TERNARY),
+                      sizeof(value)),
+        value_(value),
+        mask_(mask){};
+  KeyFieldValueTernary(const uint8_t *value_ptr,
+                       const uint8_t *mask_ptr,
+                       const size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY, size),
         value_ptr_(value_ptr),
-        mask_ptr_(mask_ptr),
-        size_(size){};
+        mask_ptr_(mask_ptr){};
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
   T mask_ = 0;
   const uint8_t *mask_ptr_ = nullptr;
-  size_t size_ = 0;
 };
 
-template<class T>
-class KeyFieldValueRange : public KeyFieldValue {
- public:
-  KeyFieldValueRange(T &start, T &end)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE)), start_(start), end_(end){};
-  KeyFieldValueRange(const uint8_t *start_ptr,
-                     const uint8_t *end_ptr,
-                     const size_t size)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE)),
-        start_ptr_(start_ptr),
-        end_ptr_(end_ptr),
-        size_(size){};
-  T start_ = 0;
-  const uint8_t *start_ptr_ = nullptr;
-  T end_ = 0;
-  const uint8_t *end_ptr_ = nullptr;
-  size_t size_ = 0;
-};
-
-template <class T>
+template <class T = uint64_t>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
-  KeyFieldValueLPM(T &value, const uint16_t &prefix_len)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM)),
+  KeyFieldValueLPM(const T &value, const uint16_t &prefix_len)
+      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_MATCH_TYPE_LPM),
+                      sizeof(value)),
         value_(value),
         prefix_len_(prefix_len){};
-  KeyFieldValueLPM(const uint8_t *value_ptr, const uint16_t &prefix_len, const size_t &size)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM)),
+  KeyFieldValueLPM(const uint8_t *value_ptr,
+                   const uint16_t &prefix_len,
+                   const size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
         value_ptr_(value_ptr),
-        prefix_len_(prefix_len),
-        size_(size){};
+        prefix_len_(prefix_len){};
   T value_ = 0;
   const uint8_t *value_ptr_ = nullptr;
-  uint16_t prefix_len_ = 0;
-  size_t size_ = 0;
+  const uint16_t prefix_len_ = 0;
+};
+
+template <class T = uint64_t>
+class KeyFieldValueRange : public KeyFieldValue {
+ public:
+  KeyFieldValueRange(const T &low, const T &high)
+      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_MATCH_TYPE_RANGE),
+                      sizeof(low)),
+        low_(low),
+        high_(high){};
+  KeyFieldValueRange(const uint8_t *low_ptr,
+                     const uint8_t *high_ptr,
+                     const size_t &size)
+      : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
+        low_ptr_(low_ptr),
+        high_ptr_(high_ptr){};
+  T low_ = 0;
+  T high_ = 0;
+  const uint8_t *low_ptr_ = nullptr;
+  const uint8_t *high_ptr_ = nullptr;
 };
 
 /**
@@ -144,8 +164,8 @@ class TableKey {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                                const tdi::KeyFieldValue &&field_value);
+  tdi_status_t setValue(const tdi_id_t &field_id,
+                        const tdi::KeyFieldValue &&field_value);
 
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
                                 const tdi::KeyFieldValue &field_value);
