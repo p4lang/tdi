@@ -64,7 +64,7 @@ class KeyFieldValue {
   const tdi_match_type_e &matchTypeGet() const { return match_type_; };
 
  protected:
-  KeyFieldValue(tdi_match_type_e match_type, size_t size)
+  KeyFieldValue(tdi_match_type_e match_type, const size_t &size)
       : match_type_(match_type), size_(size){};
 
  private:
@@ -79,11 +79,11 @@ class KeyFieldValue {
 template <class T = uint64_t>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
-  KeyFieldValueExact(T &value)
+  KeyFieldValueExact(const T &value)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT),
                       sizeof(value)),
         value_(value){};
-  KeyFieldValueExact(const uint8_t *value_ptr, size_t &size)
+  KeyFieldValueExact(const uint8_t *value_ptr, const size_t &size)
       : KeyFieldValue(TDI_MATCH_TYPE_EXACT, size), value_ptr_(value_ptr){};
   T value_ = 0;
   uint8_t *value_ptr_ = nullptr;
@@ -92,14 +92,14 @@ class KeyFieldValueExact : public KeyFieldValue {
 template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
-  KeyFieldValueTernary(T &value, T &mask)
+  KeyFieldValueTernary(const T &value, const T &mask)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY),
                       sizeof(value)),
         value_(value),
         mask_(mask){};
   KeyFieldValueTernary(const uint8_t *value_ptr,
                        const uint8_t *mask_ptr,
-                       size_t &size)
+                       const size_t &size)
       : KeyFieldValue(TDI_MATCH_TYPE_TERNARY, size),
         value_ptr_(value_ptr),
         mask_ptr_(mask_ptr){};
@@ -112,12 +112,14 @@ class KeyFieldValueTernary : public KeyFieldValue {
 template <class T = uint64_t>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
-  KeyFieldValueLPM(T &value, uint16_t &prefix_len)
+  KeyFieldValueLPM(const T &value, const uint16_t &prefix_len)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
                       sizeof(value)),
         value_(value),
         prefix_len_(prefix_len){};
-  KeyFieldValueLPM(const uint8_t *value_ptr, uint16_t &prefix_len, size_t &size)
+  KeyFieldValueLPM(const uint8_t *value_ptr,
+                   const uint16_t &prefix_len,
+                   const size_t &size)
       : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
         value_ptr_(value_ptr),
         prefix_len_(prefix_len){};
@@ -129,12 +131,14 @@ class KeyFieldValueLPM : public KeyFieldValue {
 template <class T = uint64_t>
 class KeyFieldValueRange : public KeyFieldValue {
  public:
-  KeyFieldValueRange(T &low, T &high)
+  KeyFieldValueRange(const T &low, const T &high)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
                       sizeof(low)),
         low_(low),
         high_(high){};
-  KeyFieldValueRange(uint8_t *low_ptr, uint8_t *high_ptr, size_t &size)
+  KeyFieldValueRange(const uint8_t *low_ptr,
+                     const uint8_t *high_ptr,
+                     const size_t &size)
       : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
         low_ptr_(low_ptr),
         high_ptr_(high_ptr){};
