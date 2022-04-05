@@ -10,7 +10,7 @@ set(TDI_SRCS
   tdi_table.cpp
   tdi_table_data.cpp
   tdi_table_key.cpp
-  #tdi_learn.cpp
+  tdi_learn.cpp
   #tdi_cjson.cpp
   #tdi_info_impl.cpp
   #tdi_table_info.cpp
