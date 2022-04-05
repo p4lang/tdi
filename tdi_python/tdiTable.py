@@ -914,7 +914,7 @@ class TdiTable:
                 print("CLI Error: get key field name for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
             field_type = c_int(-1)
-            sts = self._cintf.get_driver().tdi_key_field_type_get(self._handle, field_id, byref(field_type))
+            sts = self._cintf.get_driver().tdi_key_field_match_type_get(self._handle, field_id, byref(field_type))
             if not sts == 0:
                 print("CLI Error: get key field type for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
