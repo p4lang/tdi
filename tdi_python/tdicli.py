@@ -1154,7 +1154,6 @@ Available Commands:
         self._create_get_handle(key_fields)
         self._create_del(key_fields)
 
-        pdb.set_trace()
         for action_name, info in self._c_tbl.actions.items():
             data_fields = info["data_fields"]
             annotations = info["annotations"]
@@ -1186,7 +1185,6 @@ Available Commands:
         except Exception as e:
             print(e)
             raise e
-            pdb.set_trace()
         setattr(self, method_name, types.MethodType(d[method_name], self))
         self._children[method_name] = getattr(self, method_name)
         return getattr(self, method_name)
@@ -1968,7 +1966,6 @@ def validate_program_name(p4_name, p_node):
     return p4_name_res_
 
 def update_node_tree(parent_node, prefs, cintf):
-    #pdb.set_trace()
     for p in prefs[:-1]:
         contained = False
         next_node = None

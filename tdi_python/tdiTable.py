@@ -632,9 +632,9 @@ class TdiTable:
         elif key_type == 1:
             return "TERNARY"
         elif key_type == 2:
-            return "RANGE"
-        elif key_type == 3:
             return "LPM"
+        elif key_type == 3:
+            return "RANGE"
         elif key_type == 4:
             return "OPTIONAL"
         else:
@@ -1125,6 +1125,7 @@ class TdiTable:
     TdiTableField class.
     """
     def _set_key_fields(self, content, key_handle):
+        #pdb.set_trace()
         for name, info in self.key_fields.items():
             sts = -1
             if name not in content.keys():
