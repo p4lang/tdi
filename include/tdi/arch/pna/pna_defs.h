@@ -46,14 +46,6 @@ typedef enum {
   PNA_DIRECTION_ALL = 0xff,
 } pna_direction_e;
 
-/**
- * @brief Key Field Match Type. A key can have multiple fields,
- * each with a different match type
- */
-enum tdi_match_type_pna_e {
-  TDI_MATCH_TYPE_PNA_RANGE = TDI_MATCH_TYPE_ARCH,
-};
-
 #ifdef __cplusplus
 }
 #endif

@@ -797,9 +797,9 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
 }
 
 /* match type get */
-tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
-                                    const tdi_id_t field_id,
-                                    tdi_match_type_e *field_type_ret) {
+tdi_status_t tdi_key_field_match_type_get(const tdi_table_hdl *table_hdl,
+                                          const tdi_id_t field_id,
+                                          tdi_match_type_e *field_type_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
 
   auto tableInfo = table->tableInfoGet();
@@ -1653,7 +1653,7 @@ tdi_status_t tdi_table_operations_supported(
 }
 
 tdi_status_t tdi_table_num_api_supported(const tdi_table_hdl *table_hdl,
-                                          uint32_t *num_apis) {
+                                         uint32_t *num_apis) {
   if (table_hdl == nullptr || num_apis == nullptr) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -1666,8 +1666,8 @@ tdi_status_t tdi_table_num_api_supported(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_api_supported(const tdi_table_hdl *table_hdl,
-                                      tdi_table_api_type_t *apis,
-                                      uint32_t *num_returned) {
+                                     tdi_table_api_type_e *apis,
+                                     uint32_t *num_returned) {
   if (table_hdl == nullptr || num_returned == nullptr || apis == nullptr) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -1677,7 +1677,7 @@ tdi_status_t tdi_table_api_supported(const tdi_table_hdl *table_hdl,
   auto type_set = tableInfo->apiSupportedGet();
   int i = 0;
   for (const auto &iter : type_set) {
-    apis[i] = static_cast<tdi_table_api_type_t>(iter);
+    apis[i] = static_cast<tdi_table_api_type_e>(iter);
     i++;
   }
   *num_returned = i;

@@ -108,6 +108,7 @@ typedef enum tdi_table_type_ {
   PRE_ECMP = 27,
   /** PRE LAG table */
   PRE_LAG = 28,
+#if 0
   /** PRE Prune (L2 XID) table */
   PRE_PRUNE = 29,
   /** Mirror configuration table */
@@ -206,51 +207,9 @@ typedef enum tdi_table_type_ {
   TM_L1_NODE_SCHED_CFG = 76,
   /** TM L1 Node Scheduler shaping table */
   TM_L1_NODE_SCHED_SHAPING = 77,
+#endif
   INVLD = 78
 } tdi_table_type_t;
-
-typedef enum tdi_table_api_type_ {
-  /** Entry Add. Most common API. Applicable to most tables*/
-  ADD = 0,
-  /** Entry Modify. Applicable to most tables*/
-  MODIFY = 1,
-  /** Entry Modify incremental. Useful in cases where the data is an
-  array and only one element needs to be changed.*/
-  MODIFY_INC = 2,
-
-  /** Entry Delete. Not applicable for some tables like counter,
-                  register, meter*/
-  DELETE = 3,
-  /** Clear. Only applicable for tables which have DELETE right now*/
-  CLEAR = 4,
-  /** Default Entry Set. Only applicable for Match
-                              action tables, direct or indirect. If table has
-                              const default action, then this would fail*/
-  DEFAULT_ENTRY_SET = 5,
-  /** Default Entry Reset. Only applicable for Match
-                             action tables, direct or indirect. Idempotent*/
-  DEFAULT_ENTRY_RESET = 6,
-  /** Default Entry Get. Only applicable for Match
-                            action tables, direct or indirect.*/
-  DEFAULT_ENTRY_GET = 7,
-  /** Entry Get. Applicable to most tables.*/
-  GET = 8,
-  /** Entry Get First. Applicable to most tables.*/
-  GET_FIRST = 9,
-  /** Entry Get Next n entries. Applicable for most tables*/
-  GET_NEXT_N = 10,
-  /** Get Usage. get the current usage of the tables. Not applicable
-             for some tables like counter, register, meter */
-  USAGE_GET = 11,
-  /** Get entry by handle instead of key. */
-  GET_BY_HANDLE = 12,
-  /** Get entry key by handle. */
-  KEY_GET = 13,
-  /** Get entry handle from key. */
-  HANDLE_GET = 14,
-  /** Invalid not supported API. */
-  INVALID_API = 15
-} tdi_table_api_type_t;
 
 bool tdi_generic_flag_support(void);
 
@@ -657,7 +616,7 @@ tdi_status_t tdi_table_annotations_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_num_api_supported(const tdi_table_hdl *table_hdl,
-                                          uint32_t *num);
+                                         uint32_t *num);
 
 /**
  * @brief Get array of supported APIs on table
@@ -670,8 +629,8 @@ tdi_status_t tdi_table_num_api_supported(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_api_supported(const tdi_table_hdl *table_hdl,
-                                      tdi_table_api_type_t *apis,
-                                      uint32_t *num_returned);
+                                     tdi_table_api_type_e *apis,
+                                     uint32_t *num_returned);
 
 /******************** Key APIs *******************/
 
@@ -684,7 +643,7 @@ tdi_status_t tdi_table_api_supported(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_key_allocate(const tdi_table_hdl *table_hdl,
-                                     tdi_table_key_hdl **key_hdl_ret);
+                                    tdi_table_key_hdl **key_hdl_ret);
 
 /**
  * @brief Reset the key object associated with the table
@@ -740,9 +699,9 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
-                                    const tdi_id_t field_id,
-                                    tdi_match_type_e *field_type);
+tdi_status_t tdi_key_field_match_type_get(const tdi_table_hdl *table_hdl,
+                                          const tdi_id_t field_id,
+                                          tdi_match_type_e *field_type);
 
 /**
  * @brief Get data type of Key Field

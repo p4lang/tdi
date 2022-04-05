@@ -53,7 +53,7 @@ class TdiInfoMapper : public tdi::TdiInfoMapper {
   TdiInfoMapper() {
     // Match types
     matchEnumMapAdd(tdi_json::values::pna::RANGE,
-                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_PNA_RANGE));
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE));
   }
 };
 
