@@ -25,21 +25,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Data Types each Data field value can take. This is NOT Data field Type
- */
-typedef enum tdi_data_field_type_ {
-  INT_ARR = 0,
-  BOOL_ARR = 1,
-  UINT64 = 2,
-  BYTE_STREAM = 3,
-  FLOAT = 4,
-  CONTAINER = 5,
-  STRING = 6,
-  BOOL = 7,
-  STRING_ARR = 8,
-} tdi_data_type_t;
-
-/**
  * @brief Set value. Only valid on fields of size <= 64 bits
  *
  * @param[in] data_hdl   Data object handle

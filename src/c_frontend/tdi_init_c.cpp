@@ -58,8 +58,8 @@ tdi_status_t tdi_flags_delete(tdi_flags_hdl *flags_hdl) {
 }
 
 tdi_status_t tdi_info_get(const tdi_dev_id_t dev_id,
-                           const char *prog_name,
-                           const tdi_info_hdl **info_hdl_ret) {
+                          const char *prog_name,
+                          const tdi_info_hdl **info_hdl_ret) {
   tdi_status_t sts = TDI_SUCCESS;
   const tdi::TdiInfo *tdiInfo = nullptr;
   std::string program_name(prog_name);

@@ -796,6 +796,7 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
   return TDI_SUCCESS;
 }
 
+/* match type get */
 tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
                                     const tdi_id_t field_id,
                                     tdi_key_field_type_t *field_type_ret) {
@@ -810,11 +811,11 @@ tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
 
 tdi_status_t tdi_key_field_data_type_get(const tdi_table_hdl *table_hdl,
                                          const tdi_id_t field_id,
-                                         tdi_data_type_t *field_type_ret) {
+                                         tdi_field_data_type_e *field_type_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto keyFieldInfo = tableInfo->keyFieldGet(field_id);
-  *field_type_ret = static_cast<tdi_data_type_t>(keyFieldInfo->dataTypeGet());
+  *field_type_ret = static_cast<tdi_field_data_type_e>(keyFieldInfo->dataTypeGet());
   return TDI_SUCCESS;
 }
 
@@ -1230,7 +1231,6 @@ tdi_status_t tdi_data_field_name_with_action_get(
 
 tdi_status_t tdi_data_field_type_get(const tdi_table_hdl *table_hdl,
                                      const tdi_id_t field_id,
-                                     //tdi_data_type_t *field_type_ret) {
                                      tdi_field_data_type_e *field_type_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();

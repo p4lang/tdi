@@ -741,8 +741,8 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
-                                     const tdi_id_t field_id,
-                                     tdi_key_field_type_t *field_type);
+                                    const tdi_id_t field_id,
+                                    tdi_key_field_type_t *field_type);
 
 /**
  * @brief Get data type of Key Field
@@ -754,8 +754,8 @@ tdi_status_t tdi_key_field_type_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_data_type_get(const tdi_table_hdl *table_hdl,
-                                          const tdi_id_t field_id,
-                                          tdi_data_type_t *data_type);
+                                         const tdi_id_t field_id,
+                                         tdi_field_data_type_e *data_type);
 
 /**
  * @brief Get field ID of Key Field from name
@@ -767,8 +767,8 @@ tdi_status_t tdi_key_field_data_type_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_id_get(const tdi_table_hdl *table_hdl,
-                                   const char *name,
-                                   tdi_id_t *field_id);
+                                  const char *name,
+                                  tdi_id_t *field_id);
 
 /**
  * @brief Get field size
@@ -1405,8 +1405,8 @@ tdi_status_t tdi_data_field_name_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_type_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_id_t field_id,
-                                      tdi_data_type_t *type);
+                                     const tdi_id_t field_id,
+                                     tdi_field_data_type_e *type);
 
 /**
  * @brief Get the Data type of a field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)

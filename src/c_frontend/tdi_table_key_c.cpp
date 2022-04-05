@@ -122,8 +122,8 @@ tdi_status_t tdi_key_field_set_value_lpm_ptr(tdi_table_key_hdl *key_hdl,
 /** Get */
 /* Exact */
 tdi_status_t tdi_key_field_get_value(const tdi_table_key_hdl *key_hdl,
-                                      const tdi_id_t field_id,
-                                      uint64_t *value) {
+                                     const tdi_id_t field_id,
+                                     uint64_t *value) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueExact <uint64_t> keyFieldValue(*value);
   auto sts = key->getValue(field_id, &keyFieldValue);
@@ -132,9 +132,9 @@ tdi_status_t tdi_key_field_get_value(const tdi_table_key_hdl *key_hdl,
 }
 
 tdi_status_t tdi_key_field_get_value_ptr(const tdi_table_key_hdl *key_hdl,
-                                          const tdi_id_t field_id,
-                                          const size_t size,
-                                          uint8_t *value) {
+                                         const tdi_id_t field_id,
+                                         const size_t size,
+                                         uint8_t *value) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueExact <uint8_t> keyFieldValue(value, size);
   return key->getValue(field_id, &keyFieldValue);
