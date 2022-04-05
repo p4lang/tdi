@@ -41,7 +41,7 @@ namespace tdi {
 namespace tdi_json {
 namespace values {
 namespace pna {
-const std::string RANGE = "LPM";
+const std::string RANGE = "RANGE";
 }  // namespace pna
 }  // namespace values
 }  // namespace tdi_json

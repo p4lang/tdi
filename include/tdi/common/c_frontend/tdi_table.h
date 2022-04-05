@@ -211,8 +211,6 @@ typedef enum tdi_table_type_ {
   INVLD = 78
 } tdi_table_type_t;
 
-bool tdi_generic_flag_support(void);
-
 /* Table APIs */
 
 /**

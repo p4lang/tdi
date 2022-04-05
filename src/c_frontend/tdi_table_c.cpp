@@ -132,10 +132,6 @@ tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_hdl,
   return TDI_SUCCESS;
 }
 
-bool tdi_generic_flag_support(void) {
-  return true;
-}
-
 tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
                                   const tdi_session_hdl *session,
                                   //const tdi_target_hdl *dev_tgt,
