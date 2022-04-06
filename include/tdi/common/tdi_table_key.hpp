@@ -89,12 +89,11 @@ class KeyFieldValueExact : public KeyFieldValue {
   T value_ = 0;
 };
 
-#if 0
 template class KeyFieldValueExact<uint64_t>;
 template class KeyFieldValueExact<const uint64_t>;
-template class KeyFieldValueExact<uint8_t*>;
-template class KeyFieldValueExact<const uint8_t*>;
-#endif
+template class KeyFieldValueExact<uint8_t *>;
+template class KeyFieldValueExact<const uint8_t *>;
+template class KeyFieldValueExact<const std::string>;
 
 template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
@@ -128,13 +127,16 @@ class KeyFieldValueLPM : public KeyFieldValue {
       typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
   KeyFieldValueLPM(U value, uint16_t prefix_len)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
-                      sizeof(value)),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
         value_(value),
         prefix_len_(prefix_len) {}
   template <typename U = T,
             typename = typename std::enable_if<std::is_pointer<U>::value>::type>
   KeyFieldValueLPM(U value, uint16_t prefix_len, size_t size)
-      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM), size),
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
+                      size,
+                      std::is_pointer<U>::value),
         value_(value),
         prefix_len_(prefix_len) {}
   T value_ = 0;
@@ -149,14 +151,16 @@ class KeyFieldValueRange : public KeyFieldValue {
       typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
   KeyFieldValueRange(U low, U high)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
-                      sizeof(low)),
+                      sizeof(low),
+                      std::is_pointer<U>::value),
         low_(low),
         high_(high) {}
   template <typename U = T,
             typename = typename std::enable_if<std::is_pointer<U>::value>::type>
   KeyFieldValueRange(U low, U high, size_t size)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
-                      size),
+                      size,
+                      std::is_pointer<U>::value),
         low_(low),
         high_(high) {}
   T low_ = 0;
