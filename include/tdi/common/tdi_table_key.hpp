@@ -51,13 +51,15 @@ class KeyFieldValue {
   virtual ~KeyFieldValue() = default;
   KeyFieldValue() = delete;
   const tdi_match_type_e &matchTypeGet() const { return match_type_; };
+  const bool &is_pointer() const { return is_pointer_; };
 
  protected:
-  KeyFieldValue(tdi_match_type_e match_type, const size_t &size)
-      : match_type_(match_type), size_(size){};
+  KeyFieldValue(tdi_match_type_e match_type, size_t size, bool is_pointer)
+      : match_type_(match_type), is_pointer_(is_pointer), size_(size){};
 
  private:
   const tdi_match_type_e match_type_;
+  const bool is_pointer_;
 
  public:
   // Size in bytes
@@ -68,73 +70,95 @@ class KeyFieldValue {
 template <class T = uint64_t>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
-  KeyFieldValueExact(const T &value)
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueExact(U value)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT),
-                      sizeof(value)),
-        value_(value){};
-  KeyFieldValueExact(const uint8_t *value_ptr, const size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_EXACT, size), value_ptr_(value_ptr){};
+                      sizeof(value),
+                      std::is_pointer<U>::value),
+        value_(value) {}
+
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueExact(U value, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value) {}
   T value_ = 0;
-  uint8_t *value_ptr_ = nullptr;
 };
 
 template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
-  KeyFieldValueTernary(const T &value, const T &mask)
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueTernary(U &value, U &mask)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY),
-                      sizeof(value)),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
         value_(value),
-        mask_(mask){};
-  KeyFieldValueTernary(const uint8_t *value_ptr,
-                       const uint8_t *mask_ptr,
-                       const size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_TERNARY, size),
-        value_ptr_(value_ptr),
-        mask_ptr_(mask_ptr){};
+        mask_(mask) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueTernary(U value, U mask, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value),
+        mask_(mask) {}
   T value_ = 0;
-  uint8_t *value_ptr_ = nullptr;
   T mask_ = 0;
-  uint8_t *mask_ptr_ = nullptr;
 };
 
 template <class T = uint64_t>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
-  KeyFieldValueLPM(const T &value, const uint16_t &prefix_len)
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueLPM(U value, uint16_t prefix_len)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
-                      sizeof(value)),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
         value_(value),
-        prefix_len_(prefix_len){};
-  KeyFieldValueLPM(const uint8_t *value_ptr,
-                   const uint16_t &prefix_len,
-                   const size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
-        value_ptr_(value_ptr),
-        prefix_len_(prefix_len){};
+        prefix_len_(prefix_len) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueLPM(U value, uint16_t prefix_len, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value),
+        prefix_len_(prefix_len) {}
   T value_ = 0;
-  uint8_t *value_ptr_ = nullptr;
   uint16_t prefix_len_ = 0;
 };
 
 template <class T = uint64_t>
 class KeyFieldValueRange : public KeyFieldValue {
  public:
-  KeyFieldValueRange(const T &low, const T &high)
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueRange(U low, U high)
       : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
-                      sizeof(low)),
+                      sizeof(low),
+                      std::is_pointer<U>::value),
         low_(low),
-        high_(high){};
-  KeyFieldValueRange(const uint8_t *low_ptr,
-                     const uint8_t *high_ptr,
-                     const size_t &size)
-      : KeyFieldValue(TDI_MATCH_TYPE_LPM, size),
-        low_ptr_(low_ptr),
-        high_ptr_(high_ptr){};
+        high_(high) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueRange(U low, U high, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
+                      size,
+                      std::is_pointer<U>::value),
+        low_(low),
+        high_(high) {}
   T low_ = 0;
   T high_ = 0;
-  uint8_t *low_ptr_ = nullptr;
-  uint8_t *high_ptr_ = nullptr;
 };
 
 /**
