@@ -73,8 +73,6 @@ class TdiInfoMapper {
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT));
     matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_TERNARY,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY));
-    matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_RANGE,
-                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE));
     matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_LPM,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM));
     matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_RANGE,
