@@ -41,8 +41,6 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
 /**
  * @brief create the Flags corresponding to the device obj and flag
  *
- *
- * @param[in] tdi_device handle of Device object. 
  * @param[in] flag_value to initialize the Flags.
  * @param[out] flags_hdl Flags Obj Pointer associated with the Flags.
  *
@@ -96,7 +94,26 @@ tdi_status_t tdi_num_device_id_list_get(uint32_t *num);
  */
 tdi_status_t tdi_device_id_list_get(tdi_dev_id_t *device_id_list);
 
-tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl, tdi_target_hdl **target_hdl);
+/**
+ * @brief create the Target corresponding to the device obj
+ *
+ * @param[in] device_hdl to initialize the Target.
+ * @param[out] target_hdl Obj Pointer associated with the device obj.
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl,
+                               tdi_target_hdl **target_hdl);
+
+/**
+ * @brief delete the Target corresponding to the target obj
+ *
+ * @param[in] target_hdl to delete the Target.
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_target_delete(tdi_target_hdl *target_hdl);
+
 /**
  * @brief Get size of list of loaded p4 program names on a particular device
  *
