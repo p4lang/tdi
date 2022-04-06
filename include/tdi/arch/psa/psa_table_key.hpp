@@ -34,17 +34,29 @@ enum tdi_psa_match_type_e {
 
 namespace tdi {
 
-template<class T>
+template<class T = uint64_t>
 class KeyFieldValueOptional: public KeyFieldValue {
  public:
-  KeyFieldValueOptional(const T &value, const bool &is_valid)
-      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_PSA_MATCH_TYPE_OPTIONAL), value), value_(value), is_valid_(is_valid) {};
-  KeyFieldValueOptional(const uint8_t *value_ptr, const bool is_valid, const size_t size)
-      : KeyFieldValue(static_cast<tdi_match_type_core_e>(TDI_PSA_MATCH_TYPE_OPTIONAL), size), value_ptr_(value_ptr), is_valid_(is_valid), size_(size) {};
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueOptional(U value, bool is_valid)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_PSA_MATCH_TYPE_OPTIONAL),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
+        value_(value),
+        is_valid_(is_valid) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueOptional(U value, bool is_valid, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_PSA_MATCH_TYPE_OPTIONAL),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value),
+        is_valid_(is_valid){}
   T value_ = 0;
-  const uint8_t *value_ptr_ = nullptr;
-  const bool is_valid_ = 0;
-  const size_t size_ = 0;
+  bool is_valid_ = 0;
 };
+
 } // tdi
 #endif  // _PSA_TABLE_KEY_HPP

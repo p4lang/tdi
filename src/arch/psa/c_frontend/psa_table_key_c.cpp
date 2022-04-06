@@ -45,7 +45,7 @@ tdi_status_t tdi_key_field_set_value_optional_ptr(tdi_table_key_hdl *key_hdl,
                                                   const bool is_valid,
                                                   const size_t size) {
   auto key = reinterpret_cast<tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueOptional<const uint8_t> keyFieldValue(value1, is_valid, size);
+  tdi::KeyFieldValueOptional<const uint8_t *> keyFieldValue(value1, is_valid, size);
   return key->setValue(field_id, keyFieldValue);
 }
 
@@ -68,6 +68,6 @@ tdi_status_t tdi_key_field_get_value_optional_ptr(
     uint8_t *value1,
     bool *is_valid) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
-  tdi::KeyFieldValueOptional<unsigned char> keyFieldValue(value1, *is_valid, size);
+  tdi::KeyFieldValueOptional<uint8_t *> keyFieldValue(value1, *is_valid, size);
   return key->getValue(field_id, &keyFieldValue);
 }
