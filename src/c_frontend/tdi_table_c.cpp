@@ -654,7 +654,7 @@ tdi_status_t tdi_table_selector_table_update_cb_attributes_allocate(
 }
 tdi_status_t tdi_table_operations_allocate(
     const tdi_table_hdl *table_hdl,
-    const tdi_table_operations_mode_t op_type,
+    const tdi_operations_type_e op_type,
     tdi_table_operations_hdl **tbl_ops) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   std::unique_ptr<tdi::TableOperations> ops;
@@ -1628,7 +1628,7 @@ tdi_status_t tdi_table_num_operations_supported(
 
 tdi_status_t tdi_table_operations_supported(
     const tdi_table_hdl *table_hdl,
-    tdi_table_operations_mode_t *operations,
+    tdi_operations_type_e *operations,
     uint32_t *num_returned) {
   if (table_hdl == nullptr || num_returned == nullptr ||
       operations == nullptr) {
@@ -1641,7 +1641,7 @@ tdi_status_t tdi_table_operations_supported(
   auto type_set = tableInfo->operationsSupported();
   int i = 0;
   for (const auto &iter : type_set) {
-    operations[i] = static_cast<tdi_table_operations_mode_t>(iter);
+    operations[i] = static_cast<tdi_operations_type_e>(iter);
     i++;
   }
   *num_returned = i;

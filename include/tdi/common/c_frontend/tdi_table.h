@@ -1672,103 +1672,6 @@ tdi_status_t tdi_table_entry_scope_attributes_allocate(
     tdi_table_attributes_hdl **tbl_attr_hdl_ret);
 
 #ifdef _TDI_FROM_BFRT
-/**
- * @brief Allocate attribute object for Idle entry
- *
- * @param[in] table_hdl Table object
- * @param[in] idle_mode Poll vs Notify mode
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_idle_table_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_attributes_idle_table_mode_t idle_mode,
-    tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for port status notification
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_port_status_notif_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for port stats poll interval
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_port_stats_poll_intv_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for pre device config
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_pre_device_config_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for dynamic hashing
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_dyn_hashing_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for dynamic key mask
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_dyn_key_mask_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for meter count byte adjust
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_meter_byte_count_adjust_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-/**
- * @brief Allocate attribute object for selector update callback
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_selector_table_update_cb_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_attributes_hdl **tbl_attr_hdl_ret);
 
 /**
  * @brief Deallocate attribute object
@@ -1863,7 +1766,7 @@ tdi_status_t tdi_table_attributes_supported(
  */
 tdi_status_t tdi_table_operations_allocate(
     const tdi_table_hdl *table_hdl,
-    const tdi_table_operations_mode_t op_type,
+    const tdi_operations_type_e op_type,
     tdi_table_operations_hdl **tbl_ops);
 
 /**
@@ -1912,7 +1815,7 @@ tdi_status_t tdi_table_num_operations_supported(
  */
 tdi_status_t tdi_table_operations_supported(
     const tdi_table_hdl *table_hdl,
-    tdi_table_operations_mode_t *operations,
+    tdi_operations_type_e *operations,
     uint32_t *num_returned);
 #ifdef __cplusplus
 }

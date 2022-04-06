@@ -25,22 +25,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Table Operations Type
- */
-typedef enum tdi_table_operations_mode_ {
-  /** Update sw value of all counters with the value in hw.
-     Applicable on Counters or MATs with direct counters */
-  TDI_COUNTER_SYNC = 0,
-  /** Update sw value of all registers with the value in hw.
-     Applicable on Registers or MATs with direct registers */
-  TDI_REGISTER_SYNC = 1,
-  /** Update sw value of all hit state o entries with the actual
-     hw status. Applicable MATs with idletimeout POLL mode*/
-  TDI_HIT_STATUS_UPDATE = 2,
-  TDI_INVALID
-} tdi_table_operations_mode_t;
-
-/**
  * @brief Register Sync Callback
  * @param[in] dev_tgt Device target
  * @param[in] cookie User registered optional cookie
