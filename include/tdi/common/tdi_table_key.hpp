@@ -89,12 +89,6 @@ class KeyFieldValueExact : public KeyFieldValue {
   T value_ = 0;
 };
 
-template class KeyFieldValueExact<uint64_t>;
-template class KeyFieldValueExact<const uint64_t>;
-template class KeyFieldValueExact<uint8_t *>;
-template class KeyFieldValueExact<const uint8_t *>;
-template class KeyFieldValueExact<const std::string>;
-
 template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
