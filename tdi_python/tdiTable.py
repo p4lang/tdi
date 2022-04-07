@@ -1808,6 +1808,7 @@ class TdiTable:
             self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
             return -1
         key = self._get_key_fields(key_handle)
+        pdb.set_trace()
         if print_entry:
             # Print key in copy-paste format
             key_str = ""

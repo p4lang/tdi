@@ -203,9 +203,9 @@ class CIntfTdi:
         atexit.register(self._cleanup_session)
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
-            #return -1
+            return -1
         #self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
-        pdb.set_trace()
+        #pdb.set_trace()
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
