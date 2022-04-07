@@ -47,7 +47,7 @@ tdi_status_t tdi_num_tables_get(const tdi_info_hdl *tdi, int *num_tables);
  * @return Status of the API call
  */
 tdi_status_t tdi_tables_get(const tdi_info_hdl *tdi,
-                             const tdi_table_hdl **tdi_table_hdl_ret);
+                            const tdi_table_hdl **tdi_table_hdl_ret);
 
 /**
  * @brief Get a Table Object from its fully qualified name
@@ -173,7 +173,7 @@ tdi_status_t tdi_learn_name_to_id(const tdi_info_hdl *tdi_info,
  * @return Status of the API call
  */
 tdi_status_t tdi_num_tables_dependent_on_this_table_get(
-    const tdi_info_hdl *tdi_info, const tdi_id_t tbl_id, int *num_tables);
+    const tdi_table_hdl *table_hdl, int *num_tables);
 
 /**
  * @brief Get a list of tables that are dependent on a given table. When
@@ -181,9 +181,8 @@ tdi_status_t tdi_num_tables_dependent_on_this_table_get(
  *  needs to be added in table1 before we can add a corresponding entry
  *  in table2
  *
- * @param[in] tdi_info Handle of Info object. Retrieved using
+ * @param[in] tdi_table_hdl Handle of Info object. Retrieved using
  * tdi_info_get()
- * @param[in] tbl_id ID of the Table obj
  * @param[out] table_list Array of tables that depend on the given table. API
  * assumes
  * that the correct memory has been allocated by user
@@ -191,22 +190,21 @@ tdi_status_t tdi_num_tables_dependent_on_this_table_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_tables_dependent_on_this_table_get(
-    const tdi_info_hdl *tdi_info,
-    const tdi_id_t tbl_id,
+    const tdi_table_hdl *table_hdl,
     tdi_id_t *table_list);
 
 /**
  * @brief Get size of list of tables that the given table is dependent on
  *
- * @param[in] tdi_info Handle of Info object. Retrieved using
+ * @param[in] tdi_table_hdl Handle of Info object. Retrieved using
  * tdi_info_get()
- * @param[in] tbl_id ID of the Table obj
  * @param[out] num_tables Size of list of tables that this table depends upon
  *
  * @return Status of the API call
  */
 tdi_status_t tdi_num_tables_this_table_depends_on_get(
-    const tdi_info_hdl *tdi_info, const tdi_id_t tbl_id, int *num_tables);
+    const tdi_table_hdl *table_hdl,
+    int *num_tables);
 
 /**
  * @brief Get a list of tables that the given table is dependent on. When
@@ -214,9 +212,8 @@ tdi_status_t tdi_num_tables_this_table_depends_on_get(
  *    cannot be added in table1 unless a corresponding entry is added
  *    to table2
  *
- * @param[in] tdi_info Handle of Info object. Retrieved using
+ * @param[in] tdi_table_hdl Handle of Info object. Retrieved using
  * tdi_info_get()
- * @param[in] tbl_id ID of the Table obj
  * @param[out] table_list Array of tables that depend on the given table. API
  * assumes
  * that the correct memory has been allocated by user
@@ -224,8 +221,7 @@ tdi_status_t tdi_num_tables_this_table_depends_on_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_tables_this_table_depends_on_get(
-    const tdi_info_hdl *tdi_info,
-    const tdi_id_t tbl_id,
+    const tdi_table_hdl *table_hdl,
     tdi_id_t *table_list);
 
 /**

@@ -233,37 +233,32 @@ tdi_status_t tdi_learn_name_to_id(const tdi_info_hdl *tdi,
 }
 
 tdi_status_t tdi_num_tables_dependent_on_this_table_get(
-    const tdi_info_hdl *tdi, const tdi_id_t tbl_id, int *num_tables) {
+    const tdi_table_hdl *tdi, int *num_tables) {
   if (!tdi || !num_tables) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
-  auto tdi_info = reinterpret_cast<const tdi::TdiInfo *>(tdi);
+  auto tdi_table = reinterpret_cast<const tdi::Table *>(tdi);
+  auto tableInfo = tdi_table->tableInfoGet();
   std::vector<tdi_id_t> table_ids;
-  auto status =
-      tdi_info->tdiInfoTablesDependentOnThisTableGet(tbl_id, &table_ids);
-  if (status != TDI_SUCCESS) {
-    return status;
-  }
+  auto table_ids =
+      tableInfo->tdiInfoTablesDependentOnThisTableGet();
   *num_tables = static_cast<int>(table_ids.size());
   return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_tables_dependent_on_this_table_get(
-    const tdi_info_hdl *tdi,
-    const tdi_id_t tbl_id,
+    const tdi_table_hdl *tdi,
     tdi_id_t *table_list) {
   if (!tdi || !table_list) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
-  auto tdi_info = reinterpret_cast<const tdi::TdiInfo *>(tdi);
+  auto tdi_info = reinterpret_cast<const tdi::Table *>(tdi);
+  auto tableInfo = tdi_table->tableInfoGet();
   std::vector<tdi_id_t> table_ids;
-  auto status =
-      tdi_info->tdiInfoTablesDependentOnThisTableGet(tbl_id, &table_ids);
-  if (status != TDI_SUCCESS) {
-    return status;
-  }
+  auto table_ids =
+      tableInfo->tdiInfoTablesDependentOnThisTableGet();
   for (auto it = table_ids.begin(); it != table_ids.end(); it++) {
     table_list[it - table_ids.begin()] = *it;
   }
@@ -271,36 +266,32 @@ tdi_status_t tdi_tables_dependent_on_this_table_get(
 }
 
 tdi_status_t tdi_num_tables_this_table_depends_on_get(
-    const tdi_info_hdl *tdi, const tdi_id_t tbl_id, int *num_tables) {
+    const tdi_table_hdl *tdi, int *num_tables) {
   if (!tdi || !num_tables) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
-  auto tdi_info = reinterpret_cast<const tdi::TdiInfo *>(tdi);
+  auto tdi_table = reinterpret_cast<const tdi::Table *>(tdi);
+  auto tableInfo = tdi_table->tableInfoGet();
   std::vector<tdi_id_t> table_ids;
-  auto status =
-      tdi_info->tdiInfoTablesThisTableDependsOnGet(tbl_id, &table_ids);
-  if (status != TDI_SUCCESS) {
-    return status;
-  }
+  auto table_ids =
+      tdiInfo->tdiInfoTablesThisTableDependsOnGet();
   *num_tables = static_cast<int>(table_ids.size());
   return TDI_SUCCESS;
 }
 
-tdi_status_t tdi_tables_this_table_depends_on_get(const tdi_info_hdl *tdi,
-                                                   const tdi_id_t tbl_id,
-                                                   tdi_id_t *table_list) {
+tdi_status_t tdi_tables_this_table_depends_on_get(
+    const tdi_table_hdl *tdi,
+    tdi_id_t *table_list) {
   if (!tdi || !table_list) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
-  auto tdi_info = reinterpret_cast<const tdi::TdiInfo *>(tdi);
+  auto tdi_table = reinterpret_cast<const tdi::Table *>(tdi);
+  auto tableInfo = tdi_table->tableInfoGet();
   std::vector<tdi_id_t> table_ids;
-  auto status =
-      tdi_info->tdiInfoTablesThisTableDependsOnGet(tbl_id, &table_ids);
-  if (status != TDI_SUCCESS) {
-    return status;
-  }
+  auto table_ids =
+      tableInfo->tdiInfoTablesThisTableDependsOnGet(&table_ids);
   for (auto it = table_ids.begin(); it != table_ids.end(); it++) {
     table_list[it - table_ids.begin()] = *it;
   }
