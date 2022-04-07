@@ -42,6 +42,7 @@ class TdiInfo:
             return -1
 
     def _init_handle(self):
+        # get tdi_info handler
         self._handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_info_get(self._cintf.get_dev_id(), self.name, byref(self._handle))
         if not sts == 0:
@@ -83,16 +84,19 @@ class TdiInfo:
                 self.tables[tbl_obj.name] = tbl_obj
                 self.tbl_id_map[tbl_id.value] = tbl_obj
         '''
+        # need core class support
         # Tables Dependencies Initialzation
         #pdb.set_trace()
         for tbl_id, tbl_obj in self.tbl_id_map.items():
+            table_hdl=POINTER(c_uint)
+            self._cintf.get_driver().tdi_table_from_id_get(self._handle, tbl_id, byref(table_hdl))
             num_deps = c_int()
-            self._cintf.get_driver().tdi_num_tables_this_table_depends_on_get(self._handle, tbl_id, byref(num_deps))
+            self._cintf.get_driver().tdi_num_tables_this_table_depends_on_get(table_hdl, byref(num_deps))
             if num_deps.value == 0:
                 continue
             array_type = c_uint * num_deps.value
             deps = array_type()
-            self._cintf.get_driver().tdi_tables_this_table_depends_on_get(self._handle, tbl_id, deps)
+            self._cintf.get_driver().tdi_tables_this_table_depends_on_get(table_hdl, tbl_id, deps)
             self.tbl_dep_map[tbl_id] = deps
             # Nested tables are to be included in the parent table from depends_on field
             if tbl_obj.table_type in self.nested_tables:
