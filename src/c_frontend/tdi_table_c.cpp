@@ -97,7 +97,7 @@ tdi_annotation_t convert_annotation(const tdi::Annotation &annotation) {
 }  // anonymous namespace
 
 tdi_status_t tdi_table_id_from_handle_get(const tdi_table_hdl *table_hdl,
-                                           tdi_id_t *id) {
+                                          tdi_id_t *id) {
   if (id == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -112,7 +112,7 @@ tdi_status_t tdi_table_id_from_handle_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_hdl,
-                                 const char **table_name_ret) {
+                                const char **table_name_ret) {
   if (table_name_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -133,12 +133,11 @@ tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  //const tdi_target_hdl *dev_tgt,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key,
-                                  const tdi_table_data_hdl *data) {
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key,
+                                 const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   //auto &devMgr=tdi::DevMgr::getInstance();
   //tdi_status_t status=tdi:devMgr->deviceGet(dev_tgt->dev_id, device);
@@ -151,18 +150,14 @@ tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  //const tdi_target_t *dev_tgt,
-                                  //const uint64_t flags,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key,
-                                  const tdi_table_data_hdl *data) {
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key,
+                                 const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryMod(
       *reinterpret_cast<const tdi::Session *>(session),
-      //*dev_tgt,
-      //flags,
       *reinterpret_cast<const tdi::Target *>(target),
       *reinterpret_cast<const tdi::Flags *>(flags),
       *reinterpret_cast<const tdi::TableKey *>(key),
@@ -183,10 +178,10 @@ tdi_status_t tdi_table_default_entry_mod(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key) {
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryDel(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -196,9 +191,9 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
-                              const tdi_session_hdl *session,
-                              const tdi_target_hdl *target,
-                              const tdi_flags_hdl *flags) {
+                             const tdi_session_hdl *session,
+                             const tdi_target_hdl *target,
+                             const tdi_flags_hdl *flags) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->clear(
       *reinterpret_cast<const tdi::Session *>(session), /**dev_tgt, flags*/
@@ -208,11 +203,11 @@ tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key,
-                                  tdi_table_data_hdl *data) {
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key,
+                                 tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -223,12 +218,12 @@ tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
-                                            const tdi_session_hdl *session,
-                                            const tdi_target_hdl *target,
-                                            const tdi_flags_hdl *flags,
-                                            const uint32_t entry_handle,
-                                            tdi_table_key_hdl *key,
-                                            tdi_table_data_hdl *data) {
+                                           const tdi_session_hdl *session,
+                                           const tdi_target_hdl *target,
+                                           const tdi_flags_hdl *flags,
+                                           const uint32_t entry_handle,
+                                           tdi_table_key_hdl *key,
+                                           tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -240,12 +235,12 @@ tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_session_hdl *session,
-                                      const tdi_target_hdl *target_in,
-                                      const tdi_flags_hdl *flags,
-                                      const uint32_t entry_handle,
-                                      tdi_target_hdl *target_out,
-                                      tdi_table_key_hdl *key) {
+                                     const tdi_session_hdl *session,
+                                     const tdi_target_hdl *target_in,
+                                     const tdi_flags_hdl *flags,
+                                     const uint32_t entry_handle,
+                                     tdi_target_hdl *target_out,
+                                     tdi_table_key_hdl *key) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryKeyGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -257,11 +252,11 @@ tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
-                                         const tdi_session_hdl *session,
-                                         const tdi_target_hdl *target,
-                                         const tdi_flags_hdl *flags,
-                                         const tdi_table_key_hdl *key,
-                                         uint32_t *entry_handle) {
+                                        const tdi_session_hdl *session,
+                                        const tdi_target_hdl *target,
+                                        const tdi_flags_hdl *flags,
+                                        const tdi_table_key_hdl *key,
+                                        uint32_t *entry_handle) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryHandleGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -272,11 +267,11 @@ tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
-                                        const tdi_session_hdl *session,
-                                        const tdi_target_hdl *target,
-                                        const tdi_flags_hdl *flags,
-                                        tdi_table_key_hdl *key,
-                                        tdi_table_data_hdl *data) {
+                                       const tdi_session_hdl *session,
+                                       const tdi_target_hdl *target,
+                                       const tdi_flags_hdl *flags,
+                                       tdi_table_key_hdl *key,
+                                       tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->entryGetFirst(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -287,14 +282,14 @@ tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
-                                         const tdi_session_hdl *session,
-                                         const tdi_target_hdl *target,
-                                         const tdi_flags_hdl *flags,
-                                         const tdi_table_key_hdl *key,
-                                         tdi_table_key_hdl **output_keys,
-                                         tdi_table_data_hdl **output_data,
-                                         uint32_t n,
-                                         uint32_t *num_returned) {
+                                        const tdi_session_hdl *session,
+                                        const tdi_target_hdl *target,
+                                        const tdi_flags_hdl *flags,
+                                        const tdi_table_key_hdl *key,
+                                        tdi_table_key_hdl **output_keys,
+                                        tdi_table_data_hdl **output_data,
+                                        uint32_t n,
+                                        uint32_t *num_returned) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   tdi::Table::keyDataPairs key_data_pairs;
   unsigned i = 0;
@@ -315,10 +310,10 @@ tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  uint32_t *count) {
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 uint32_t *count) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->usageGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -328,10 +323,10 @@ tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
-                                          const tdi_session_hdl *session,
-                                          const tdi_target_hdl *target,
-                                          const tdi_flags_hdl *flags,
-                                          const tdi_table_data_hdl *data) {
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *target,
+                                         const tdi_flags_hdl *flags,
+                                         const tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->defaultEntrySet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -341,10 +336,10 @@ tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
-                                          const tdi_session_hdl *session,
-                                          const tdi_target_hdl *target,
-                                          const tdi_flags_hdl *flags,
-                                          tdi_table_data_hdl *data) {
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *target,
+                                         const tdi_flags_hdl *flags,
+                                         tdi_table_data_hdl *data) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->defaultEntryGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -354,9 +349,9 @@ tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
-                                            const tdi_session_hdl *session,
-                                            const tdi_target_hdl *target,
-                                            const tdi_flags_hdl *flags) {
+                                           const tdi_session_hdl *session,
+                                           const tdi_target_hdl *target,
+                                           const tdi_flags_hdl *flags) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->defaultEntryReset(
       *reinterpret_cast<const tdi::Session *>(session), 
@@ -366,10 +361,10 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
-                                 const tdi_session_hdl *session,
-                                 const tdi_target_hdl *target,
-                                 const tdi_flags_hdl *flags,
-                                 size_t *count) {
+                                const tdi_session_hdl *session,
+                                const tdi_target_hdl *target,
+                                const tdi_flags_hdl *flags,
+                                size_t *count) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->sizeGet(
       *reinterpret_cast<const tdi::Session *>(session),
@@ -379,7 +374,7 @@ tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_type_get(const tdi_table_hdl *table_hdl,
-                                 tdi_table_type_t *table_type) {
+                                tdi_table_type_t *table_type) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   *table_type = static_cast<tdi_table_type_t>(tableInfo->tableTypeGet());
@@ -396,7 +391,7 @@ tdi_status_t tdi_table_has_const_default_action(
 }
 
 tdi_status_t tdi_table_num_annotations_get(const tdi_table_hdl *table_hdl,
-                                            uint32_t *num_annotations) {
+                                           uint32_t *num_annotations) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   //tdi::AnnotationSet cpp_annotations;
   auto tableInfo = table->tableInfoGet();
@@ -406,7 +401,7 @@ tdi_status_t tdi_table_num_annotations_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_annotations_get(const tdi_table_hdl *table_hdl,
-                                        tdi_annotation_t *annotations_c) {
+                                       tdi_annotation_t *annotations_c) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   const tdi::TableInfo *tableInfo=table->tableInfoGet();
   std::set<tdi::Annotation> cpp_annotations;
@@ -420,7 +415,7 @@ tdi_status_t tdi_table_annotations_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_action_id_from_data_get(const tdi_table_data_hdl *data,
-                                          tdi_id_t *id_ret) {
+                                         tdi_id_t *id_ret) {
   auto data_obj = reinterpret_cast<const tdi::TableData *>(data);
   // disable it now, will enable it once the method is available in the code class
   *id_ret = data_obj->actionIdGet();
@@ -429,7 +424,7 @@ tdi_status_t tdi_action_id_from_data_get(const tdi_table_data_hdl *data,
 
 // Allocate APIs
 tdi_status_t tdi_table_key_allocate(const tdi_table_hdl *table_hdl,
-                                     tdi_table_key_hdl **key_hdl_ret) {
+                                    tdi_table_key_hdl **key_hdl_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   std::unique_ptr<tdi::TableKey> key_hdl;
   auto status = table->keyAllocate(&key_hdl);
@@ -438,7 +433,7 @@ tdi_status_t tdi_table_key_allocate(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_table_data_allocate(const tdi_table_hdl *table_hdl,
-                                      tdi_table_data_hdl **data_hdl_ret) {
+                                     tdi_table_data_hdl **data_hdl_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   std::unique_ptr<tdi::TableData> data_hdl;
   auto status = table->dataAllocate(&data_hdl);
@@ -608,6 +603,7 @@ tdi_status_t tdi_table_pre_device_config_attributes_allocate(
       reinterpret_cast<tdi_table_attributes_hdl *>(attr.release());
   return status;
 }
+
 tdi_status_t tdi_table_dyn_hashing_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret) {
@@ -619,6 +615,7 @@ tdi_status_t tdi_table_dyn_hashing_attributes_allocate(
       reinterpret_cast<tdi_table_attributes_hdl *>(attr.release());
   return status;
 }
+
 tdi_status_t tdi_table_dyn_key_mask_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret) {
@@ -630,6 +627,7 @@ tdi_status_t tdi_table_dyn_key_mask_attributes_allocate(
       reinterpret_cast<tdi_table_attributes_hdl *>(attr.release());
   return status;
 }
+
 tdi_status_t tdi_table_meter_byte_count_adjust_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret) {
@@ -641,6 +639,7 @@ tdi_status_t tdi_table_meter_byte_count_adjust_attributes_allocate(
       reinterpret_cast<tdi_table_attributes_hdl *>(attr.release());
   return status;
 }
+
 tdi_status_t tdi_table_selector_table_update_cb_attributes_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_table_attributes_hdl **tbl_attr_hdl_ret) {
@@ -652,6 +651,7 @@ tdi_status_t tdi_table_selector_table_update_cb_attributes_allocate(
       reinterpret_cast<tdi_table_attributes_hdl *>(attr.release());
   return status;
 }
+
 tdi_status_t tdi_table_operations_allocate(
     const tdi_table_hdl *table_hdl,
     const tdi_operations_type_e op_type,
@@ -666,21 +666,21 @@ tdi_status_t tdi_table_operations_allocate(
 #endif
 // Reset APIs
 tdi_status_t tdi_table_key_reset(const tdi_table_hdl *table_hdl,
-                                  tdi_table_key_hdl **key_hdl_ret) {
+                                 tdi_table_key_hdl **key_hdl_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->keyReset(reinterpret_cast<tdi::TableKey *>(*key_hdl_ret));
 }
 
 tdi_status_t tdi_table_data_reset(const tdi_table_hdl *table_hdl,
-                                   tdi_table_data_hdl **data_hdl_ret) {
+                                  tdi_table_data_hdl **data_hdl_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->dataReset(
       reinterpret_cast<tdi::TableData *>(*data_hdl_ret));
 }
 
 tdi_status_t tdi_table_action_data_reset(const tdi_table_hdl *table_hdl,
-                                          const tdi_id_t action_id,
-                                          tdi_table_data_hdl **data_hdl_ret) {
+                                         const tdi_id_t action_id,
+                                         tdi_table_data_hdl **data_hdl_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->dataReset(
       action_id, reinterpret_cast<tdi::TableData *>(*data_hdl_ret));
@@ -757,7 +757,7 @@ tdi_status_t tdi_table_operations_deallocate(
 
 // KeyField APIs
 tdi_status_t tdi_key_field_id_list_size_get(const tdi_table_hdl *table_hdl,
-                                             uint32_t *num) {
+                                            uint32_t *num) {
   // Only here are we using TableObj rather than Table
   // since we need the hidden impl function
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
@@ -767,7 +767,7 @@ tdi_status_t tdi_key_field_id_list_size_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
-                                        tdi_id_t *id_vec_ret) {
+                                       tdi_id_t *id_vec_ret) {
   if (id_vec_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -843,8 +843,8 @@ tdi_status_t tdi_key_field_size_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_key_field_is_ptr_get(const tdi_table_hdl *table_hdl,
-                                       const tdi_id_t field_id,
-                                       bool *is_ptr_ret) {
+                                      const tdi_id_t field_id,
+                                      bool *is_ptr_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto keyFieldInfo = tableInfo->keyFieldGet(field_id);
@@ -853,8 +853,8 @@ tdi_status_t tdi_key_field_is_ptr_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_key_field_name_get(const tdi_table_hdl *table_hdl,
-                                     const tdi_id_t field_id,
-                                     const char **name_ret) {
+                                    const tdi_id_t field_id,
+                                    const char **name_ret) {
   if (name_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -908,7 +908,7 @@ tdi_status_t tdi_key_field_allowed_choices_get(
 
 // DataField APIs
 tdi_status_t tdi_data_field_id_list_size_get(const tdi_table_hdl *table_hdl,
-                                              uint32_t *num) {
+                                             uint32_t *num) {
   if (num == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -940,7 +940,7 @@ tdi_status_t tdi_data_field_id_list_size_with_action_get(
 }
 
 tdi_status_t tdi_data_field_list_get(const tdi_table_hdl *table_hdl,
-                                      tdi_id_t *id_vec_ret) {
+                                     tdi_id_t *id_vec_ret) {
   if (id_vec_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1043,8 +1043,8 @@ tdi_status_t tdi_data_field_list_with_action_get(
 
 #ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_data_field_id_get(const tdi_table_hdl *table_hdl,
-                                    const char *data_field_name,
-                                    tdi_id_t *field_id_ret) {
+                                   const char *data_field_name,
+                                   tdi_id_t *field_id_ret) {
   auto table = reinterpret_cast<const tdi::Table*>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   *field_id_ret = tableInfo->dataFieldIdGet(data_field_name);
@@ -1064,8 +1064,8 @@ tdi_status_t tdi_data_field_id_with_action_get(
 #endif
 
 tdi_status_t tdi_data_field_size_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_id_t field_id,
-                                      size_t *field_size_ret) {
+                                     const tdi_id_t field_id,
+                                     size_t *field_size_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
@@ -1086,8 +1086,8 @@ tdi_status_t tdi_data_field_size_with_action_get(
 }
 
 tdi_status_t tdi_data_field_is_ptr_get(const tdi_table_hdl *table_hdl,
-                                        const tdi_id_t field_id,
-                                        bool *is_ptr_ret) {
+                                       const tdi_id_t field_id,
+                                       bool *is_ptr_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
@@ -1108,8 +1108,8 @@ tdi_status_t tdi_data_field_is_ptr_with_action_get(
 }
 
 tdi_status_t tdi_data_field_is_mandatory_get(const tdi_table_hdl *table_hdl,
-                                              const tdi_id_t field_id,
-                                              bool *is_mandatory_ret) {
+                                             const tdi_id_t field_id,
+                                             bool *is_mandatory_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
@@ -1130,8 +1130,8 @@ tdi_status_t tdi_data_field_is_mandatory_with_action_get(
 }
 
 tdi_status_t tdi_data_field_is_read_only_get(const tdi_table_hdl *table_hdl,
-                                              const tdi_id_t field_id,
-                                              bool *is_read_only_ret) {
+                                             const tdi_id_t field_id,
+                                             bool *is_read_only_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
@@ -1152,8 +1152,8 @@ tdi_status_t tdi_data_field_is_read_only_with_action_get(
 }
 
 tdi_status_t tdi_data_field_name_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_id_t field_id,
-                                      const char **name_ret) {
+                                     const tdi_id_t field_id,
+                                     const char **name_ret) {
   if (name_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1173,9 +1173,9 @@ tdi_status_t tdi_data_field_name_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_data_field_name_copy_get(const tdi_table_hdl *table_hdl,
-                                           const tdi_id_t field_id,
-                                           const uint32_t buf_sz,
-                                           char *name_ret) {
+                                          const tdi_id_t field_id,
+                                          const uint32_t buf_sz,
+                                          char *name_ret) {
   if (name_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1429,7 +1429,7 @@ tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
 
 // disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
-                                          uint32_t *num) {
+                                         uint32_t *num) {
   if (num == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1450,7 +1450,7 @@ tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
-                                     tdi_id_t *id_vec_ret) {
+                                    tdi_id_t *id_vec_ret) {
   if (id_vec_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1474,8 +1474,8 @@ tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
 
 // disable it now, will enable it once the method is available in the code class
 tdi_status_t tdi_action_name_get(const tdi_table_hdl *table_hdl,
-                                  const tdi_id_t action_id,
-                                  const char **name_ret) {
+                                 const tdi_id_t action_id,
+                                 const char **name_ret) {
   if (name_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -1496,8 +1496,8 @@ tdi_status_t tdi_action_name_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_action_name_to_id(const tdi_table_hdl *table_hdl,
-                                    const char *action_name,
-                                    tdi_id_t *action_id_ret) {
+                                   const char *action_name,
+                                   tdi_id_t *action_id_ret) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto actionInfo = tableInfo->actionGet(std::string(action_name));
@@ -1506,15 +1506,15 @@ tdi_status_t tdi_action_name_to_id(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
-                                       bool *ret_val) {
+                                      bool *ret_val) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   *ret_val = table->actionIdApplicable();
   return TDI_SUCCESS;
 }
 
 tdi_status_t tdi_action_num_annotations_get(const tdi_table_hdl *table_hdl,
-                                             const tdi_id_t action_id,
-                                             uint32_t *num_annotations) {
+                                            const tdi_id_t action_id,
+                                            uint32_t *num_annotations) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto actionInfo = tableInfo->actionGet(action_id);
@@ -1524,8 +1524,8 @@ tdi_status_t tdi_action_num_annotations_get(const tdi_table_hdl *table_hdl,
 }
 
 tdi_status_t tdi_action_annotations_get(const tdi_table_hdl *table_hdl,
-                                         const tdi_id_t action_id,
-                                         tdi_annotation_t *annotations_c) {
+                                        const tdi_id_t action_id,
+                                        tdi_annotation_t *annotations_c) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   auto tableInfo = table->tableInfoGet();
   auto actionInfo = tableInfo->actionGet(action_id);

@@ -53,15 +53,6 @@ tdi_status_t tdi_session_destroy(tdi_session_hdl *const session);
 tdi_id_t tdi_sess_handle_get(const tdi_session_hdl *const session);
 
 /**
- * @brief Get the internal PRE session ID
- *
- * @param[in] session Ptr to session object
- *
- * @return Internal PRE session ID
- */
-tdi_id_t tdi_pre_sess_handle_get(const tdi_session_hdl *const session);
-
-/**
  * @brief Check whether this Session Object  is still valid or not
  *
  * @param[in] session Ptr to session object

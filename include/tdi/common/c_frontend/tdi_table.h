@@ -226,11 +226,11 @@ typedef enum tdi_table_type_ {
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key,
-                                  const tdi_table_data_hdl *data);
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key,
+                                 const tdi_table_data_hdl *data);
 
 /**
  * @brief Modify an existing entry of the table
@@ -245,11 +245,11 @@ tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_mod(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *target,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key,
-                                  const tdi_table_data_hdl *data);
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key,
+                                 const tdi_table_data_hdl *data);
 
 /**
  * @brief Modify only an existing default entry of the table.
@@ -280,10 +280,10 @@ tdi_status_t tdi_table_default_entry_mod(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *dev_tgt,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key);
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *dev_tgt,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key);
 
 /**
  * @brief Clear a table. Delete all entries. This API also resets default
@@ -299,9 +299,9 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
-                              const tdi_session_hdl *session,
-                              const tdi_target_hdl *dev_tgt,
-                              const tdi_flags_hdl *flags);
+                             const tdi_session_hdl *session,
+                             const tdi_target_hdl *dev_tgt,
+                             const tdi_flags_hdl *flags);
 
 /**
  * @brief Get an entry from the table
@@ -317,11 +317,11 @@ tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *dev_tgt,
-                                  const tdi_flags_hdl *flags,
-                                  const tdi_table_key_hdl *key,
-                                  tdi_table_data_hdl *data);
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *dev_tgt,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key,
+                                 tdi_table_data_hdl *data);
 
 /**
  * @brief Get an entry from the table by entry handle
@@ -338,12 +338,12 @@ tdi_status_t tdi_table_entry_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
-                                            const tdi_session_hdl *session,
-                                            const tdi_target_hdl *dev_tgt,
-                                            const tdi_flags_hdl *flags,
-                                            const uint32_t entry_handle,
-                                            tdi_table_key_hdl *key,
-                                            tdi_table_data_hdl *data);
+                                           const tdi_session_hdl *session,
+                                           const tdi_target_hdl *dev_tgt,
+                                           const tdi_flags_hdl *flags,
+                                           const uint32_t entry_handle,
+                                           tdi_table_key_hdl *key,
+                                           tdi_table_data_hdl *data);
 
 /**
  * @brief Get the first entry of the table
@@ -359,11 +359,11 @@ tdi_status_t tdi_table_entry_get_by_handle(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
-                                        const tdi_session_hdl *session,
-                                        const tdi_target_hdl *dev_tgt,
-                                        const tdi_flags_hdl *flags,
-                                        tdi_table_key_hdl *key,
-                                        tdi_table_data_hdl *data);
+                                       const tdi_session_hdl *session,
+                                       const tdi_target_hdl *dev_tgt,
+                                       const tdi_flags_hdl *flags,
+                                       tdi_table_key_hdl *key,
+                                       tdi_table_data_hdl *data);
 
 /**
  * @brief Get an entry key from the table by handle
@@ -380,12 +380,12 @@ tdi_status_t tdi_table_entry_get_first(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_session_hdl *session,
-                                      const tdi_target_hdl *dev_tgt_in,
-                                      const tdi_flags_hdl *flags,
-                                      const uint32_t entry_handle,
-                                      tdi_target_hdl *dev_tgt_out,
-                                      tdi_table_key_hdl *key);
+                                     const tdi_session_hdl *session,
+                                     const tdi_target_hdl *dev_tgt_in,
+                                     const tdi_flags_hdl *flags,
+                                     const uint32_t entry_handle,
+                                     tdi_target_hdl *dev_tgt_out,
+                                     tdi_table_key_hdl *key);
 
 /**
  * @brief Get an entry handle from the table
@@ -400,11 +400,11 @@ tdi_status_t tdi_table_entry_key_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
-                                         const tdi_session_hdl *session,
-                                         const tdi_target_hdl *dev_tgt,
-                                         const tdi_flags_hdl *flags,
-                                         const tdi_table_key_hdl *key,
-                                         uint32_t *entry_handle);
+                                        const tdi_session_hdl *session,
+                                        const tdi_target_hdl *dev_tgt,
+                                        const tdi_flags_hdl *flags,
+                                        const tdi_table_key_hdl *key,
+                                        uint32_t *entry_handle);
 
 /**
  * @brief Get next N entries of the table following the entry that is
@@ -428,14 +428,14 @@ tdi_status_t tdi_table_entry_handle_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
-                                         const tdi_session_hdl *session,
-                                         const tdi_target_hdl *dev_tgt,
-                                         const tdi_flags_hdl *flags,
-                                         const tdi_table_key_hdl *key,
-                                         tdi_table_key_hdl **output_keys,
-                                         tdi_table_data_hdl **output_data,
-                                         uint32_t n,
-                                         uint32_t *num_returned);
+                                        const tdi_session_hdl *session,
+                                        const tdi_target_hdl *dev_tgt,
+                                        const tdi_flags_hdl *flags,
+                                        const tdi_table_key_hdl *key,
+                                        tdi_table_key_hdl **output_keys,
+                                        tdi_table_data_hdl **output_data,
+                                        uint32_t n,
+                                        uint32_t *num_returned);
 
 /**
  * @brief Current Usage of the table
@@ -449,10 +449,10 @@ tdi_status_t tdi_table_entry_get_next_n(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
-                                  const tdi_session_hdl *session,
-                                  const tdi_target_hdl *dev_tgt,
-                                  const tdi_flags_hdl *flags,
-                                  uint32_t *count);
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *dev_tgt,
+                                 const tdi_flags_hdl *flags,
+                                 uint32_t *count);
 /**
  * @brief Set the default Entry of the table
  *
@@ -473,10 +473,10 @@ tdi_status_t tdi_table_usage_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
-                                          const tdi_session_hdl *session,
-                                          const tdi_target_hdl *dev_tgt,
-                                          const tdi_flags_hdl *flags,
-                                          const tdi_table_data_hdl *data);
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *dev_tgt,
+                                         const tdi_flags_hdl *flags,
+                                         const tdi_table_data_hdl *data);
 
 /**
  * @brief Get the default Entry of the table
@@ -498,10 +498,10 @@ tdi_status_t tdi_table_default_entry_set(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
-                                          const tdi_session_hdl *session,
-                                          const tdi_target_hdl *dev_tgt,
-                                          const tdi_flags_hdl *flags,
-                                          tdi_table_data_hdl *data);
+                                         const tdi_session_hdl *session,
+                                         const tdi_target_hdl *dev_tgt,
+                                         const tdi_flags_hdl *flags,
+                                         tdi_table_data_hdl *data);
 
 /**
  * @brief Reset the default Entry of the table
@@ -517,9 +517,9 @@ tdi_status_t tdi_table_default_entry_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
-                                            const tdi_session_hdl *session,
-                                            const tdi_target_hdl *dev_tgt,
-                                            const tdi_flags_hdl *flags);
+                                           const tdi_session_hdl *session,
+                                           const tdi_target_hdl *dev_tgt,
+                                           const tdi_flags_hdl *flags);
 
 /**
  * @brief The maximum size of the table. Note that this size might
@@ -536,10 +536,10 @@ tdi_status_t tdi_table_default_entry_reset(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
-                                 const tdi_session_hdl *session,
-                                 const tdi_target_hdl *dev_tgt,
-                                 const tdi_flags_hdl *flags,
-                                 size_t *size);
+                                const tdi_session_hdl *session,
+                                const tdi_target_hdl *dev_tgt,
+                                const tdi_flags_hdl *flags,
+                                size_t *size);
 
 
 /**
@@ -551,7 +551,7 @@ tdi_status_t tdi_table_size_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_hdl,
-                                 const char **table_name_ret);
+                                const char **table_name_ret);
 
 /**
  * @brief Get ID of the table
@@ -562,7 +562,7 @@ tdi_status_t tdi_table_name_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_id_from_handle_get(const tdi_table_hdl *table_hdl,
-                                           tdi_id_t *id);
+                                          tdi_id_t *id);
 /**
  * @brief The type of the table
  *
@@ -572,7 +572,7 @@ tdi_status_t tdi_table_id_from_handle_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_type_get(const tdi_table_hdl *table_hdl,
-                                 tdi_table_type_t *table_type);
+                                tdi_table_type_t *table_type);
 
 /**
  * @brief Get whether this table has a const default action
@@ -594,7 +594,7 @@ tdi_status_t tdi_table_has_const_default_action(
  * @return Status of the API call
  */
 tdi_status_t tdi_table_num_annotations_get(const tdi_table_hdl *table_hdl,
-                                            uint32_t *num_annotations);
+                                           uint32_t *num_annotations);
 /**
  * @brief Get an array of annotations on a Table
  *
@@ -604,7 +604,7 @@ tdi_status_t tdi_table_num_annotations_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_table_annotations_get(const tdi_table_hdl *table_hdl,
-                                        tdi_annotation_t *annotations_c);
+                                       tdi_annotation_t *annotations_c);
 
 /**
  * @brief Get the size of array of supported APIs on table
@@ -654,7 +654,7 @@ tdi_status_t tdi_table_key_allocate(const tdi_table_hdl *table_hdl,
  * associated with the table.
  */
 tdi_status_t tdi_table_key_reset(const tdi_table_hdl *table_hdl,
-                                  tdi_table_key_hdl **key_hdl_ret);
+                                 tdi_table_key_hdl **key_hdl_ret);
 
 /**
  * @brief Deallocate key for the table
@@ -675,7 +675,7 @@ tdi_status_t tdi_table_key_deallocate(tdi_table_key_hdl *key_hdl);
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_id_list_size_get(const tdi_table_hdl *table_hdl,
-                                             uint32_t *num);
+                                            uint32_t *num);
 
 /**
  * @brief Get an array of Key field IDs
@@ -686,7 +686,7 @@ tdi_status_t tdi_key_field_id_list_size_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_id_list_get(const tdi_table_hdl *table_hdl,
-                                        tdi_id_t *id_arr);
+                                       tdi_id_t *id_arr);
 
 /**
  * @brief Get field type of Key Field
@@ -737,8 +737,8 @@ tdi_status_t tdi_key_field_id_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_size_get(const tdi_table_hdl *table_hdl,
-                                     const tdi_id_t field_id,
-                                     size_t *size);
+                                    const tdi_id_t field_id,
+                                    size_t *size);
 
 /**
  * @brief Get whether Key Field is of type ptr or not. If the field is
@@ -752,8 +752,8 @@ tdi_status_t tdi_key_field_size_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_is_ptr_get(const tdi_table_hdl *table_hdl,
-                                       const tdi_id_t field_id,
-                                       bool *is_ptr);
+                                      const tdi_id_t field_id,
+                                      bool *is_ptr);
 
 /**
  * @brief Get name of field
@@ -765,8 +765,8 @@ tdi_status_t tdi_key_field_is_ptr_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_name_get(const tdi_table_hdl *table_hdl,
-                                     const tdi_id_t field_id,
-                                     const char **name);
+                                    const tdi_id_t field_id,
+                                    const char **name);
 
 /**
  * @brief Get size of array of allowed choices for string
@@ -806,7 +806,7 @@ tdi_status_t tdi_key_field_allowed_choices_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_table_data_allocate(const tdi_table_hdl *table_hdl,
-                                      tdi_table_data_hdl **data_hdl_ret);
+                                     tdi_table_data_hdl **data_hdl_ret);
 
 /**
  * @brief Allocate Data Object for the table
@@ -982,7 +982,7 @@ tdi_status_t tdi_table_action_data_allocate_container_with_fields(
  * not associated with the table
  */
 tdi_status_t tdi_table_data_reset(const tdi_table_hdl *table_hdl,
-                                   tdi_table_data_hdl **data_hdl_ret);
+                                  tdi_table_data_hdl **data_hdl_ret);
 
 /**
  * @brief Reset the data object previously allocated using dataAllocate on the
@@ -1001,8 +1001,8 @@ tdi_status_t tdi_table_data_reset(const tdi_table_hdl *table_hdl,
  * not associated with the table or if action_id doesn't exist
  */
 tdi_status_t tdi_table_action_data_reset(const tdi_table_hdl *table_hdl,
-                                          const tdi_id_t action_id,
-                                          tdi_table_data_hdl **data_hdl_ret);
+                                         const tdi_id_t action_id,
+                                         tdi_table_data_hdl **data_hdl_ret);
 
 /**
  * @brief Reset the data object previously allocated using dataAllocate on the
@@ -1079,7 +1079,7 @@ tdi_status_t tdi_table_data_deallocate(tdi_table_data_hdl *data_hdl);
  * @return Status of API call
  */
 tdi_status_t tdi_data_field_id_list_size_get(const tdi_table_hdl *table_hdl,
-                                              uint32_t *num);
+                                             uint32_t *num);
 /**
  * @brief Get Size of array of Data field IDs
  *
@@ -1103,7 +1103,7 @@ tdi_status_t tdi_data_field_id_list_size_with_action_get(
  * @return Status of API call
  */
 tdi_status_t tdi_data_field_list_get(const tdi_table_hdl *table_hdl,
-                                      tdi_id_t *id_arr);
+                                     tdi_id_t *id_arr);
 
 /**
  * @brief Get array of field IDs inside a container
@@ -1161,8 +1161,8 @@ tdi_status_t tdi_data_field_list_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_id_get(const tdi_table_hdl *table_hdl,
-                                    const char *name,
-                                    tdi_id_t *field_id);
+                                   const char *name,
+                                   tdi_id_t *field_id);
 
 /**
  * @brief Get the field ID of a Data Field from a name and
@@ -1192,8 +1192,8 @@ tdi_status_t tdi_data_field_id_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_size_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_id_t field_id,
-                                      size_t *field_size);
+                                     const tdi_id_t field_id,
+                                     size_t *field_size);
 
 /**
  * @brief Get the Size of a field with field ID and action ID.
@@ -1225,8 +1225,8 @@ tdi_status_t tdi_data_field_size_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_is_ptr_get(const tdi_table_hdl *table_hdl,
-                                        const tdi_id_t field_id,
-                                        bool *is_ptr);
+                                       const tdi_id_t field_id,
+                                       bool *is_ptr);
 
 /**
  * @brief Get whether a field is a ptr type with field and action ID
@@ -1256,8 +1256,8 @@ tdi_status_t tdi_data_field_is_ptr_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_is_mandatory_get(const tdi_table_hdl *table_hdl,
-                                              const tdi_id_t field_id,
-                                              bool *is_mandatory);
+                                             const tdi_id_t field_id,
+                                             bool *is_mandatory);
 
 /**
  * @brief Get whether a field is mandatory
@@ -1285,8 +1285,8 @@ tdi_status_t tdi_data_field_is_mandatory_with_action_get(
 * @return Status of the API call
 */
 tdi_status_t tdi_data_field_is_read_only_get(const tdi_table_hdl *table_hdl,
-                                              const tdi_id_t field_id,
-                                              bool *is_read_only_ret);
+                                             const tdi_id_t field_id,
+                                             bool *is_read_only_ret);
 
 /**
 * @brief Get whether a field is ReadOnly.
@@ -1315,8 +1315,8 @@ tdi_status_t tdi_data_field_is_read_only_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_name_get(const tdi_table_hdl *table_hdl,
-                                      const tdi_id_t field_id,
-                                      const char **name);
+                                     const tdi_id_t field_id,
+                                     const char **name);
 
 /**
  * @brief Get the Name of a field. Driver will return a copy of
@@ -1331,9 +1331,9 @@ tdi_status_t tdi_data_field_name_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_name_copy_get(const tdi_table_hdl *table_hdl,
-                                           const tdi_id_t field_id,
-                                           const uint32_t buf_sz,
-                                           char *name_ret);
+                                          const tdi_id_t field_id,
+                                          const uint32_t buf_sz,
+                                          char *name_ret);
 
 /**
  * @brief Get the Name of a field. Note that driver will return
@@ -1477,8 +1477,8 @@ tdi_status_t tdi_data_field_num_annotations_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_annotations_get(const tdi_table_hdl *table_hdl,
-                                             const tdi_id_t field_id,
-                                             tdi_annotation_t *annotations_c);
+                                            const tdi_id_t field_id,
+                                            tdi_annotation_t *annotations_c);
 /**
  * @brief Get size of array annotations on a data field
  *
@@ -1583,7 +1583,7 @@ tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
  * @return Status of API call
  */
 tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
-                                          uint32_t *num);
+                                         uint32_t *num);
 
 /**
  * @brief Get array of action IDs
@@ -1594,7 +1594,7 @@ tdi_status_t tdi_action_id_list_size_get(const tdi_table_hdl *table_hdl,
  * @return Status of API call
  */
 tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
-                                     tdi_id_t *id_arr);
+                                    tdi_id_t *id_arr);
 
 /**
  * @brief Get Action Name
@@ -1606,8 +1606,8 @@ tdi_status_t tdi_action_id_list_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_action_name_get(const tdi_table_hdl *table_hdl,
-                                  const tdi_id_t action_id,
-                                  const char **name);
+                                 const tdi_id_t action_id,
+                                 const char **name);
 
 /**
  * @brief Get Action ID from Name
@@ -1619,8 +1619,8 @@ tdi_status_t tdi_action_name_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_action_name_to_id(const tdi_table_hdl *table_hdl,
-                                    const char *name,
-                                    tdi_id_t *action_id);
+                                   const char *name,
+                                   tdi_id_t *action_id);
 
 /**
  * @brief Are Action IDs applicable for this table
@@ -1631,7 +1631,7 @@ tdi_status_t tdi_action_name_to_id(const tdi_table_hdl *table_hdl,
  * @return Status of API call
  */
 tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
-                                       bool *ret_val);
+                                      bool *ret_val);
 
 /**
  * @brief Get size of array annotations on an action
@@ -1643,8 +1643,8 @@ tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_action_num_annotations_get(const tdi_table_hdl *table_hdl,
-                                             const tdi_id_t action_id,
-                                             uint32_t *num);
+                                            const tdi_id_t action_id,
+                                            uint32_t *num);
 /**
  * @brief Get array of annotations on an action
  *
@@ -1655,8 +1655,8 @@ tdi_status_t tdi_action_num_annotations_get(const tdi_table_hdl *table_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_action_annotations_get(const tdi_table_hdl *table_hdl,
-                                         const tdi_id_t action_id,
-                                         tdi_annotation_t *annotations_c);
+                                        const tdi_id_t action_id,
+                                        tdi_annotation_t *annotations_c);
 
 /********************** Attribute APIs ***********************/
 /**
@@ -1720,10 +1720,10 @@ tdi_status_t tdi_table_attributes_set(
  * @return Status of the API call
  */
 tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
-                                       const tdi_session_hdl *session,
-                                       const tdi_target_hdl *dev_tgt,
-                                       const tdi_flags_hdl *flags,
-                                       tdi_table_attributes_hdl *tbl_attr);
+                                      const tdi_session_hdl *session,
+                                      const tdi_target_hdl *dev_tgt,
+                                      const tdi_flags_hdl *flags,
+                                      tdi_table_attributes_hdl *tbl_attr);
 
 /**
  * @brief Get the size of array of supported attributes
