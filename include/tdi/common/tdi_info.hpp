@@ -44,9 +44,13 @@ namespace core {
 const std::string TABLE_KEY_MATCH_TYPE_EXACT = "Exact";
 const std::string TABLE_KEY_MATCH_TYPE_TERNARY = "Ternary";
 const std::string TABLE_KEY_MATCH_TYPE_LPM = "LPM";
+const std::string TABLE_KEY_MATCH_TYPE_RANGE = "Range";
 }  // namespace core
 }  // namespace values
 }  // namespace tdi_json
+
+// Forward declaration
+class TdiInfo;
 
 class TdiInfoMapper {
  public:
@@ -71,6 +75,8 @@ class TdiInfoMapper {
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY));
     matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_LPM,
                     static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM));
+    matchEnumMapAdd(tdi_json::values::core::TABLE_KEY_MATCH_TYPE_RANGE,
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE));
   }
   virtual ~TdiInfoMapper(){};
 
@@ -122,6 +128,7 @@ class TdiInfoMapper {
 class TableFactory {
  public:
   virtual std::unique_ptr<tdi::Table> makeTable(
+      const TdiInfo * /*tdi_info*/,
       const tdi::TableInfo * /*table_info*/) const {
     // No tables in core currently
     return nullptr;
@@ -154,6 +161,7 @@ class TdiInfo {
    * @return unique_ptr to TdiInfo
    */
   std::unique_ptr<const TdiInfo> static makeTdiInfo(
+      const std::string &p4_name,
       std::unique_ptr<TdiInfoParser> tdi_info_parser,
       const tdi::TableFactory *factory);
 
@@ -214,6 +222,31 @@ class TdiInfo {
    */
   tdi_status_t learnFromIdGet(tdi_id_t id, const tdi::Learn **learn_ret) const;
 
+  /**
+   * @brief Get the p4_name associated with this TdiInfo object. Each TdiInfo is
+   * associated with a P4 program. If no P4 name exists, then the device can
+   * choose to assign an empty string or preferabley a reserved name like
+   * "$SHARED".
+   *
+   * @return std::string P4 name
+   *
+   */
+  const std::string &p4NameGet() const { return p4_name_; };
+
+  /**
+   * @brief Get name and tdi::Table map
+   *
+   * @return map of name and tdi::Table
+   */
+  const std::map<std::string, std::unique_ptr<tdi::Table>> &tableMapGet() const;
+
+  /**
+   * @brief Get name and tdi::Learn map
+   *
+   * @return map of name and tdi::Learn
+   */
+  const std::map<std::string, std::unique_ptr<tdi::Learn>> &learnMapGet() const;
+
   TdiInfo(TdiInfo const &) = delete;
   TdiInfo(TdiInfo &&) = delete;
   TdiInfo() = delete;
@@ -224,8 +257,10 @@ class TdiInfo {
   std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
 
  private:
-  TdiInfo(std::unique_ptr<TdiInfoParser> tdi_info_parser,
+  TdiInfo(const std::string &p4_name,
+          std::unique_ptr<TdiInfoParser> tdi_info_parser,
           const tdi::TableFactory *factory);
+
   // This is the map which is to be queried when a name lookup for a table
   // happens. Multiple names can point to the same table because multiple
   // names can exist for a table. Example, switchingress.forward and forward
@@ -245,6 +280,11 @@ class TdiInfo {
   // for it at all.
   // Target can add tables to this set if needed
   mutable std::set<std::string> invalid_table_names;
+
+  // Each TdiInfo is associated with a P4 program. If no P4 name exists, then
+  // the device can choose to assign an empty string or preferabley a reserved
+  // name like "$SHARED".
+  const std::string p4_name_;
   std::unique_ptr<TdiInfoParser> tdi_info_parser_;
 };
 

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @file tna_info.hpp
+/** @file pna_info.hpp
  *
- *  @brief Contains TDI Info classes for TNA
+ *  @brief Contains TDI Info classes for PNA
  *  Object
  */
-#ifndef _TNA_INFO_HPP
-#define _TNA_INFO_HPP
+#ifndef _PNA_INFO_HPP
+#define _PNA_INFO_HPP
 
 #include <map>
 #include <memory>
@@ -31,7 +31,7 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_info.hpp>
 
-#include <tdi/arch/tna/tna_defs.h>
+#include <tdi/arch/pna/pna_defs.h>
 
 /**
  * @brief Namespace for TDI
@@ -40,20 +40,20 @@ namespace tdi {
 
 namespace tdi_json {
 namespace values {
-namespace tna {
-const std::string TABLE_KEY_MATCH_TYPE_ATCAM = "ATCAM";
-}  // namespace tna
+namespace pna {
+const std::string RANGE = "RANGE";
+}  // namespace pna
 }  // namespace values
 }  // namespace tdi_json
 
-namespace tna {
+namespace pna {
 
 class TdiInfoMapper : public tdi::TdiInfoMapper {
  public:
   TdiInfoMapper() {
     // Match types
-    matchEnumMapAdd(tdi_json::values::tna::TABLE_KEY_MATCH_TYPE_ATCAM,
-                    static_cast<tdi_match_type_e>(TDI_TNA_MATCH_TYPE_ATCAM));
+    matchEnumMapAdd(tdi_json::values::pna::RANGE,
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE));
   }
 };
 
@@ -66,13 +66,13 @@ class TableFactory : public tdi::TableFactory {
   virtual std::unique_ptr<tdi::Table> makeTable(
       const TdiInfo * /*tdi_info*/,
       const tdi::TableInfo * /*table_info*/) const override {
-    // No tables in TNA currently. Will eventually have Selector, Action profile
+    // No tables in PNA currently. Will eventually have Selector, Action profile
     // etc
     return nullptr;
   };
 };
 
-}  // namespace tna
+}  // namespace pna
 }  // namespace tdi
 
 #endif

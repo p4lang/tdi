@@ -122,16 +122,17 @@ APIs to query any json information like list of key field IDs, Size, type of fie
 
 ### Table APIs
 CRUD APIs for tables like
-* tableEntryAdd
-* tableEntryDel
-* tableEntryMod
-* tableClear
-* tableEntryGet
-* tableEntryGetNext_n
-* tableEntryGetFirst
-* tableDefaultEntrySet
-* tableDefaultEntryGet
-* tableUsageGet
+* entryAdd
+* entryDel
+* entryMod
+* clear
+* entryGet
+* entryGetNextN
+* entryGetFirst
+* defaultEntrySet
+* defaultEntryMod
+* defaultEntryGet
+* usageGet
 
 Object allocate/reset APIs like
 * keyAllocate
@@ -174,6 +175,6 @@ C --> E(libtdi_dpdk)
 
 ```
 mkdir -p build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=../install .. && make install -j8
+cmake -DSTANDALONE=ON -DCMAKE_INSTALL_PREFIX=../install .. && make install -j8
 ```
 
