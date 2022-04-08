@@ -156,13 +156,15 @@ class CIntfTdi:
         sts = self._driver.tdi_device_get(self._dev_id, byref(self._device))
 
         # testing for num devices
-        pdb.set_trace()
+        #pdb.set_trace()
         num_devices = c_int(-1)
         sts = self._driver.tdi_num_device_id_list_get(byref(num_devices))
-        array_type = c_void_p * num_devices.value
+        array_type = c_uint32 * num_devices.value
         devices = array_type()
         sts = self._driver.tdi_device_id_list_get(byref(devices))
-         
+        for dev in devices:
+          print("device_id_list="+str(dev))
+      
         num_names = c_int(-1)
         self._driver.tdi_num_p4_names_get(self._dev_id, byref(num_names))
         #pdb.set_trace()
@@ -198,14 +200,14 @@ class CIntfTdi:
             self.infos[name] = info
         self._session = self.sess_type()
         self._flags = self.flags_type()
-        #pdb.set_trace()
+        pdb.set_trace()
         sts = self._driver.tdi_session_create(self._device, byref(self._session))
         atexit.register(self._cleanup_session)
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             return -1
         #self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
-        #pdb.set_trace()
+        pdb.set_trace()
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
@@ -553,7 +555,6 @@ class BFNode(BFContext):
         self._commands["enable"] = getattr(self, "enable")
         #self._commands["tdi_info"] = getattr(self, "tdi_info")
     def enable(self):
-        print("This is in the BFNode enable\n")
         # This call will stay the same (call old c_frontend libdriver.so) not call libtdi.so
         self._cintf.get_driver().bf_rt_enable_pipeline(self._cintf.get_dev_id())
 
@@ -807,7 +808,7 @@ class BFLeaf(BFContext):
         key_rows = []
         headers = ["Name", "Type", "Size", "Required", "Read Only"]
         for info in sorted(self._c_tbl.key_fields.values(), key=lambda x: x.id):
-            field = [info.name.decode('ascii'), self._c_tbl.key_type_map(info.type), info.size, info.required, info.read_only]
+            field = [info.name.decode('ascii'), self._c_tbl.key_match_type_map(info.type), info.size, info.required, info.read_only]
             key_rows += [field]
             res["key_fields"] += [{"name": field[0],
                                    "type": field[1],
@@ -1270,16 +1271,16 @@ Available Commands:
 
         for name, info in sorted(key_fields.items(), key=lambda x: x[1].id):
             key_idx += [name.decode('ascii')]
-            key_types += [info.table.key_type_map(info.type)]
+            key_types += [info.table.key_match_type_map(info.type)]
             key_sizes += [info.size]
             p_name = key_pnames[name]
-            if info.table.key_type_map(info.type) == "TERNARY":
+            if info.table.key_match_type_map(info.type) == "TERNARY":
                 key_params += [[p_name, p_name + "_mask"]]
-            elif info.table.key_type_map(info.type) == "RANGE":
+            elif info.table.key_match_type_map(info.type) == "RANGE":
                 key_params += [[p_name + "_start", p_name + "_end"]]
-            elif info.table.key_type_map(info.type) == "LPM":
+            elif info.table.key_match_type_map(info.type) == "LPM":
                 key_params += [[p_name, p_name + "_p_length"]]
-            elif info.table.key_type_map(info.type) == "OPTIONAL":
+            elif info.table.key_match_type_map(info.type) == "OPTIONAL":
                 key_params += [[p_name, p_name + "_is_valid"]]
             else:
                 key_params += [p_name]
