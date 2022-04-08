@@ -107,9 +107,9 @@ enum tdi_field_data_type_e {
 };
 
 /**
-* @brief P4 Arch types. If any new p4 arch needs to be
-* used not currently known by TDI, then use TDI_ARCH_TYPE_UNKNOWN
-*/
+ * @brief P4 Arch types. If any new p4 arch needs to be
+ * used not currently known by TDI, then use TDI_ARCH_TYPE_UNKNOWN
+ */
 enum tdi_arch_type_e {
   TDI_ARCH_TYPE_BEGIN = 0,
   TDI_ARCH_TYPE_PSA,
@@ -117,7 +117,6 @@ enum tdi_arch_type_e {
   TDI_ARCH_TYPE_TNA,
   TDI_ARCH_TYPE_UNKNOWN,
 };
-
 
 /**
  * @brief Mgr type. Devices need to
@@ -128,8 +127,8 @@ typedef enum {
 } tdi_mgr_type_e;
 
 /**
-* @brief Target top level enum and reservation
-*/
+ * @brief Target top level enum and reservation
+ */
 enum tdi_target_e {
   TDI_TARGET_CORE = 0,
   TDI_TARGET_ARCH = 0x08,
@@ -137,28 +136,32 @@ enum tdi_target_e {
 };
 
 /**
-* @brief Flags top level enum and reservation
-*/
+ * @brief Flags top level enum and reservation
+ * This enum denotes the index in a 64 bit flag.
+ * So the first 8(0-7) bits are reserved for core.
+ * 8-15 are for arch. 16-63 are for device.
+ */
 enum tdi_flags_e {
   TDI_FLAGS_CORE = 0,
   TDI_FLAGS_ARCH = 0x08,
-  TDI_FLAGS_DEVICE = 0x80,
+  TDI_FLAGS_DEVICE = 0x10,
+  TDI_FLAGS_END = 0x40,
 };
 
 /**
-* @brief Table type top level enum and reservation.
-* Taking larger reservation space than other enums due
-* to possibility of high number of table types
-*/
+ * @brief Table type top level enum and reservation.
+ * Taking larger reservation space than other enums due
+ * to possibility of high number of table types
+ */
 enum tdi_table_type_e {
-  TDI_TABLE_TYPE_CORE   = 0x0000,
-  TDI_TABLE_TYPE_ARCH   = 0x0080,
+  TDI_TABLE_TYPE_CORE = 0x0000,
+  TDI_TABLE_TYPE_ARCH = 0x0080,
   TDI_TABLE_TYPE_DEVICE = 0x0800,
 };
 
 /**
-* @brief Match type top level enum and reservation
-*/
+ * @brief Match type top level enum and reservation
+ */
 enum tdi_match_type_e {
   TDI_MATCH_TYPE_CORE = 0,
   TDI_MATCH_TYPE_ARCH = 0x08,
@@ -166,8 +169,20 @@ enum tdi_match_type_e {
 };
 
 /**
-* @brief Attributes top level enum and reservation
-*/
+ * @brief Key Field Match Type. A key can have multiple fields,
+ * each with a different match type. The below are the supported
+ * Core match types
+ */
+enum tdi_match_type_core_e {
+  TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
+  TDI_MATCH_TYPE_TERNARY,
+  TDI_MATCH_TYPE_LPM,
+  TDI_MATCH_TYPE_RANGE,
+};
+
+/**
+ * @brief Attributes top level enum and reservation
+ */
 enum tdi_attributes_type_e {
   TDI_ATTRIBUTES_TYPE_CORE = 0,
   TDI_ATTRIBUTES_TYPE_ARCH = 0x08,
@@ -175,19 +190,18 @@ enum tdi_attributes_type_e {
 };
 
 /**
-* @brief Attribute field enums. Either of
-* core, arch or target will define entire list and
-* hence doesn't need to be split.
-*
-*/
+ * @brief Attribute field enums. Either of
+ * core, arch or target will define entire list and
+ * hence doesn't need to be split.
+ *
+ */
 enum tdi_attributes_field_type_e {
   TDI_ATTRIBUTES_FIELD_BEGIN = 0,
 };
- 
 
 /**
-* @brief Operations top level enum and reservation
-*/
+ * @brief Operations top level enum and reservation
+ */
 enum tdi_operations_type_e {
   TDI_OPERATIONS_TYPE_CORE = 0,
   TDI_OPERATIONS_TYPE_ARCH = 0x08,
@@ -195,47 +209,47 @@ enum tdi_operations_type_e {
 };
 
 /**
-* @brief Operations field enums. Either of
-* core, arch or target will define entire list and
-* hence doesn't need to be split.
-*
-*/
+ * @brief Operations field enums. Either of
+ * core, arch or target will define entire list and
+ * hence doesn't need to be split.
+ *
+ */
 enum tdi_operations_field_type_e {
   TDI_OPERATIONS_FIELD_BEGIN = 0,
 };
- 
 
 /** Identifies an error code. */
 typedef int tdi_status_t;
 
 #define TDI_STATUS_VALUES                                                    \
-  TDI_STATUS_(TDI_SUCCESS, "Success"), TDI_STATUS_(TDI_NOT_READY, "Not ready"), \
-      TDI_STATUS_(TDI_NO_SYS_RESOURCES, "No system resources"),               \
-      TDI_STATUS_(TDI_INVALID_ARG, "Invalid arguments"),                      \
-      TDI_STATUS_(TDI_ALREADY_EXISTS, "Already exists"),                      \
-      TDI_STATUS_(TDI_HW_COMM_FAIL, "HW access fails"),                       \
-      TDI_STATUS_(TDI_OBJECT_NOT_FOUND, "Object not found"),                  \
-      TDI_STATUS_(TDI_MAX_SESSIONS_EXCEEDED, "Max sessions exceeded"),        \
-      TDI_STATUS_(TDI_SESSION_NOT_FOUND, "Session not found"),                \
-      TDI_STATUS_(TDI_NO_SPACE, "Not enough space"),                          \
-      TDI_STATUS_(TDI_EAGAIN,                                                 \
-                 "Resource temporarily not available, try again later"),    \
-      TDI_STATUS_(TDI_INIT_ERROR, "Initialization error"),                    \
-      TDI_STATUS_(TDI_TXN_NOT_SUPPORTED, "Not supported in transaction"),     \
-      TDI_STATUS_(TDI_TABLE_LOCKED, "Resource held by another session"),      \
-      TDI_STATUS_(TDI_IO, "IO error"),                                        \
-      TDI_STATUS_(TDI_UNEXPECTED, "Unexpected error"),                        \
-      TDI_STATUS_(TDI_ENTRY_REFERENCES_EXIST,                                 \
-                 "Action data entry is being referenced by match entries"), \
-      TDI_STATUS_(TDI_NOT_SUPPORTED, "Operation not supported"),              \
-      TDI_STATUS_(TDI_HW_UPDATE_FAILED, "Updating hardware failed"),          \
-      TDI_STATUS_(TDI_NO_LEARN_CLIENTS, "No learning clients registered"),    \
-      TDI_STATUS_(TDI_IDLE_UPDATE_IN_PROGRESS,                                \
-                 "Idle time update state already in progress"),             \
-      TDI_STATUS_(TDI_DEVICE_LOCKED, "Device locked"),                        \
-      TDI_STATUS_(TDI_INTERNAL_ERROR, "Internal error"),                      \
-      TDI_STATUS_(TDI_TABLE_NOT_FOUND, "Table not found"),                    \
-      TDI_STATUS_(TDI_IN_USE, "In use"),                                      \
+  TDI_STATUS_(TDI_SUCCESS, "Success"),                                       \
+      TDI_STATUS_(TDI_NOT_READY, "Not ready"),                               \
+      TDI_STATUS_(TDI_NO_SYS_RESOURCES, "No system resources"),              \
+      TDI_STATUS_(TDI_INVALID_ARG, "Invalid arguments"),                     \
+      TDI_STATUS_(TDI_ALREADY_EXISTS, "Already exists"),                     \
+      TDI_STATUS_(TDI_HW_COMM_FAIL, "HW access fails"),                      \
+      TDI_STATUS_(TDI_OBJECT_NOT_FOUND, "Object not found"),                 \
+      TDI_STATUS_(TDI_MAX_SESSIONS_EXCEEDED, "Max sessions exceeded"),       \
+      TDI_STATUS_(TDI_SESSION_NOT_FOUND, "Session not found"),               \
+      TDI_STATUS_(TDI_NO_SPACE, "Not enough space"),                         \
+      TDI_STATUS_(TDI_EAGAIN,                                                \
+                  "Resource temporarily not available, try again later"),    \
+      TDI_STATUS_(TDI_INIT_ERROR, "Initialization error"),                   \
+      TDI_STATUS_(TDI_TXN_NOT_SUPPORTED, "Not supported in transaction"),    \
+      TDI_STATUS_(TDI_TABLE_LOCKED, "Resource held by another session"),     \
+      TDI_STATUS_(TDI_IO, "IO error"),                                       \
+      TDI_STATUS_(TDI_UNEXPECTED, "Unexpected error"),                       \
+      TDI_STATUS_(TDI_ENTRY_REFERENCES_EXIST,                                \
+                  "Action data entry is being referenced by match entries"), \
+      TDI_STATUS_(TDI_NOT_SUPPORTED, "Operation not supported"),             \
+      TDI_STATUS_(TDI_HW_UPDATE_FAILED, "Updating hardware failed"),         \
+      TDI_STATUS_(TDI_NO_LEARN_CLIENTS, "No learning clients registered"),   \
+      TDI_STATUS_(TDI_IDLE_UPDATE_IN_PROGRESS,                               \
+                  "Idle time update state already in progress"),             \
+      TDI_STATUS_(TDI_DEVICE_LOCKED, "Device locked"),                       \
+      TDI_STATUS_(TDI_INTERNAL_ERROR, "Internal error"),                     \
+      TDI_STATUS_(TDI_TABLE_NOT_FOUND, "Table not found"),                   \
+      TDI_STATUS_(TDI_IN_USE, "In use"),                                     \
       TDI_STATUS_(TDI_NOT_IMPLEMENTED, "Object not implemented")
 enum tdi_status_enum {
 #define TDI_STATUS_(x, y) x
@@ -256,7 +270,6 @@ static inline const char *tdi_err_str(tdi_status_t sts) {
   }
 }
 
-
 /**
  * @brief Small helper macro and struct for typedef.
  * For sake of strict typechecking, instead of typedef-ing
@@ -268,16 +281,21 @@ static inline const char *tdi_err_str(tdi_status_t sts) {
   };                         \
   typedef struct name##__ name
 
-
 // C frontend typedefs
 DECLARE_HANDLE(tdi_info_hdl);
 DECLARE_HANDLE(tdi_session_hdl);
 DECLARE_HANDLE(tdi_table_hdl);
+DECLARE_HANDLE(tdi_table_info_hdl);
+DECLARE_HANDLE(tdi_device_hdl);
+DECLARE_HANDLE(tdi_target_hdl);
+DECLARE_HANDLE(tdi_flags_hdl);
 DECLARE_HANDLE(tdi_table_key_hdl);
 DECLARE_HANDLE(tdi_table_data_hdl);
 DECLARE_HANDLE(tdi_table_attributes_hdl);
 DECLARE_HANDLE(tdi_entry_scope_arguments_hdl);
 DECLARE_HANDLE(tdi_learn_hdl);
+DECLARE_HANDLE(tdi_learn_info_hdl);
+DECLARE_HANDLE(tdi_learn_field_info_hdl);
 DECLARE_HANDLE(tdi_table_operations_hdl);
 
 /**
@@ -289,6 +307,19 @@ typedef tdi_table_data_hdl tdi_learn_data_hdl;
 
 /* C and C++ void typedefs */
 DECLARE_HANDLE(tdi_learn_msg_hdl);
+/** Identifies a pipe on an ASIC.  This is a 2-bit field where the bits identify
+ * pipeline.
+ */
+typedef uint32_t tdi_dev_pipe_t;
+
+/**
+ * @brief Get error details string from an error status
+ *
+ * @param[in] sts Status of type @c tdi_status_t
+ * @param[out] err_str Pointer to error string. Doesn't require user to allocate
+ *space
+ */
+//void tdi_err_str(tdi_status_t sts, const char **err_str);
 
 #ifdef __cplusplus
 }

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @file tna_defs.h
+/** @file pna_defs.h
  *
- *  @brief Contains Common data types needed for TNA specificcally
+ *  @brief Contains Common data types needed for PNA specificcally
  */
-#ifndef _TNA_DEFS_H
-#define _TNA_DEFS_H
+#ifndef _PNA_DEFS_H
+#define _PNA_DEFS_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -31,33 +31,20 @@ extern "C" {
 /**
  * @brief 32-bit ID for pipe_id
  */
-typedef uint32_t tna_pipe_id_t;
+typedef uint32_t pna_pipe_id_t;
 
 /** Identifies an invalid value for a pipeline on an ASIC. */
-#define TNA_INVALID_PIPE 0xFFFFFFFF
+#define PNA_INVALID_PIPE 0xFFFFFFFF
 
 /** Identifies a pipeline on an ASIC.  Note dev_pipe_id can be set to
- *  TNA_DEV_PIPE_ALL as a special value to indicate "all pipelines". */
-#define TNA_DEV_PIPE_ALL 0xFFFF
+ *  PNA_DEV_PIPE_ALL as a special value to indicate "all pipelines". */
+#define PNA_DEV_PIPE_ALL 0xFFFF
 
 typedef enum {
-  TNA_DIRECTION_INGRESS = 0,
-  TNA_DIRECTION_EGRESS = 1,
-  TNA_DIRECTION_ALL = 0xff,
-} tna_direction_e;
-
-/**
- * @brief Key Field Match Type. A key can have multiple fields,
- * each with a different match type
- */
-enum tdi_tna_match_type_e {
-  TDI_TNA_MATCH_TYPE_ATCAM = TDI_MATCH_TYPE_ARCH,
-};
-
-enum tdi_tna_target_e {
-  TDI_TNA_TARGET_PIPE_ID = TDI_TARGET_ARCH,
-  TDI_TNA_TARGET_DIRECTION,
-};
+  PNA_DIRECTION_INGRESS = 0,
+  PNA_DIRECTION_EGRESS = 1,
+  PNA_DIRECTION_ALL = 0xff,
+} pna_direction_e;
 
 #ifdef __cplusplus
 }

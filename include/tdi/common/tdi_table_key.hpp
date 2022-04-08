@@ -35,59 +35,130 @@ namespace tdi {
 class Table;
 
 /**
- * @brief Key Field Match Type. A key can have multiple fields,
- * each with a different match type
+ * @brief Thin wrapper over Key Field values. Users are free to access the
+ * public data members and manipulate if necessary.
+ * Each derived class has 2 constructors, One is a templatized version of
+ * primitive data types. The other one is byte array version. Both
+ * TableKey::setValue and TableKey::getValue() expect memory to be allocated by
+ * user if byte array versions are being used.
+ *
+ * Note for Target driver developers: match type is being saved so as to save
+ * from dynamic casting and figure out what match type was used.
+ *
  */
-enum tdi_match_type_core_e {
-  TDI_MATCH_TYPE_EXACT = TDI_MATCH_TYPE_CORE,
-  TDI_MATCH_TYPE_TERNARY,
-  TDI_MATCH_TYPE_LPM,
-};
-
-
 class KeyFieldValue {
-  public:
+ public:
   virtual ~KeyFieldValue() = default;
+  KeyFieldValue() = delete;
+  const tdi_match_type_e &matchTypeGet() const { return match_type_; };
+  const bool &is_pointer() const { return is_pointer_; };
+
+ protected:
+  KeyFieldValue(tdi_match_type_e match_type, size_t size, bool is_pointer)
+      : match_type_(match_type), is_pointer_(is_pointer), size_(size){};
+
+ private:
+  const tdi_match_type_e match_type_;
+  const bool is_pointer_;
+
+ public:
+  // Size in bytes
+  // Accessible publicly
+  size_t size_{0};
 };
 
-template<class T>
+template <class T = uint64_t>
 class KeyFieldValueExact : public KeyFieldValue {
  public:
-  KeyFieldValueExact(T &value) : value_(value){};
-  KeyFieldValueExact(uint8_t *value_ptr, size_t &size)
-      : value_ptr_(value_ptr), size_(size){};
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueExact(U value)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
+        value_(value) {}
+
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueExact(U value, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value) {}
   T value_ = 0;
-  uint8_t *value_ptr_ = nullptr;
-  size_t size_ = 0;
 };
 
-template<class T>
+template <class T = uint64_t>
 class KeyFieldValueTernary : public KeyFieldValue {
  public:
-  KeyFieldValueTernary(T &value, T &mask)
-      : value_(value), mask_(mask){};
-  KeyFieldValueTernary(uint8_t *value_ptr,
-                       uint8_t *mask_ptr,
-                       size_t &size)
-      : value_ptr_(value_ptr), mask_ptr_(mask_ptr), size_(size){};
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueTernary(U &value, U &mask)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
+        value_(value),
+        mask_(mask) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueTernary(U value, U mask, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_TERNARY),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value),
+        mask_(mask) {}
   T value_ = 0;
-  uint8_t *value_ptr_ = nullptr;
   T mask_ = 0;
-  uint8_t *mask_ptr_ = nullptr;
-  size_t size_ = 0;
 };
 
-template<class T>
+template <class T = uint64_t>
 class KeyFieldValueLPM : public KeyFieldValue {
  public:
-  KeyFieldValueLPM(T &value, uint16_t &prefix_len)
-      : value_(value), prefix_len_(prefix_len) {};
-  KeyFieldValueLPM(uint8_t *value_ptr, uint16_t &prefix_len, size_t &size)
-      : value_ptr_(value_ptr), prefix_len_(prefix_len), size_(size) {};
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueLPM(U value, uint16_t prefix_len)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
+                      sizeof(value),
+                      std::is_pointer<U>::value),
+        value_(value),
+        prefix_len_(prefix_len) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueLPM(U value, uint16_t prefix_len, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_LPM),
+                      size,
+                      std::is_pointer<U>::value),
+        value_(value),
+        prefix_len_(prefix_len) {}
   T value_ = 0;
-  uint8_t *value_ptr_ = nullptr;
   uint16_t prefix_len_ = 0;
-  size_t size_ = 0;
+};
+
+template <class T = uint64_t>
+class KeyFieldValueRange : public KeyFieldValue {
+ public:
+  template <
+      typename U = T,
+      typename = typename std::enable_if<!std::is_pointer<U>::value>::type>
+  KeyFieldValueRange(U low, U high)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
+                      sizeof(low),
+                      std::is_pointer<U>::value),
+        low_(low),
+        high_(high) {}
+  template <typename U = T,
+            typename = typename std::enable_if<std::is_pointer<U>::value>::type>
+  KeyFieldValueRange(U low, U high, size_t size)
+      : KeyFieldValue(static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_RANGE),
+                      size,
+                      std::is_pointer<U>::value),
+        low_(low),
+        high_(high) {}
+  T low_ = 0;
+  T high_ = 0;
 };
 
 /**
@@ -97,7 +168,7 @@ class KeyFieldValueLPM : public KeyFieldValue {
  */
 class TableKey {
  public:
-  TableKey(Table *table) : table_(table){};
+  TableKey(const Table *table) : table_(table){};
   virtual ~TableKey() = default;
 
   /**
@@ -110,11 +181,11 @@ class TableKey {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const tdi::KeyFieldValue &&field_value);
+  tdi_status_t setValue(const tdi_id_t &field_id,
+                        const tdi::KeyFieldValue &&field_value);
 
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
-                               const tdi::KeyFieldValue &field_value);
+                                const tdi::KeyFieldValue &field_value);
 
   /**
    * @brief Get value. Only valid on fields of \ref tdi::KeyFieldType "EXACT"
@@ -126,7 +197,6 @@ class TableKey {
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
                                 tdi::KeyFieldValue *value) const;
-
 
   /**
    * @brief Get the Table Object associated with this Key Object
@@ -140,13 +210,14 @@ class TableKey {
   /**
    * @brief Reset the TableKey object
    *
-   * @return 
+   * @return
    */
   virtual tdi_status_t reset();
- private:
-  Table *table_ = nullptr;
+
+ protected:
+  const Table *table_ = nullptr;
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_TABLE_KEY_HPP

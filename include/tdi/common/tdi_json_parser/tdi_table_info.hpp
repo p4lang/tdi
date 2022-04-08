@@ -91,6 +91,408 @@ class Annotation {
   std::string full_name_{""};
 };
 
+class KeyFieldInfo {
+ public:
+  /**
+   * @name Key APIs
+   * @{
+   */
+
+  /**
+   * @brief Get match type of Key Field
+   *
+   * @return Match Type (Exact/Ternary/LPM ... )
+   *
+   */
+  const tdi_match_type_e &matchTypeGet() const { return match_type_; };
+
+  /**
+   * @brief Get the Data type of a Key field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)
+   *
+   * @return Field Type (uint64, float, string etc)
+   */
+  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
+
+  /**
+   * @brief Get field size
+   *
+   * @return Field Size in bits
+   */
+  const size_t &sizeGet() const { return size_bits_; };
+
+  /**
+   * @brief Is field Slice
+   *
+   * @return if the key is a field slice of a bigger field
+   */
+  const bool &isFieldSlice() const { return is_field_slice_; };
+
+  /**
+   * @brief Get whether Key Field is of type ptr or not. This is true for
+   * fields of size>64 bits and false if <=64
+   * If the field is
+   * of ptr type, then only byte array sets/gets are applicable on the field. Else
+   * both the ptr versions and the primitive template versions work
+   *
+   * @return Boolean type indicating whether Field is of type ptr
+   *
+   */
+  const bool &isPtrGet() const { return is_ptr_; };
+
+  /**
+   * @brief Get name of field
+   *
+   * @return Field name
+   */
+  const std::string &nameGet() const { return name_; };
+
+  /**
+   * @brief Get a list of all the allowed values that a particular field can
+   * have. This API is only for fields with string type. If the returned
+   * vector is empty, it indicates that the allowed choices have not been
+   * published in tdi json
+   *
+   * @return choices Vector of the string values that are
+   * allowed for this field
+   *
+   */
+  const std::vector<std::string> &choicesGet() const { return enum_choices_; };
+
+  /**
+   * @brief Get field ID
+   * @return field ID
+   */
+  const tdi_id_t &idGet() const { return field_id_; };
+  
+
+  /** @} */  // End of group Key
+
+  /**
+   * @brief Set keyFieldContextInfo object.
+   *
+   * @return keyFieldContextInfo object.
+   *
+   */
+  void keyFieldContextInfoSet(
+      std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const {
+    key_field_context_info_ = std::move(key_field_context_info);
+  };
+
+  /**
+   * @brief Get keyFieldContextInfo object.
+   *
+   * @return keyFieldContextInfo object.
+   *
+   */
+  const KeyFieldContextInfo *keyFieldContextInfoGet() const {
+    return key_field_context_info_.get();
+  };
+
+ private:
+  KeyFieldInfo(tdi_id_t field_id,
+               std::string name,
+               size_t size_bits,
+               tdi_match_type_e match_type,
+               tdi_field_data_type_e data_type,
+               bool mandatory,
+               const std::vector<std::string> &enum_choices,
+               const std::set<tdi::Annotation> &annotations,
+               uint64_t default_value,
+               float default_fl_value,
+               std::string default_str_value,
+               bool is_field_slice,
+               bool is_ptr,
+               bool match_priority)
+      : field_id_(field_id),
+        name_(name),
+        size_bits_(size_bits),
+        match_type_(match_type),
+        data_type_(data_type),
+        mandatory_(mandatory),
+        enum_choices_(enum_choices),
+        annotations_(annotations),
+        default_value_(default_value),
+        default_fl_value_(default_fl_value),
+        default_str_value_(default_str_value),
+        is_field_slice_(is_field_slice),
+        is_ptr_(is_ptr),
+        match_priority_(match_priority){};
+  const tdi_id_t field_id_;
+  const std::string name_;
+  const size_t size_bits_;
+  const tdi_match_type_e match_type_;
+  const tdi_field_data_type_e data_type_;
+  const bool mandatory_;
+  const std::vector<std::string> enum_choices_;
+  const std::set<tdi::Annotation> annotations_;
+
+  const uint64_t default_value_;
+  const float default_fl_value_;
+  const std::string default_str_value_;
+
+  const bool is_field_slice_{false};
+  const bool is_ptr_{false};
+  const bool match_priority_{false};
+  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_;
+  friend class TdiInfoParser;
+};  // class KeyFieldInfo
+
+class DataFieldInfo {
+ public:
+  /**
+   * @brief Get vector of DataField IDs for a container's field id.
+   *
+   * @param[out] id Vector of IDs
+   *
+   * @return Status of the API call
+   */
+  std::vector<tdi_id_t> containerDataFieldIdListGet() const;
+
+  /**
+   * @brief Get the Size of a field.
+   * For container fields this function will return number
+   * of elements inside the container.
+   *
+   * @return Size of the field in bits
+   */
+  const size_t &sizeGet() const { return size_bits_; };
+
+  /**
+   * @brief Get whether a field is a ptr type.
+   * Only the ptr versions of setValue/getValue will work on fields
+   * for which this API returns true
+   *
+   * @return Boolean value indicating if it is ptr type
+   *
+   */
+  const bool &isPtrGet() const { return is_ptr_; };
+
+  /**
+   * @brief Get whether a field is mandatory.
+   *
+   * @return Boolean value indicating if it is mandatory
+   */
+  const bool &mandatoryGet() const { return mandatory_; };
+
+  /**
+   * @brief Get whether a field is ReadOnly.
+   *
+   * @return Boolean value indicating if it is ReadOnly
+   */
+  const bool &readOnlyGet() const { return read_only_; };
+
+  /**
+   * @brief Get the IDs of oneof siblings of a field. If a field is part of a
+   * oneof , for example, consider $ACTION_MEMBER_ID and $SELECTOR_GROUP_ID.
+   * then this API will return [field_ID($ACTION_MEMBER_ID)] for
+   * $SELECTOR_GROUP_ID.
+   *
+   *
+   * @return Set containing field IDs of oneof siblings
+   *
+   */
+  const std::set<tdi_id_t> &oneofSiblingsGet() const {
+    return oneof_siblings_;
+  };
+
+  /**
+   * @brief Get the Name of a field.
+   *
+   * @return Name of the field
+   */
+  const std::string &nameGet() const { return name_; };
+
+  /**
+   * @brief Get the Data type of a field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)
+   *
+   * @return Data type of a data field
+   */
+  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
+
+  /**
+   * @brief Get a list of all the allowed values that a particular field can
+   * have. This API is only for fields with string type. If the returned
+   * vector is empty, it indicates that the allowed choices have not been
+   * published in tdi json. If called for non-string fields, then also empty
+   * vector would be returned
+   *
+   * @return Vector of const references of the values that are
+   * allowed for this field
+   *
+   */
+  const std::vector<std::string> &allowedChoicesGet() const {
+    return enum_choices_;
+  };
+
+  /**
+   * @brief Get a set of annotations on a data field
+   *
+   * @param[out] annotations Set of annotations on a data field
+   *
+   * @return Status of the API call
+   */
+  const std::set<tdi::Annotation> &annotationsGet() const {
+    return annotations_;
+  };
+
+  /**
+   * @brief Get ID of field
+   * @return ID of field
+   */
+  const tdi_id_t &idGet() const { return field_id_; }
+
+  /** @} */  // End of group Data
+
+  /**
+   * @brief Set dataFieldContextInfo object.
+   *
+   * @return dataFieldContextInfo object.
+   *
+   */
+  void dataFieldContextInfoSet(
+      std::unique_ptr<DataFieldContextInfo> data_field_context_info) const {
+    data_field_context_info_ = std::move(data_field_context_info);
+  };
+
+  /**
+   * @brief Get dataFieldContextInfo object.
+   *
+   * @return dataFieldContextInfo object.
+   *
+   */
+  const DataFieldContextInfo *dataFieldContextInfoGet() const {
+    return data_field_context_info_.get();
+  };
+
+ private:
+  DataFieldInfo(tdi_id_t field_id,
+                std::string name,
+                size_t size_bits,
+                tdi_field_data_type_e data_type,
+                bool mandatory,
+                bool read_only,
+                const std::vector<std::string> &enum_choices,
+                const std::set<tdi::Annotation> annotations,
+                uint64_t default_value,
+                float default_fl_value,
+                std::string default_str_value,
+                bool repeated,
+                bool container_valid,
+                std::set<tdi_id_t> oneof_siblings)
+      : field_id_(field_id),
+        name_(name),
+        size_bits_(size_bits),
+        data_type_(data_type),
+        mandatory_(mandatory),
+        read_only_(read_only),
+        enum_choices_(enum_choices),
+        annotations_(annotations),
+        default_value_(default_value),
+        default_fl_value_(default_fl_value),
+        default_str_value_(default_str_value),
+        repeated_(repeated),
+        container_valid_(container_valid),
+        oneof_siblings_(oneof_siblings){};
+  const tdi_id_t field_id_;
+  const std::string name_;
+  const size_t size_bits_;
+  const tdi_field_data_type_e data_type_;
+  const bool is_ptr_{false};
+  const bool mandatory_;
+  const bool read_only_;
+  const std::vector<std::string> enum_choices_;
+  const std::set<tdi::Annotation> annotations_;
+  const uint64_t default_value_;
+  const float default_fl_value_;
+  const std::string default_str_value_;
+  const bool repeated_;
+  const bool container_valid_{false};
+  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
+  const std::map<std::string, tdi_id_t> container_names_;
+  const std::set<tdi_id_t> oneof_siblings_;
+  mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_;
+  friend class TdiInfoParser;
+};
+
+// Action ID APIs
+class ActionInfo {
+ public:
+  /**
+   * @name Action ID APIs
+   * @{
+   */
+  /**
+   * @brief Get Action ID
+   * @return Action ID
+   */
+  const tdi_id_t &idGet() const { return action_id_; };
+
+  /**
+   * @brief Get Action Name
+   * @return Action Name
+   */
+  const std::string &nameGet() const { return name_; };
+
+  /**
+   * @brief Get a set of annotations for this action.
+   *
+   * @return Set of annotations
+   */
+  const std::set<tdi::Annotation> &annotationsGet() const {
+    return annotations_;
+  };
+  /** @} */  // End of group Action IDs
+
+  /**
+   * @brief Set actionContextInfo object.
+   *
+   * @return actionContextInfo object.
+   *
+   */
+  void actionContextInfoSet(
+      std::unique_ptr<ActionContextInfo> action_context_info) const {
+    action_context_info_ = std::move(action_context_info);
+  };
+
+  /**
+   * @brief Get actionContextInfo object.
+   *
+   * @return actionContextInfo object.
+   *
+   */
+  const ActionContextInfo *actionContextInfoGet() const {
+    return action_context_info_.get();
+  };
+
+  // Map of table_data_fields with names
+  std::map<std::string, const DataFieldInfo *> data_fields_names_;
+
+ private:
+  ActionInfo(tdi_id_t field_id,
+             std::string name,
+             std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields,
+             std::set<tdi::Annotation> annotations)
+      : action_id_(field_id),
+        name_(name),
+        data_fields_(std::move(data_fields)),
+        annotations_(annotations) {
+    // update relevant map
+    for (const auto &kv : data_fields_) {
+      const auto data_field = kv.second.get();
+      data_fields_names_[data_field->nameGet()] = data_field;
+    }
+  };
+
+  const tdi_id_t action_id_;
+  const std::string name_;
+  // Map of table_data_fields
+  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields_;
+  const std::set<tdi::Annotation> annotations_;
+  mutable std::unique_ptr<ActionContextInfo> action_context_info_;
+  friend class TableInfo;
+  friend class TdiInfoParser;
+};
+
 /**
  * @brief In memory representation of tdi.json Table
  */
@@ -293,9 +695,25 @@ class TableInfo {
    */
   const ActionInfo *actionGet(const tdi_id_t &action_id) const;
 
+  /**
+   * @brief Set tableContextInfo object.
+   *
+   * @return tableContextInfo object.
+   *
+   */
   void tableContextInfoSet(
       std::unique_ptr<TableContextInfo> table_context_info) const {
     table_context_info_ = std::move(table_context_info);
+  };
+
+  /**
+   * @brief Get tableContextInfo object.
+   *
+   * @return tableContextInfo object.
+   *
+   */
+  const TableContextInfo *tableContextInfoGet() const {
+    return table_context_info_.get();
   };
 
   std::map<std::string, const KeyFieldInfo *> name_key_map_;
@@ -330,7 +748,25 @@ class TableInfo {
         table_apis_(table_apis),
         operations_type_set_(operations_type_set),
         attributes_type_set_(attributes_type_set),
-        annotations_(annotations){};
+        annotations_(annotations) {
+
+    // update relevant maps
+    for (const auto &kv : table_key_map_) {
+      const KeyFieldInfo *key_field = kv.second.get();
+      name_key_map_[key_field->nameGet()] = key_field;
+    }
+
+    for (const auto &kv : table_action_map_) {
+      const auto action = kv.second.get();
+      name_action_map_[action->nameGet()] = action;
+    }
+
+    for (const auto &kv : table_data_map_) {
+      const auto data_field = kv.second.get();
+      name_data_map_[data_field->nameGet()] = data_field;
+    }
+  };
+
   const tdi_id_t id_;
   const std::string name_;
   const tdi_table_type_e table_type_;
@@ -350,351 +786,6 @@ class TableInfo {
   friend class TdiInfoParser;
 };
 
-class KeyFieldInfo {
- public:
-  /**
-   * @name Key APIs
-   * @{
-   */
-
-  /**
-   * @brief Get match type of Key Field
-   *
-   * @return Match Type (Exact/Ternary/LPM ... )
-   *
-   */
-  const tdi_match_type_e &matchTypeGet() const { return match_type_; };
-
-  /**
-   * @brief Get data type of Key Field
-   *
-   * @return Field Type (uint64, float, string)
-   */
-  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
-
-  /**
-   * @brief Get field size
-   *
-   * @return Field Size in bits
-   */
-  const size_t &sizeGet() const { return size_bits_; };
-
-  /**
-   * @brief Is field Slice
-   *
-   * @return if the key is a field slice
-   */
-  const bool &isFieldSlice() const { return is_field_slice_; };
-
-  /**
-   * @brief Get whether Key Field is of type ptr or not. If the field is
-   * of ptr type, then only ptr sets/gets are applicable on the field. Else
-   * both the ptr versions and the uint64_t versions work
-   *
-   * @return Boolean type indicating whether Field is of type ptr
-   *
-   */
-  const bool &isPtrGet() const { return is_ptr_; };
-
-  /**
-   * @brief Get name of field
-   *
-   * @return Field name
-   */
-  const std::string &nameGet() const { return name_; };
-
-  /**
-   * @brief Get a list of all the allowed values that a particular field can
-   * have. This API is only for fields with string type. If the returned
-   * vector is empty, it indicates that the allowed choices have not been
-   * published in tdi json
-   *
-   * @return choices Vector of the string values that are
-   * allowed for this field
-   *
-   */
-  const std::vector<std::string> &choicesGet() const { return enum_choices_; };
-
-  /**
-   * @brief Get field ID
-   * @return field ID
-   */
-  const tdi_id_t &idGet() const { return field_id_; };
-
-  /** @} */  // End of group Key
-
-  void keyFieldContextInfoSet(
-      std::unique_ptr<KeyFieldContextInfo> key_field_context_info) const {
-    key_field_context_info_ = std::move(key_field_context_info);
-  };
-
- private:
-  KeyFieldInfo(tdi_id_t field_id,
-               std::string name,
-               size_t size_bits,
-               tdi_match_type_e match_type,
-               tdi_field_data_type_e data_type,
-               bool mandatory,
-               const std::vector<std::string> &enum_choices,
-               const std::set<tdi::Annotation> &annotations,
-               uint64_t default_value,
-               float default_fl_value,
-               std::string default_str_value,
-               bool is_field_slice,
-               bool is_ptr,
-               bool match_priority)
-      : field_id_(field_id),
-        name_(name),
-        size_bits_(size_bits),
-        match_type_(match_type),
-        data_type_(data_type),
-        mandatory_(mandatory),
-        enum_choices_(enum_choices),
-        annotations_(annotations),
-        default_value_(default_value),
-        default_fl_value_(default_fl_value),
-        default_str_value_(default_str_value),
-        is_field_slice_(is_field_slice),
-        is_ptr_(is_ptr),
-        match_priority_(match_priority){};
-  const tdi_id_t field_id_;
-  const std::string name_;
-  const size_t size_bits_;
-  const tdi_match_type_e match_type_;
-  const tdi_field_data_type_e data_type_;
-  const bool mandatory_;
-  const std::vector<std::string> enum_choices_;
-  const std::set<tdi::Annotation> annotations_;
-
-  const uint64_t default_value_;
-  const float default_fl_value_;
-  const std::string default_str_value_;
-
-  const bool is_field_slice_{false};
-  const bool is_ptr_{false};
-  const bool match_priority_{false};
-  mutable std::unique_ptr<KeyFieldContextInfo> key_field_context_info_;
-  friend class TdiInfoParser;
-};  // class KeyFieldInfo
-
-class DataFieldInfo {
- public:
-  /**
-   * @brief Get vector of DataField IDs for a container's field id.
-   *
-   * @param[out] id Vector of IDs
-   *
-   * @return Status of the API call
-   */
-  std::vector<tdi_id_t> containerDataFieldIdListGet() const;
-
-  /**
-   * @brief Get the Size of a field.
-   * For container fields this function will return number
-   * of elements inside the container.
-   *
-   * @return Size of the field in bits
-   */
-  const size_t &sizeGet() const { return size_bits_; };
-
-  /**
-   * @brief Get whether a field is a ptr type.
-   * Only the ptr versions of setValue/getValue will work on fields
-   * for which this API returns true
-   *
-   * @return Boolean value indicating if it is ptr type
-   *
-   */
-  const bool &isPtrGet() const { return is_ptr_; };
-
-  /**
-   * @brief Get whether a field is mandatory.
-   *
-   * @return Boolean value indicating if it is mandatory
-   */
-  const bool &mandatoryGet() const { return mandatory_; };
-
-  /**
-   * @brief Get whether a field is ReadOnly.
-   *
-   * @return Boolean value indicating if it is ReadOnly
-   */
-  const bool &readOnlyGet() const { return read_only_; };
-
-  /**
-   * @brief Get the IDs of oneof siblings of a field. If a field is part of a
-   * oneof , for example, consider $ACTION_MEMBER_ID and $SELECTOR_GROUP_ID.
-   * then this API will return [field_ID($ACTION_MEMBER_ID)] for
-   * $SELECTOR_GROUP_ID.
-   *
-   *
-   * @return Set containing field IDs of oneof siblings
-   *
-   */
-  const std::set<tdi_id_t> &oneofSiblingsGet() const {
-    return oneof_siblings_;
-  };
-
-  /**
-   * @brief Get the Name of a field.
-   *
-   * @return Name of the field
-   */
-  const std::string &nameGet() const { return name_; };
-
-  /**
-   * @brief Get the Data type of a field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)
-   *
-   * @return Data type of a data field
-   */
-  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
-
-  /**
-   * @brief Get a list of all the allowed values that a particular field can
-   * have. This API is only for fields with string type. If the returned
-   * vector is empty, it indicates that the allowed choices have not been
-   * published in tdi json. If called for non-string fields, then also empty
-   * vector would be returned
-   *
-   * @return Vector of const references of the values that are
-   * allowed for this field
-   *
-   */
-  const std::vector<std::string> &allowedChoicesGet() const {
-    return enum_choices_;
-  };
-
-  /**
-   * @brief Get a set of annotations on a data field
-   *
-   * @param[out] annotations Set of annotations on a data field
-   *
-   * @return Status of the API call
-   */
-  const std::set<tdi::Annotation> &annotationsGet() const {
-    return annotations_;
-  };
-
-  /**
-   * @brief Get ID of field
-   * @return ID of field
-   */
-  const tdi_id_t &idGet() { return field_id_; }
-
-  /** @} */  // End of group Data
-
-  void dataFieldContextInfoSet(
-      std::unique_ptr<DataFieldContextInfo> data_field_context_info) {
-    data_field_context_info_ = std::move(data_field_context_info);
-  };
-
- private:
-  DataFieldInfo(tdi_id_t field_id,
-                std::string name,
-                size_t size_bits,
-                tdi_field_data_type_e data_type,
-                bool mandatory,
-                bool read_only,
-                const std::vector<std::string> &enum_choices,
-                const std::set<tdi::Annotation> annotations,
-                uint64_t default_value,
-                float default_fl_value,
-                std::string default_str_value,
-                bool repeated,
-                bool container_valid,
-                std::set<tdi_id_t> oneof_siblings)
-      : field_id_(field_id),
-        name_(name),
-        size_bits_(size_bits),
-        data_type_(data_type),
-        mandatory_(mandatory),
-        read_only_(read_only),
-        enum_choices_(enum_choices),
-        annotations_(annotations),
-        default_value_(default_value),
-        default_fl_value_(default_fl_value),
-        default_str_value_(default_str_value),
-        repeated_(repeated),
-        container_valid_(container_valid),
-        oneof_siblings_(oneof_siblings){};
-  const tdi_id_t field_id_;
-  const std::string name_;
-  const size_t size_bits_;
-  const tdi_field_data_type_e data_type_;
-  const bool is_ptr_{false};
-  const bool mandatory_;
-  const bool read_only_;
-  const std::vector<std::string> enum_choices_;
-  const std::set<tdi::Annotation> annotations_;
-  const uint64_t default_value_;
-  const float default_fl_value_;
-  const std::string default_str_value_;
-  const bool repeated_;
-  const bool container_valid_{false};
-  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> container_;
-  const std::map<std::string, tdi_id_t> container_names_;
-  const std::set<tdi_id_t> oneof_siblings_;
-  mutable std::unique_ptr<DataFieldContextInfo> data_field_context_info_;
-  friend class TdiInfoParser;
-};
-
-// Action ID APIs
-class ActionInfo {
- public:
-  /**
-   * @name Action ID APIs
-   * @{
-   */
-  /**
-   * @brief Get Action ID
-   * @return Action ID
-   */
-  const tdi_id_t &idGet() const { return action_id_; };
-
-  /**
-   * @brief Get Action Name
-   * @return Action Name
-   */
-  const std::string &nameGet() const { return name_; };
-
-  /**
-   * @brief Get a set of annotations for this action.
-   *
-   * @return Set of annotations
-   */
-  const std::set<tdi::Annotation> &annotationsGet() const {
-    return annotations_;
-  };
-  /** @} */  // End of group Action IDs
-
-  void actionContextInfoSet(
-      std::unique_ptr<ActionContextInfo> action_context_info) const {
-    action_context_info_ = std::move(action_context_info);
-  };
-
-  // Map of table_data_fields with names
-  std::map<std::string, const DataFieldInfo *> data_fields_names_;
-
- private:
-  ActionInfo(tdi_id_t field_id,
-             std::string name,
-             std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields,
-             std::set<tdi::Annotation> annotations)
-      : action_id_(field_id),
-        name_(name),
-        data_fields_(std::move(data_fields)),
-        annotations_(annotations){};
-
-  const tdi_id_t action_id_;
-  const std::string name_;
-  // Map of table_data_fields
-  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields_;
-  const std::set<tdi::Annotation> annotations_;
-  mutable std::unique_ptr<ActionContextInfo> action_context_info_;
-  friend class TableInfo;
-  friend class TdiInfoParser;
-};
-
 }  // namespace tdi
 
-#endif  // _TDI_TABLE_HPP
+#endif  // _TDI_TABLE_INFO_HPP
