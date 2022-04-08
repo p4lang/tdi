@@ -285,11 +285,17 @@ static inline const char *tdi_err_str(tdi_status_t sts) {
 DECLARE_HANDLE(tdi_info_hdl);
 DECLARE_HANDLE(tdi_session_hdl);
 DECLARE_HANDLE(tdi_table_hdl);
+DECLARE_HANDLE(tdi_table_info_hdl);
+DECLARE_HANDLE(tdi_device_hdl);
+DECLARE_HANDLE(tdi_target_hdl);
+DECLARE_HANDLE(tdi_flags_hdl);
 DECLARE_HANDLE(tdi_table_key_hdl);
 DECLARE_HANDLE(tdi_table_data_hdl);
 DECLARE_HANDLE(tdi_table_attributes_hdl);
 DECLARE_HANDLE(tdi_entry_scope_arguments_hdl);
 DECLARE_HANDLE(tdi_learn_hdl);
+DECLARE_HANDLE(tdi_learn_info_hdl);
+DECLARE_HANDLE(tdi_learn_field_info_hdl);
 DECLARE_HANDLE(tdi_table_operations_hdl);
 
 /**
@@ -301,6 +307,19 @@ typedef tdi_table_data_hdl tdi_learn_data_hdl;
 
 /* C and C++ void typedefs */
 DECLARE_HANDLE(tdi_learn_msg_hdl);
+/** Identifies a pipe on an ASIC.  This is a 2-bit field where the bits identify
+ * pipeline.
+ */
+typedef uint32_t tdi_dev_pipe_t;
+
+/**
+ * @brief Get error details string from an error status
+ *
+ * @param[in] sts Status of type @c tdi_status_t
+ * @param[out] err_str Pointer to error string. Doesn't require user to allocate
+ *space
+ */
+//void tdi_err_str(tdi_status_t sts, const char **err_str);
 
 #ifdef __cplusplus
 }

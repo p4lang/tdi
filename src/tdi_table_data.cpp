@@ -69,11 +69,13 @@ tdi_status_t TableData::setValue(
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
+
 tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
                                  const std::string & /*str*/) {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
+
 tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
                                  uint64_t * /*value*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);

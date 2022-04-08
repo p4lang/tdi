@@ -253,13 +253,13 @@ class TdiInfo {
   TdiInfo &operator=(const TdiInfo &) = delete;
   TdiInfo &operator=(TdiInfo &&) = delete;
 
+  /* Main P4_info map. object_name --> tdi_info object */
+  std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
+
  private:
   TdiInfo(const std::string &p4_name,
           std::unique_ptr<TdiInfoParser> tdi_info_parser,
           const tdi::TableFactory *factory);
-
-  /* Main P4_info map. object_name --> tdi_info object */
-  std::map<std::string, std::unique_ptr<tdi::Table>> tableMap;
 
   // This is the map which is to be queried when a name lookup for a table
   // happens. Multiple names can point to the same table because multiple

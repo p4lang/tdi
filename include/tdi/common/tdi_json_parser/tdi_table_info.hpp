@@ -788,4 +788,4 @@ class TableInfo {
 
 }  // namespace tdi
 
-#endif  // _TDI_TABLE_HPP
+#endif  // _TDI_TABLE_INFO_HPP
