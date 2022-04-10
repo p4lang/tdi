@@ -285,4 +285,20 @@ const std::map<std::string, std::unique_ptr<tdi::Learn>> &TdiInfo::learnMapGet()
   return learnMap;
 }
 
+tdi_status_t TdiInfo::tablesThisTableDependsOnGet(
+    const tdi_id_t &tbl_id, std::vector<tdi_id_t> *table_vec_ret) const {
+  const tdi::Table *table;
+  auto status = tableFromIdGet(tbl_id, &table);
+  if (status != TDI_SUCCESS) {
+    return status;
+  }
+
+  const auto &depends_on_set = table->tableInfoGet()->dependsOnGet();
+  for (const auto table_id : depends_on_set) {
+    table_vec_ret->push_back(table_id);
+  }
+
+  return status;
+}
+
 }  // namespace tdi

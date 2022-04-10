@@ -247,6 +247,9 @@ class TdiInfo {
    */
   const std::map<std::string, std::unique_ptr<tdi::Learn>> &learnMapGet() const;
 
+  tdi_status_t tablesThisTableDependsOnGet(
+      const tdi_id_t &tbl_id, std::vector<tdi_id_t> *table_vec_ret) const;
+
   TdiInfo(TdiInfo const &) = delete;
   TdiInfo(TdiInfo &&) = delete;
   TdiInfo() = delete;
