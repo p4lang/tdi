@@ -106,8 +106,8 @@ tdi_status_t tdi_table_from_id_get(const tdi_info_hdl *tdi,
 }
 
 tdi_status_t tdi_table_name_to_id(const tdi_info_hdl *tdi,
-                                   const char *table_name,
-                                   tdi_id_t *id_ret) {
+                                  const char *table_name,
+                                  tdi_id_t *id_ret) {
   if (id_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -146,7 +146,7 @@ tdi_status_t tdi_num_learns_get(const tdi_info_hdl *tdi, int *num_learns) {
 }
 
 tdi_status_t tdi_learns_get(const tdi_info_hdl *tdi,
-                             const tdi_learn_hdl **tdi_learn_hdl_ret) {
+                            const tdi_learn_hdl **tdi_learn_hdl_ret) {
   if (!tdi) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -174,8 +174,8 @@ tdi_status_t tdi_learns_get(const tdi_info_hdl *tdi,
 }
 
 tdi_status_t tdi_learn_from_name_get(const tdi_info_hdl *tdi,
-                                      const char *learn_name,
-                                      const tdi_learn_hdl **learn_hdl_ret) {
+                                     const char *learn_name,
+                                     const tdi_learn_hdl **learn_hdl_ret) {
   if (learn_hdl_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
