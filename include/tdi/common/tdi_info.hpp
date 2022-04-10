@@ -247,6 +247,14 @@ class TdiInfo {
    */
   const std::map<std::string, std::unique_ptr<tdi::Learn>> &learnMapGet() const;
 
+  /**
+   * @brief Get tables dependent on this table
+   *
+   * @param[in] id ID of the tdi::Table obj
+   * @param[out] pointer to vector of tdi_id
+   *
+   * @return status of the API call
+   */
   tdi_status_t tablesThisTableDependsOnGet(
       const tdi_id_t &tbl_id, std::vector<tdi_id_t> *table_vec_ret) const;
 
