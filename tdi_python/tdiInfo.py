@@ -66,7 +66,9 @@ class TdiInfo:
         self.tables = {}
         for table in tables:
             #pdb.set_trace()
-            tbl_obj = self._cintf.TdiTable(self._cintf, table, self)
+            table_info = self._cintf.handle_type()
+            self._cintf.get_driver().tdi_table_info_get(table, byref(table_info));
+            tbl_obj = self._cintf.TdiTable(self._cintf, table, self, table_info)
             if tbl_obj == -1:
                 print("CLI Error: bad table object init")
                 return -1
@@ -75,10 +77,10 @@ class TdiInfo:
                 return -1
             else:
                 tbl_id = c_uint(0)
-                sts = self._cintf.get_driver().tdi_table_id_from_handle_get(table, byref(tbl_id))
+                sts = self._cintf.get_driver().tdi_table_id_from_handle_get(table_info, byref(tbl_id))
                 tbl_obj.set_id(tbl_id.value)
                 has_const_default_action = c_bool(False)
-                sts = self._cintf.get_driver().tdi_table_has_const_default_action(table,
+                sts = self._cintf.get_driver().tdi_table_has_const_default_action(table_info,
                         byref(has_const_default_action))
                 tbl_obj.set_has_const_default_action(has_const_default_action)
                 self.tables[tbl_obj.name] = tbl_obj

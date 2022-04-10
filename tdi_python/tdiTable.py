@@ -41,10 +41,11 @@ class TdiTable:
     Note that keys in this object are the c-string representation
     (byte-streams in python) of data, not python strings.
     """
-    def __init__(self, cintf, handle, info):
+    def __init__(self, cintf, handle, info, info_handle):
         self._cintf = cintf
         self._tdi_info = info
         self._handle = handle
+        self._info_handle = info_handle
         # get get_device
         self._device_hdl = cintf.get_device()
         self.key_field_readables = []
@@ -78,7 +79,7 @@ class TdiTable:
         # Determine the **Table Name** from Driver
         #
         table_name = c_char_p()
-        sts = self._cintf.get_driver().tdi_table_name_get(self._handle, byref(table_name))
+        sts = self._cintf.get_driver().tdi_table_name_get(self._info_handle, byref(table_name))
         #pdb.set_trace()
         if not sts == 0:
             print("CLI Error: get table name failed. [{}]".format(self._cintf.err_str(sts)))
@@ -186,18 +187,18 @@ class TdiTable:
             annotations = []
             num_annotations = c_uint(0)
             if self.action_id is None:
-                sts = nannotations_func(self.table._handle, self.id, byref(num_annotations))
+                sts = nannotations_func(self.table._info_handle, self.id, byref(num_annotations))
             else:
-                sts = nannotations_func(self.table._handle, self.id, self.action_id, byref(num_annotations))
+                sts = nannotations_func(self.table._info_handle, self.id, self.action_id, byref(num_annotations))
             if sts != 0:
                 print("Error: num annotations for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
             arr_type = self.table._cintf.annotation_type * num_annotations.value
             annotations_arr = arr_type()
             if self.action_id is None:
-                sts = get_annotations_func(self.table._handle, self.id, byref(annotations_arr))
+                sts = get_annotations_func(self.table._info_handle, self.id, byref(annotations_arr))
             else:
-                sts = get_annotations_func(self.table._handle, self.id, self.action_id, byref(annotations_arr))
+                sts = get_annotations_func(self.table._info_handle, self.id, self.action_id, byref(annotations_arr))
             if sts != 0:
                 print("Error: get annotations for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
@@ -228,18 +229,18 @@ class TdiTable:
             choices = []
             num_choices = c_uint(0)
             if self.action_id is None:
-                sts = nchoices_func(self.table._handle, self.id, byref(num_choices))
+                sts = nchoices_func(self.table._info_handle, self.id, byref(num_choices))
             else:
-                sts = nchoices_func(self.table._handle, self.id, self.action_id, byref(num_choices))
+                sts = nchoices_func(self.table._info_handle, self.id, self.action_id, byref(num_choices))
             if sts != 0:
                 print("Error: num choices for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
             arr_type = c_char_p * num_choices.value
             choices_arr = arr_type()
             if self.action_id is None:
-                sts = get_choices_func(self.table._handle, self.id, choices_arr)
+                sts = get_choices_func(self.table._info_handle, self.id, choices_arr)
             else:
-                sts = get_choices_func(self.table._handle, self.id, self.action_id, choices_arr)
+                sts = get_choices_func(self.table._info_handle, self.id, self.action_id, choices_arr)
             if sts != 0:
                 print("Error: get choices for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
@@ -815,7 +816,7 @@ class TdiTable:
     def _init_key(self):
         self.key_fields = {}
         num_ids = c_uint(-1)
-        sts = self._cintf.get_driver().tdi_key_field_id_list_size_get(self._handle, byref(num_ids))
+        sts = self._cintf.get_driver().tdi_key_field_id_list_size_get(self._info_handle, byref(num_ids))
         if not sts == 0:
             print("CLI Error: get num key fields for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
             return sts
@@ -823,33 +824,33 @@ class TdiTable:
             return 0
         array_type = c_uint * num_ids.value
         field_ids = array_type()
-        sts = self._cintf.get_driver().tdi_key_field_id_list_get(self._handle, field_ids)
+        sts = self._cintf.get_driver().tdi_key_field_id_list_get(self._info_handle, field_ids)
         if not sts == 0:
             print("CLI Error: get key field ids for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
             return sts
         for field_id in field_ids:
             field_name = c_char_p()
-            sts = self._cintf.get_driver().tdi_key_field_name_get(self._handle, field_id, byref(field_name))
+            sts = self._cintf.get_driver().tdi_key_field_name_get(self._info_handle, field_id, byref(field_name))
             if not sts == 0:
                 print("CLI Error: get key field name for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
             field_type = c_int(-1)
-            sts = self._cintf.get_driver().tdi_key_field_match_type_get(self._handle, field_id, byref(field_type))
+            sts = self._cintf.get_driver().tdi_key_field_match_type_get(self._info_handle, field_id, byref(field_type))
             if not sts == 0:
                 print("CLI Error: get key field type for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
             field_data_type = c_int(-1)
-            sts = self._cintf.get_driver().tdi_key_field_data_type_get(self._handle, field_id, byref(field_data_type))
+            sts = self._cintf.get_driver().tdi_key_field_data_type_get(self._info_handle, field_id, byref(field_data_type))
             if not sts == 0:
                 print("CLI Error: get key field data type for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
             field_size = c_uint()
-            sts = self._cintf.get_driver().tdi_key_field_size_get(self._handle, field_id, byref(field_size))
+            sts = self._cintf.get_driver().tdi_key_field_size_get(self._info_handle, field_id, byref(field_size))
             if not sts == 0:
                 print("CLI Error: get key field size for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
             field_is_ptr = c_bool()
-            sts = self._cintf.get_driver().tdi_key_field_is_ptr_get(self._handle, field_id, byref(field_is_ptr))
+            sts = self._cintf.get_driver().tdi_key_field_is_ptr_get(self._info_handle, field_id, byref(field_is_ptr))
             if not sts == 0:
                 print("CLI Error: get key field is_ptr for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
@@ -862,32 +863,32 @@ class TdiTable:
         if not action_id:
             action_id = c_uint(0)
         field_type = c_int(-1)
-        sts = self._cintf.get_driver().tdi_data_field_type_with_action_get(self._handle, field_id, action_id, byref(field_type))
+        sts = self._cintf.get_driver().tdi_data_field_type_with_action_get(self._info_handle, field_id, action_id, byref(field_type))
         if not sts == 0:
             print("CLI Error: get data field type for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
         field_name = c_char_p()
-        sts = self._cintf.get_driver().tdi_data_field_name_with_action_get(self._handle, field_id, action_id, byref(field_name))
+        sts = self._cintf.get_driver().tdi_data_field_name_with_action_get(self._info_handle, field_id, action_id, byref(field_name))
         if not sts == 0:
             print("CLI Error: get data field name for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
         field_size = c_uint()
-        sts = self._cintf.get_driver().tdi_data_field_size_with_action_get(self._handle, field_id, action_id, byref(field_size))
+        sts = self._cintf.get_driver().tdi_data_field_size_with_action_get(self._info_handle, field_id, action_id, byref(field_size))
         if not sts == 0:
             print("CLI Error: get data field size for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
         field_is_ptr = c_bool()
-        sts = self._cintf.get_driver().tdi_data_field_is_ptr_with_action_get(self._handle, field_id, action_id, byref(field_is_ptr))
+        sts = self._cintf.get_driver().tdi_data_field_is_ptr_with_action_get(self._info_handle, field_id, action_id, byref(field_is_ptr))
         if not sts == 0:
             print("CLI Error: get data field is_ptr for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
         read_only = c_bool()
-        sts = self._cintf.get_driver().tdi_data_field_is_read_only_with_action_get(self._handle, field_id, action_id, byref(read_only))
+        sts = self._cintf.get_driver().tdi_data_field_is_read_only_with_action_get(self._info_handle, field_id, action_id, byref(read_only))
         if not sts == 0:
             print("CLI Error: get data field is_read_only for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
         mandatory = c_bool()
-        sts = self._cintf.get_driver().tdi_data_field_is_mandatory_with_action_get(self._handle, field_id, action_id, byref(mandatory))
+        sts = self._cintf.get_driver().tdi_data_field_is_mandatory_with_action_get(self._info_handle, field_id, action_id, byref(mandatory))
         if not sts == 0:
             print("CLI Error: get data field is_mandatory for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
@@ -900,7 +901,7 @@ class TdiTable:
             # Get container field ids.
             arr_t = c_uint * field_size.value
             c_fields = arr_t()
-            sts = self._cintf.get_driver().tdi_container_data_field_list_get(self._handle, field_id, c_fields)
+            sts = self._cintf.get_driver().tdi_container_data_field_list_get(self._info_handle, field_id, c_fields)
             if not sts == 0:
                 print("CLI Error: get container data field list failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
                 return sts
@@ -921,7 +922,7 @@ class TdiTable:
 
         if len(self.actions) == 0:
             num_ids = c_uint(-1)
-            sts = self._cintf.get_driver().tdi_data_field_id_list_size_get(self._handle, byref(num_ids))
+            sts = self._cintf.get_driver().tdi_data_field_id_list_size_get(self._info_handle, byref(num_ids))
             if not sts == 0:
                 print("CLI Error: get num data fields for table {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
@@ -929,7 +930,7 @@ class TdiTable:
                 return 0
             array_type = c_uint * num_ids.value
             field_ids = array_type()
-            sts = self._cintf.get_driver().tdi_data_field_list_get(self._handle, field_ids)
+            sts = self._cintf.get_driver().tdi_data_field_list_get(self._info_handle, field_ids)
             if not sts == 0:
                 print("CLI Error: get data field ids for table {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
@@ -944,7 +945,7 @@ class TdiTable:
                     action_readable = "      {}".format(name.decode('ascii'))
                 self.action_readables[name] = action_readable.strip()
                 num_ids = c_uint(-1)
-                sts = self._cintf.get_driver().tdi_data_field_id_list_size_with_action_get(self._handle, info["id"], byref(num_ids))
+                sts = self._cintf.get_driver().tdi_data_field_id_list_size_with_action_get(self._info_handle, info["id"], byref(num_ids))
                 if not sts == 0:
                     print("CLI Error: get num data fields for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
                     return sts
@@ -952,7 +953,7 @@ class TdiTable:
                     continue
                 array_type = c_uint * num_ids.value
                 field_ids = array_type()
-                sts = self._cintf.get_driver().tdi_data_field_list_with_action_get(self._handle, info["id"], field_ids)
+                sts = self._cintf.get_driver().tdi_data_field_list_with_action_get(self._info_handle, info["id"], field_ids)
                 if not sts == 0:
                     print("CLI Error: get data field ids for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
                     return sts
@@ -980,12 +981,12 @@ class TdiTable:
         #pdb.set_trace()
         num_ids = c_uint(-1)
         
-        sts = self._cintf.get_driver().tdi_action_id_list_size_get(self._handle, byref(num_ids))
+        sts = self._cintf.get_driver().tdi_action_id_list_size_get(self._info_handle, byref(num_ids))
         if not sts == 0 or num_ids.value == 0:
             return 0
         array_type = c_uint * num_ids.value
         action_ids = array_type()
-        sts = self._cintf.get_driver().tdi_action_id_list_get(self._handle, action_ids)
+        sts = self._cintf.get_driver().tdi_action_id_list_get(self._info_handle, action_ids)
         if not sts == 0:
             print("CLI Error: get action id list failed for {}.".format(self.name))
             return sts
@@ -1009,7 +1010,7 @@ class TdiTable:
         '''
         for action_id in action_ids:
             action_name = c_char_p()
-            sts = self._cintf.get_driver().tdi_action_name_get(self._handle, action_id, byref(action_name))
+            sts = self._cintf.get_driver().tdi_action_name_get(self._info_handle, action_id, byref(action_name))
             if not sts == 0:
                 print("CLI Error: get action name failed for {}.".format(self.name))
                 return sts
@@ -1019,11 +1020,11 @@ class TdiTable:
 
             annotations = []
             num_annotations = c_uint(0)
-            sts = nannotations_func(self._handle, action_id, byref(num_annotations))
+            sts = nannotations_func(self._info_handle, action_id, byref(num_annotations))
 
             arr_type = self._cintf.annotation_type * num_annotations.value
             annotations_arr = arr_type()
-            sts = get_annotations_func(self._handle, action_id, byref(annotations_arr))
+            sts = get_annotations_func(self._info_handle, action_id, byref(annotations_arr))
             for ann in annotations_arr:
                 annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
             
@@ -1857,7 +1858,7 @@ class TdiTable:
 
     def get_type(self):
         table_type = c_int(-1)
-        sts = self._cintf.get_driver().tdi_table_type_get(self._handle, byref(table_type))
+        sts = self._cintf.get_driver().tdi_table_type_get(self._info_handle, byref(table_type))
         #print("table name= "+str(self.name)+" table_type="+str(table_type))
         print("table_type=0x%x" % table_type.value)
         if not sts == 0:
@@ -1866,12 +1867,12 @@ class TdiTable:
 
     def set_supported_attributes_to_supported_commands(self):
         num_attrs = c_uint(0)
-        sts = self._cintf.get_driver().tdi_table_num_attributes_supported(self._handle, byref(num_attrs))
+        sts = self._cintf.get_driver().tdi_table_num_attributes_supported(self._info_handle, byref(num_attrs))
         if sts != 0:
             raise TdiTableError("Error: num attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         arr_type = c_uint * num_attrs.value
         attributes_arr = arr_type()
-        sts = self._cintf.get_driver().tdi_table_attributes_supported(self._handle, byref(attributes_arr), byref(num_attrs))
+        sts = self._cintf.get_driver().tdi_table_attributes_supported(self._info_handle, byref(attributes_arr), byref(num_attrs))
         if sts != 0:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         for i in range(len(attributes_arr)):
@@ -1898,12 +1899,12 @@ class TdiTable:
 
     def set_supported_operations_to_supported_commands(self):
         num_opers = c_uint(0)
-        sts = self._cintf.get_driver().tdi_table_num_operations_supported(self._handle, byref(num_opers))
+        sts = self._cintf.get_driver().tdi_table_num_operations_supported(self._info_handle, byref(num_opers))
         if sts != 0:
             raise TdiTableError("Error: num operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         arr_type = c_uint * num_opers.value
         operations_arr = arr_type()
-        sts = self._cintf.get_driver().tdi_table_operations_supported(self._handle, byref(operations_arr), byref(num_opers))
+        sts = self._cintf.get_driver().tdi_table_operations_supported(self._info_handle, byref(operations_arr), byref(num_opers))
         if sts != 0:
             raise TdiTableError("Error: operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         for i in range(len(operations_arr)):
@@ -1918,12 +1919,12 @@ class TdiTable:
     def set_supported_apis_to_supported_commands(self):
         #pdb.set_trace()
         num_api = c_uint(0)
-        sts = self._cintf.get_driver().tdi_table_num_api_supported(self._handle, byref(num_api))
+        sts = self._cintf.get_driver().tdi_table_num_api_supported(self._info_handle, byref(num_api))
         if sts != 0:
             raise TdiTableError("Error: num apis supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         arr_type = c_uint * num_api.value
         api_arr = arr_type()
-        sts = self._cintf.get_driver().tdi_table_api_supported(self._handle, byref(api_arr), byref(num_api))
+        sts = self._cintf.get_driver().tdi_table_api_supported(self._info_handle, byref(api_arr), byref(num_api))
         self.supported_commands.append("add")
         self.supported_commands.append("mod")
         self.supported_commands.append("get")
