@@ -999,3 +999,35 @@ tdi_status_t tdi_data_field_allowed_choices_with_action_get(
   return TDI_SUCCESS;
 }
 
+tdi_status_t tdi_num_tables_this_table_depends_on_get(
+    const tdi_table_info_hdl *tdi, int *num_tables) {
+  if (!tdi || !num_tables) {
+    LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(tdi);
+  std::vector<tdi_id_t> table_ids;
+  auto &depends_on_set =
+      tableInfo->dependsOnGet();
+  *num_tables = static_cast<int>(depends_on_set.size());
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_tables_this_table_depends_on_get(
+    const tdi_table_info_hdl *tdi,
+    tdi_id_t *table_list) {
+  if (!tdi || !table_list) {
+    LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(tdi);
+  std::vector<tdi_id_t> table_ids;
+  auto &depends_on_set =
+      tableInfo->dependsOnGet();
+  int i=0;
+  for (auto table_id: depends_on_set) {
+    table_list[i++] = table_id;
+
+  }
+  return TDI_SUCCESS;
+}
