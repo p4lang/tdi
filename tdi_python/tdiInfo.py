@@ -20,10 +20,10 @@ import pdb
 class TdiInfo:
 
     """
-    This class contains abstractions on the BF Runtime C API for all
-    tables described by a BF Runtime Info object. This includes infos
+    This class contains abstractions on the TDI Runtime C API for all
+    tables described by a TDI Runtime Info object. This includes infos
     for both p4 programs and for pd_fixed APIs exposed through
-    BF Runtime.
+    TDI Runtime.
     """
     def __init__(self, cintf, name):
         self._cintf = cintf
@@ -85,20 +85,20 @@ class TdiInfo:
                 tbl_obj.set_has_const_default_action(has_const_default_action)
                 self.tables[tbl_obj.name] = tbl_obj
                 self.tbl_id_map[tbl_id.value] = tbl_obj
-        '''
-        # need core class support
         # Tables Dependencies Initialzation
-        #pdb.set_trace()
+        pdb.set_trace()
         for tbl_id, tbl_obj in self.tbl_id_map.items():
-            table_hdl=POINTER(c_uint)
+            table_hdl = self._cintf.handle_type()
             self._cintf.get_driver().tdi_table_from_id_get(self._handle, tbl_id, byref(table_hdl))
+            table_info = self._cintf.handle_type()
+            self._cintf.get_driver().tdi_table_info_get(table_hdl, byref(table_info))
             num_deps = c_int()
-            self._cintf.get_driver().tdi_num_tables_this_table_depends_on_get(table_hdl, byref(num_deps))
+            self._cintf.get_driver().tdi_num_tables_this_table_depends_on_get(table_info, byref(num_deps))
             if num_deps.value == 0:
                 continue
             array_type = c_uint * num_deps.value
             deps = array_type()
-            self._cintf.get_driver().tdi_tables_this_table_depends_on_get(table_hdl, tbl_id, deps)
+            self._cintf.get_driver().tdi_tables_this_table_depends_on_get(table_info_hdl, tbl_id, deps)
             self.tbl_dep_map[tbl_id] = deps
             # Nested tables are to be included in the parent table from depends_on field
             if tbl_obj.table_type in self.nested_tables:
@@ -108,7 +108,6 @@ class TdiInfo:
                 self.tables[new_name] = tbl_obj
                 del self.tables[tbl_obj.name]
                 tbl_obj.name = new_name
-        '''
         return 0
 
     def _init_learns(self):

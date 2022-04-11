@@ -100,7 +100,7 @@ class TableEntry:
         entry = self._c_tbl.get_entry(self.key, print_entry=False)
         if isinstance(entry, list):
             if len(entry > 1):
-                print("BF Runtime CLI Internal Error! Duplicate entry for key found.")
+                print("TDI Runtime CLI Internal Error! Duplicate entry for key found.")
                 return
             entry = entry[0]
         if entry == -1:

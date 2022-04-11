@@ -465,14 +465,14 @@ class TableEntryDumper:
         return False
 
 
-class BFContext:
+class TDIContext:
     """
     This superclass provides node and leaf subclasses with callability.
     When called, the aforementioned objects' available commands are
     loaded into python's global namespace. When another object is
     called, the old commands are unloaded and replaced.
     """
-    # BFContext obj() will call obj.__call__()
+    # TDIContext obj() will call obj.__call__()
     def __call__(self):
         global _tdi_context
         for name in _tdi_context['cur_context']:
@@ -533,7 +533,7 @@ class TesterInt:
 
 
 
-class BFNode(BFContext):
+class TDINode(TDIContext):
     """
     This class represents non-leaf nodes in the TDI Runtime CLI's command tree.
     Its sole purpose is to organize available commands.
@@ -541,7 +541,7 @@ class BFNode(BFContext):
     def __init__(self, name, cintf, parent_node=None):
         self._set_name(name)
         self._cintf = cintf
-        if parent_node is not None and isinstance(parent_node, BFNode):
+        if parent_node is not None and isinstance(parent_node, TDINode):
             self._parent_node = parent_node
             self._parent_node._add_child(self)
         else:
@@ -560,12 +560,12 @@ class BFNode(BFContext):
 
     def dump(self, table=False, json=False, from_hw=False, return_ents=False, print_zero=True):
         for child in self._children:
-            if ((isinstance(child, BFLeaf) and "dump" in child._c_tbl.supported_commands) or (isinstance(child, BFNode))):
+            if ((isinstance(child, TDILeaf) and "dump" in child._c_tbl.supported_commands) or (isinstance(child, TDINode))):
                 child.dump(table=table, json=json, from_hw=from_hw, return_ents=return_ents, print_zero=print_zero)
 
     def clear(self, batch=True):
         for child in self._children:
-            if ((isinstance(child, BFLeaf) and "clear" in child._c_tbl.supported_commands) or (isinstance(child, BFNode))):
+            if ((isinstance(child, TDILeaf) and "clear" in child._c_tbl.supported_commands) or (isinstance(child, TDINode))):
                 child.clear(batch)
 
     def tdi_info(self, return_info=True, print_info=True):
@@ -607,7 +607,7 @@ class BFNode(BFContext):
     def _get_full_leaf_info(self):
         info = []
         for k, v in self._get_children().items():
-            if isinstance(v, BFLeaf) or isinstance(v, BFNode):
+            if isinstance(v, TDILeaf) or isinstance(v, TDINode):
                 info += v._get_full_leaf_info()
         return info
 
@@ -628,9 +628,9 @@ class BFNode(BFContext):
         child_names = []
         for child in self._children:
             type_ = "Node"
-            if isinstance(child, BFLeaf):
+            if isinstance(child, TDILeaf):
                 type_ = "Table"
-            if isinstance(child, BFLrnLeaf):
+            if isinstance(child, TDILrnLeaf):
                 type_ = "Learn-digest"
             child_names.append((child._get_name(), type_))
         for name, command in self._commands.items():
@@ -727,7 +727,7 @@ def _learn_fields_print(dev_id, pipe_id, direction, parser_id, session, data):
     print("Learn data:\n{}".format(data))
     return 0
 
-class BFLeaf(BFContext):
+class TDILeaf(TDIContext):
     """
     This class creates easy to type, autocompleted python entrypoints to the
     TDI Runtime API. Each instance of the class represents one table. It exposes
@@ -742,9 +742,9 @@ class BFLeaf(BFContext):
         c_tbl.set_frontend(self)
         self._children = {}
         #
-        # Link the BF Command Object Tree
+        # Link the TDI Command Object Tree
         #
-        if parent_node is not None and isinstance(parent_node, BFNode):
+        if parent_node is not None and isinstance(parent_node, TDINode):
             self._parent_node = parent_node
             self._parent_node._add_child(self)
         else:
@@ -1798,7 +1798,7 @@ def {}(self, {}):
         entry_method = self._set_dynamic_method(code, method_name)
         self._entries[""] = (entry_method, param_list)
 
-class BFLrnLeaf(BFContext):
+class TDILrnLeaf(TDIContext):
     """
     This class creates easy to type, autocompleted python entrypoints to the
     TDI Runtime API. Each instance of the class represents one table. It exposes
@@ -1815,7 +1815,7 @@ class BFLrnLeaf(BFContext):
         self._children["info"] = getattr(self, "info")
         self._children["callback_register"] = getattr(self, "callback_register")
         self._children["callback_deregister"] = getattr(self, "callback_deregister")
-        if parent_node is not None and isinstance(parent_node, BFNode):
+        if parent_node is not None and isinstance(parent_node, TDINode):
             self._parent_node = parent_node
             self._parent_node._add_child(self)
         else:
@@ -1903,7 +1903,7 @@ docstrings for the organizational nodes. Note that leaves have already
 generated their docstrings during initialization.
 """
 def set_node_docstrs(node):
-    if isinstance(node, BFNode):
+    if isinstance(node, TDINode):
         node._set_doc()
         for child in node._children:
             set_node_docstrs(child)
@@ -1954,7 +1954,7 @@ def validate_program_name(p4_name, p_node):
         print("ERROR: The P4 program name '%s' is in use by tdi_python." %(p4_name_str_), file = sys.stderr)
         return ""
 
-    if p_node is not None and isinstance(p_node, BFNode):
+    if p_node is not None and isinstance(p_node, TDINode):
         if not p4_pref_ and (p4_name_str_ in dir(p_node) or p4_name_str_ in _tdi_fixed_nodes):
             p4_name_res_ = "p4_" + p4_name_str_
             print_name_warn_("reserved for another item in the object tree", p4_name_str_, p4_name_res_)
@@ -1976,13 +1976,13 @@ def update_node_tree(parent_node, prefs, cintf):
                 next_node = child
                 break
         if not contained:
-            parent_node = BFNode(p, cintf, parent_node=parent_node)
+            parent_node = TDINode(p, cintf, parent_node=parent_node)
         else:
             parent_node = next_node
     return parent_node
 
 def is_node(obj):
-    if isinstance(obj, BFNode) or isinstance(obj, BFLeaf):
+    if isinstance(obj, TDINode) or isinstance(obj, TDILeaf):
         return True
     return False
 
@@ -1991,7 +1991,7 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
         p4_name_str_ = validate_program_name(p4_name, dev_node)
         if len(p4_name_str_) == 0:
             return -1
-        p4_node = BFNode(p4_name_str_, cintf, parent_node=dev_node)
+        p4_node = TDINode(p4_name_str_, cintf, parent_node=dev_node)
     else:
         p4_name_str_ = p4_name
     #pdb.set_trace()
@@ -2016,13 +2016,13 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
 
             # If there is no node add it
             if prefs[-1] not in node_list:
-                BFLeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
+                TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
             # If it is nested table recreate it with proper list of children and
             # update the parent, but don't modify fixed nodes.
             elif prefs[0] not in _tdi_fixed_nodes:
                 for c in parent_node._children:
                     if is_node(c) and c._name == prefs[-1]:
-                        BFLeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
+                        TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
                         parent_node._children.remove(c)
                         break
 
@@ -2031,13 +2031,13 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
     return 0
 
 """
-This function initializes the BF Runtime CLI objects, generating a tree of
+This function initializes the TDI Runtime CLI objects, generating a tree of
 objects that serve as CLI command nodes.
 """
 def populate_tdi(dev_id_list):
     global tdi
     # tdi node shouldn't have a cintf since cintf is dev dependent
-    tdi = BFNode("tdi", None)
+    tdi = TDINode("tdi", None)
     tdi.device_list =  dev_id_list
     # For each device_id, create a cintf and a dev node
     # If only one device is present, then skip creating the
@@ -2053,11 +2053,11 @@ def populate_tdi(dev_id_list):
         if cintf == -1:
             return -1
         if single_device:
-            tdi = BFNode("tdi", cintf, parent_node=None)
+            tdi = TDINode("tdi", cintf, parent_node=None)
             tdi.device_list =  dev_id_list
             dev_node = tdi
         else:
-            dev_node = BFNode("dev_"+str(dev_id), cintf, parent_node=tdi)
+            dev_node = TDINode("dev_"+str(dev_id), cintf, parent_node=tdi)
 
         dev_node.devcall = cintf._devcall
         dev_node.set_pipe = cintf._set_pipe

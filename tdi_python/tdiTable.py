@@ -34,7 +34,7 @@ class TdiTable:
 
     """
     This class manages the exchange of information between
-    the CLI and BF Runtime's C API. It has two primary parts:
+    the CLI and TDI Runtime's C API. It has two primary parts:
       - Looking up the action and field metadata for a table
       - Parsing and reformatting data as the user makes calls
 
@@ -85,7 +85,7 @@ class TdiTable:
             print("CLI Error: get table name failed. [{}]".format(self._cintf.err_str(sts)))
             raise TdiTableError("Table init name failed.", None, -1)
         self.name = table_name.value.decode('ascii')
-        #Unify the table name for BFNode (command nodes)
+        #Unify the table name for TDINode (command nodes)
         name_lowercase_without_dollar=self.name.lower().replace("$","")
         if self.table_type in ["PORT_CFG", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
             self.name = "port.{}".format(name_lowercase_without_dollar)
@@ -144,7 +144,7 @@ class TdiTable:
         """
         This class acts as a storage container for table field info. It
         also exposes a parse method for transforming user input into data
-        the BF Runtime C API can accept and a deparse method for printing
+        the TDI Runtime C API can accept and a deparse method for printing
         API outputs in an easy to read format.
         """
         def __init__(self, name, id_, size, is_ptr, read_only, required, category, tbl, action_name=None, action_id=None, data_type_=None, type_=None, is_cont_field=False):
@@ -512,7 +512,6 @@ class TdiTable:
             return [value[i] for i in range(len(value))]
 
         def deparse_output(self, value):
-            pdb.set_trace()
             if self.category == "data" and (self.table.data_type_map(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
                                            (self.table.data_type_map(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
                 return self._deparse_int_arr(value)
@@ -1041,7 +1040,7 @@ class TdiTable:
         return 0
 
     """
-    Fill a key allocated by BF Runtime with appropriate values provided
+    Fill a key allocated by TDI Runtime with appropriate values provided
     by the user. These values must have already been parsed by the
     TdiTableField class.
     """
@@ -1258,7 +1257,7 @@ class TdiTable:
         return 0
 
     """
-    Fill data object allocated by BF Runtime with appropriate values
+    Fill data object allocated by TDI Runtime with appropriate values
     provided by the user. These values must have already been parsed by the
     TdiTableField class.
     """
@@ -1391,7 +1390,7 @@ class TdiTable:
         return self._process_data_fields(data_fields, data_handle)
 
     """
-    These next two functions allocate a key or data object via BF Runtime.
+    These next two functions allocate a key or data object via TDI Runtime.
     These objects are then filled via the corresponding methods for filling
     the objects with parsed user-provided information.
     """
@@ -1490,7 +1489,7 @@ class TdiTable:
 
     """
     These methods essentially are the highest level of abstraction on our
-    BF Runtime C API. All data passed to them must be eligible for use with
+    TDI Runtime C API. All data passed to them must be eligible for use with
     Python's ctypes foriegn function interface.
     """
     def add_entry(self, key_content, data_content, action=None):
@@ -1584,7 +1583,8 @@ class TdiTable:
             return -1
 
         key_handle = None
-        entry_tgt = byref(self._cintf.BfDevTgt(0, 0, 0, 0))
+        #entry_tgt = byref(self._cintf.BfDevTgt(0, 0, 0, 0))
+        entry_tgt = self._cintf.get_dev_tgt()
         if entry_handle != None:
             key_handle = self._cintf.handle_type()
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
@@ -1716,7 +1716,8 @@ class TdiTable:
         if not sts == 0:
             return -1
 
-        entry_tgt = self._cintf.BfDevTgt(0, 0, 0, 0);
+        #entry_tgt = self._cintf.BfDevTgt(0, 0, 0, 0);
+        entry_tgt = self._cintf.get_dev_tgt()
         sts = self._cintf.tdi_table_entry_key_get(
                 self._handle,
                 self._cintf.get_session(),
@@ -1818,7 +1819,7 @@ class TdiTable:
                                                        byref(num_returned))
         if not sts == 0 and not sts == 6:
             # Once we are done reading all the entries from the table, tdi will
-            # return an BF_OBJECT_NOT_FOUND error
+            # return an TDI_OBJECT_NOT_FOUND error
             raise TdiTableError("Error: entry_get_next {} failed on table {}. [{}]".format(n, self.name, self._cintf.err_str(sts)), self, sts)
             return -1, -1
         key_ret = []
@@ -2511,7 +2512,7 @@ class TdiTable:
     This method parses information provided by the user into the
     appropriate types for use with the ctypes foriegn function interface.
     The type information is mapped from the information encoded in the
-    BF Runtime leafs' method definitions.
+    TDI Runtime leafs' method definitions.
     """
     def parse_str_input(self, method_name, key_strs, data_strs, action=None):
         parsed_keys = {}
