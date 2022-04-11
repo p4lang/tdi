@@ -570,6 +570,15 @@ class TableInfo {
   const std::set<tdi_operations_type_e> &operationsSupported() const {
     return operations_type_set_;
   };
+
+  /**
+   * @brief Get set of table_ids this table depends on
+   * @return Set of table_ids this table depends on
+   */
+  const std::set<tdi_id_t> &dependsOnGet() const {
+    return depends_on_set_;
+  };
+
   /**
    * @brief Get a vector of Key field IDs
    * @return Vector of Key field IDs
