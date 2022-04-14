@@ -195,7 +195,6 @@ typedef enum tdi_table_type_ {
   /** TM L1 Node Scheduler shaping table */
   TM_L1_NODE_SCHED_SHAPING = 77,
 #endif
-  INVLD = 78
 } tdi_table_type_t;
 /**
  * @brief Annotation struct. Contains name-value pair.
