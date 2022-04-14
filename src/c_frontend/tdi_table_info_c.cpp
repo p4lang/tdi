@@ -132,9 +132,9 @@ tdi_status_t tdi_table_name_get(const tdi_table_info_hdl *table_info_hdl,
 }
 
 tdi_status_t tdi_table_type_get(const tdi_table_info_hdl *table_info_hdl,
-                                tdi_table_type_t *table_type) {
+                                tdi_table_type_e *table_type) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
-  *table_type = static_cast<tdi_table_type_t>(tableInfo->tableTypeGet());
+  *table_type = static_cast<tdi_table_type_e>(tableInfo->tableTypeGet());
       //reinterpret_cast<tdi::TableInfo::TableType *>(table_type));
   return TDI_SUCCESS;
 }
