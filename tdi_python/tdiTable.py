@@ -80,7 +80,6 @@ class TdiTable:
         #
         table_name = c_char_p()
         sts = self._cintf.get_driver().tdi_table_name_get(self._info_handle, byref(table_name))
-        #pdb.set_trace()
         if not sts == 0:
             print("CLI Error: get table name failed. [{}]".format(self._cintf.err_str(sts)))
             raise TdiTableError("Table init name failed.", None, -1)
@@ -202,7 +201,6 @@ class TdiTable:
             if sts != 0:
                 print("Error: get annotations for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
-            #pdb.set_trace()
             for ann in annotations_arr:
                 print("num ann {} table name {}  field name = {} annotations = {} {} ".format(str(num_annotations.value), self.table.name,  str(self.name), str(ann.name), str(ann.value.decode('ascii'))))
                 #annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
@@ -977,7 +975,6 @@ class TdiTable:
         if (not is_action_applicable.value):
             return 0
         '''
-        #pdb.set_trace()
         num_ids = c_uint(-1)
         
         sts = self._cintf.get_driver().tdi_action_id_list_size_get(self._info_handle, byref(num_ids))
@@ -990,7 +987,6 @@ class TdiTable:
             print("CLI Error: get action id list failed for {}.".format(self.name))
             return sts
         
-        #pdb.set_trace()
         print("self.name="+str(self.name))
         '''
         if self.name == "pipe.ingress.mymac":
@@ -1045,7 +1041,6 @@ class TdiTable:
     TdiTableField class.
     """
     def _set_key_fields(self, content, key_handle):
-        #pdb.set_trace()
         for name, info in self.key_fields.items():
             sts = -1
             if name not in content.keys():
@@ -1185,7 +1180,6 @@ class TdiTable:
                 continue
             sts = -1
             print("data_type="+self.data_type_map(info.data_type))
-            #pdb.set_trace()
             if self.data_type_map(info.data_type) == "BYTE_STREAM":
                 value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                 sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
@@ -1253,7 +1247,7 @@ class TdiTable:
             """
             if not sts == 0:
                 raise TdiTableError("CLI Error: set data field failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                #return sts
+                return sts
         return 0
 
     """
@@ -1445,7 +1439,6 @@ class TdiTable:
     called on a key before said key can be modified.
     """
     def _call_add_mod(self, key_content, data_content, action, c_func, flags=0):
-        #pdb.set_trace()
         key_handle = self._make_call_keys(key_content)
         data_handle = self._make_call_data(data_content, action)
         flags_handle = self._make_call_flags(flags)
@@ -1614,7 +1607,6 @@ class TdiTable:
             raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
     def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
-        #pdb.set_trace()
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
             return -1
@@ -1731,7 +1723,6 @@ class TdiTable:
             self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
             return -1
         key = self._get_key_fields(key_handle)
-        #pdb.set_trace()
         if print_entry:
             # Print key in copy-paste format
             key_str = ""
@@ -1918,7 +1909,6 @@ class TdiTable:
 
 
     def set_supported_apis_to_supported_commands(self):
-        #pdb.set_trace()
         num_api = c_uint(0)
         sts = self._cintf.get_driver().tdi_table_num_api_supported(self._info_handle, byref(num_api))
         if sts != 0:

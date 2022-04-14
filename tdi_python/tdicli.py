@@ -156,7 +156,6 @@ class CIntfTdi:
         sts = self._driver.tdi_device_get(self._dev_id, byref(self._device))
 
         # testing for num devices
-        #pdb.set_trace()
         num_devices = c_int(-1)
         sts = self._driver.tdi_num_device_id_list_get(byref(num_devices))
         array_type = c_uint32 * num_devices.value
@@ -167,7 +166,6 @@ class CIntfTdi:
       
         num_names = c_int(-1)
         self._driver.tdi_num_p4_names_get(self._dev_id, byref(num_names))
-        #pdb.set_trace()
         print("We've found {} p4 programs for device {}:".format(num_names.value, self._dev_id))
         array_type = c_char_p * num_names.value
         p4_names = array_type()
@@ -200,14 +198,12 @@ class CIntfTdi:
             self.infos[name] = info
         self._session = self.sess_type()
         self._flags = self.flags_type()
-        pdb.set_trace()
         sts = self._driver.tdi_session_create(self._device, byref(self._session))
         atexit.register(self._cleanup_session)
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             return -1
         #self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
-        pdb.set_trace()
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
@@ -479,7 +475,6 @@ class TDIContext:
             delattr(sys.modules['__main__'],name)
 
         _tdi_context['cur_context'] = []
-        #pdb.set_trace()
         for name, child in self._get_children().items():
             _tdi_context['cur_context'].append(name)
             setattr(sys.modules['__main__'], name, child)
@@ -772,7 +767,6 @@ class TDILeaf(TDIContext):
             except:
                 pass
                 # print("CLI log: Command {} is not ready or available".format(cmd))
-                # pdb.set_trace()
         self._set_docstring()
         # if self._c_tbl.table_type_map(self._c_tbl.get_type()) in self._c_tbl.unimplemented_tables:
         #     print("CLI Err: Unimplemented Command Object {}".format(self._name))
@@ -1994,7 +1988,6 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
         p4_node = TDINode(p4_name_str_, cintf, parent_node=dev_node)
     else:
         p4_name_str_ = p4_name
-    #pdb.set_trace()
     # Sort tables in reverse order, so nested table children are added first.
     for table_name, tbl_obj in sorted(tdi_info.tables.items(), reverse=True):
         print("table_name:"+str(table_name))
@@ -2044,7 +2037,6 @@ def populate_tdi(dev_id_list):
     # device node for now for backward compatibility.
     # TODO take care of it later especially when device level
     # APIs are introduced.
-    #pdb.set_trace()
     single_device = True
     if len(dev_id_list) > 1:
         single_device = False
@@ -2074,7 +2066,6 @@ def populate_tdi(dev_id_list):
         dev_node.p4_programs_list = []
         for p4_name, tdi_info in cintf.infos.items():
             print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
-            #pdb.set_trace()
             if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
               print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
               return -1

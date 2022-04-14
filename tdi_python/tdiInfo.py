@@ -65,7 +65,6 @@ class TdiInfo:
         # print("{:40s} | {:30s} | {:10s}".format("TableName","Table Type","Status"))
         self.tables = {}
         for table in tables:
-            #pdb.set_trace()
             table_info = self._cintf.handle_type()
             self._cintf.get_driver().tdi_table_info_get(table, byref(table_info));
             tbl_obj = self._cintf.TdiTable(self._cintf, table, self, table_info)
@@ -86,7 +85,6 @@ class TdiInfo:
                 self.tables[tbl_obj.name] = tbl_obj
                 self.tbl_id_map[tbl_id.value] = tbl_obj
         # Tables Dependencies Initialzation
-        pdb.set_trace()
         for tbl_id, tbl_obj in self.tbl_id_map.items():
             table_hdl = self._cintf.handle_type()
             self._cintf.get_driver().tdi_table_from_id_get(self._handle, tbl_id, byref(table_hdl))
