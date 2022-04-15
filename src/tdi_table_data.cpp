@@ -162,12 +162,14 @@ tdi_status_t TableData::reset(const tdi_id_t &action_id,
   this->action_id_ = action_id;
   this->container_id_ = container_id;
   this->removed_one_ofs_ = {};
+  this->active_fields_s_ = {};
   if (fields.empty()) {
     this->all_fields_set_ = true;
-    this->active_fields_s_ = {};
   } else {
     this->all_fields_set_ = false;
-    for (const auto &f : fields) this->active_fields_s_.insert(f);
+    std::copy(fields.begin(),
+              fields.end(),
+              std::inserter(active_fields_s_, active_fields_s_.end()));
   }
   return TDI_SUCCESS;
 }

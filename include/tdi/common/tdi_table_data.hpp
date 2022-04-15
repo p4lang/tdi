@@ -65,7 +65,9 @@ class TableData {
     if (!active_fields.size()) {
       all_fields_set_ = true;
     } else {
-      for (const auto &f : active_fields) this->active_fields_s_.insert(f);
+      std::copy(active_fields.begin(),
+                active_fields.end(),
+                std::inserter(active_fields_s_, active_fields_s_.end()));
     }
   };
 
