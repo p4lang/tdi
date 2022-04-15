@@ -61,12 +61,11 @@ class TableData {
             tdi_id_t action_id,
             tdi_id_t container_id,
             std::vector<tdi_id_t> active_fields)
-      : table_(table),
-        action_id_(action_id),
-        container_id_(container_id),
-        active_fields_(std::move(active_fields)) {
-    if (!active_fields_.size()) {
+      : table_(table), action_id_(action_id), container_id_(container_id) {
+    if (!active_fields.size()) {
       all_fields_set_ = true;
+    } else {
+      for (const auto &f : active_fields) this->active_fields_s_.insert(f);
     }
   };
 
@@ -360,6 +359,33 @@ class TableData {
       std::unique_ptr<tdi::TableData> *data_ret) const;
 
   /**
+   * @brief Data object reset
+   *
+   * @param[in] action_id Action ID. Can be put in as 0 if actions aren't
+   * supported by the table or if it is unknown.
+   * @param[in] fields Vector of field IDs
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t reset(const tdi_id_t &action_id,
+                     const std::vector<tdi_id_t> &fields);
+
+  /**
+   * @brief Data object reset, container version
+   *
+   * @param[in] action_id Action ID. Can be put in as 0 if actions aren't
+   * supported by the table or if it is unknown.
+   * @param[in] container_id field ID of the parent field if it is a
+   * container
+   * @param[in] fields Vector of field IDs. If empty
+   *
+   * @return Status of the API call
+   */
+  tdi_status_t reset(const tdi_id_t &action_id,
+                     const tdi_id_t &container_id,
+                     const std::vector<tdi_id_t> &fields);
+
+  /**
    * @brief Get parent Table object.
    *
    * @param[out] table Pointer to the pointer to tdi::Table to be filled in.
@@ -400,8 +426,20 @@ class TableData {
   tdi_status_t isActive(const tdi_id_t &field_id, bool *is_active) const;
 
   const bool &allFieldsSetGet() const { return all_fields_set_; };
-  const std::vector<tdi_id_t> &activeFieldsGet() const {
-    return active_fields_;
+
+  void removeActiveField(const tdi_id_t &field_id) {
+    this->removed_one_ofs_.insert(field_id);
+    this->active_fields_s_.erase(field_id);
+  }
+
+  /**
+   * @brief Returns a const ref to set of active fields. If empty
+   * then all fields are deemed to be active.
+   *
+   * @return set of active fields
+   */
+  const std::set<tdi_id_t> &activeFieldsGet() const {
+    return active_fields_s_;
   };
 
  protected:
@@ -414,7 +452,10 @@ class TableData {
  private:
   tdi_id_t action_id_{0};
   tdi_id_t container_id_{0};
-  std::vector<tdi_id_t> active_fields_{};
+  // set for faster lookup
+  std::set<tdi_id_t> active_fields_s_{};
+  // set of removed oneofs
+  std::set<tdi_id_t> removed_one_ofs_{};
 };
 
 }  // namespace tdi

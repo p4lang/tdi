@@ -41,6 +41,7 @@ class Session {
    */
   virtual ~Session() = default;
 
+  Session() = delete;
   Session(const std::vector<tdi_mgr_type_e> &mgr_type_list)
       : mgr_type_list_(mgr_type_list){};
 
@@ -70,7 +71,7 @@ class Session {
    * @param [in]
    * @returns Session Handle of an active session
    */
-  virtual const tdi_handle_t &handleGet(const tdi_mgr_type_e& mgr_type) const = 0;
+  virtual tdi_handle_t handleGet(const tdi_mgr_type_e &mgr_type) const = 0;
 
   /**
    * @brief Check whether this Session Object's handle is still valid or not
@@ -165,10 +166,12 @@ class Session {
   virtual tdi_status_t abortTransaction() const = 0;
   /** @} */  // End of group Transaction
  protected:
+  virtual tdi_status_t create() = 0;
+
   std::vector<tdi_mgr_type_e> mgr_type_list_;
   bool is_valid_ = true;
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif
