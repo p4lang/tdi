@@ -106,8 +106,8 @@ tdi_status_t tdi_table_from_id_get(const tdi_info_hdl *tdi,
 }
 
 tdi_status_t tdi_table_name_to_id(const tdi_info_hdl *tdi,
-                                   const char *table_name,
-                                   tdi_id_t *id_ret) {
+                                  const char *table_name,
+                                  tdi_id_t *id_ret) {
   if (id_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -146,7 +146,7 @@ tdi_status_t tdi_num_learns_get(const tdi_info_hdl *tdi, int *num_learns) {
 }
 
 tdi_status_t tdi_learns_get(const tdi_info_hdl *tdi,
-                             const tdi_learn_hdl **tdi_learn_hdl_ret) {
+                            const tdi_learn_hdl **tdi_learn_hdl_ret) {
   if (!tdi) {
     LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -174,8 +174,8 @@ tdi_status_t tdi_learns_get(const tdi_info_hdl *tdi,
 }
 
 tdi_status_t tdi_learn_from_name_get(const tdi_info_hdl *tdi,
-                                      const char *learn_name,
-                                      const tdi_learn_hdl **learn_hdl_ret) {
+                                     const char *learn_name,
+                                     const tdi_learn_hdl **learn_hdl_ret) {
   if (learn_hdl_ret == nullptr) {
     LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
               __func__,
@@ -265,38 +265,6 @@ tdi_status_t tdi_tables_dependent_on_this_table_get(
   return TDI_SUCCESS;
 }
 
-tdi_status_t tdi_num_tables_this_table_depends_on_get(
-    const tdi_table_hdl *tdi, int *num_tables) {
-  if (!tdi || !num_tables) {
-    LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
-    return TDI_INVALID_ARG;
-  }
-  auto tdi_table = reinterpret_cast<const tdi::Table *>(tdi);
-  auto tableInfo = tdi_table->tableInfoGet();
-  std::vector<tdi_id_t> table_ids;
-  auto table_ids =
-      tdiInfo->tdiInfoTablesThisTableDependsOnGet();
-  *num_tables = static_cast<int>(table_ids.size());
-  return TDI_SUCCESS;
-}
-
-tdi_status_t tdi_tables_this_table_depends_on_get(
-    const tdi_table_hdl *tdi,
-    tdi_id_t *table_list) {
-  if (!tdi || !table_list) {
-    LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
-    return TDI_INVALID_ARG;
-  }
-  auto tdi_table = reinterpret_cast<const tdi::Table *>(tdi);
-  auto tableInfo = tdi_table->tableInfoGet();
-  std::vector<tdi_id_t> table_ids;
-  auto table_ids =
-      tableInfo->tdiInfoTablesThisTableDependsOnGet(&table_ids);
-  for (auto it = table_ids.begin(); it != table_ids.end(); it++) {
-    table_list[it - table_ids.begin()] = *it;
-  }
-  return TDI_SUCCESS;
-}
 
 tdi_status_t tdi_info_num_pipeline_info_get(const tdi_info_hdl *tdi,
                                              int *num) {

@@ -194,37 +194,6 @@ tdi_status_t tdi_tables_dependent_on_this_table_get(
     tdi_id_t *table_list);
 
 /**
- * @brief Get size of list of tables that the given table is dependent on
- *
- * @param[in] tdi_table_hdl Handle of Info object. Retrieved using
- * tdi_info_get()
- * @param[out] num_tables Size of list of tables that this table depends upon
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_num_tables_this_table_depends_on_get(
-    const tdi_table_hdl *table_hdl,
-    int *num_tables);
-
-/**
- * @brief Get a list of tables that the given table is dependent on. When
- *    we say that table1 is dependent on table2, we imply that a entry
- *    cannot be added in table1 unless a corresponding entry is added
- *    to table2
- *
- * @param[in] tdi_table_hdl Handle of Info object. Retrieved using
- * tdi_info_get()
- * @param[out] table_list Array of tables that depend on the given table. API
- * assumes
- * that the correct memory has been allocated by user
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_tables_this_table_depends_on_get(
-    const tdi_table_hdl *table_hdl,
-    tdi_id_t *table_list);
-
-/**
  * @brief Get pipeline info of a Program.
  *
  * @param[in] tdi_info Handle of Info object. Retrieved using
