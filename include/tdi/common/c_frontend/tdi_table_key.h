@@ -340,9 +340,9 @@ tdi_status_t tdi_key_field_get_value_range_ptr(
  * @return Status of the API call
  */
 tdi_status_t tdi_key_field_get_value_lpm(const tdi_table_key_hdl *key_hdl,
-                                          const tdi_id_t field_id,
-                                          uint64_t *value,
-                                          uint16_t *p_length);
+                                         const tdi_id_t field_id,
+                                         uint64_t *value,
+                                         uint16_t *p_length);
 
 /**
  * @brief Get value. Only valid on fields of \ref tdi_key_field_type_t "LPM"

@@ -210,9 +210,9 @@ tdi_status_t tdi_key_field_get_value_range_ptr(
 
 /* LPM */
 tdi_status_t tdi_key_field_get_value_lpm(const tdi_table_key_hdl *key_hdl,
-                                          const tdi_id_t field_id,
-                                          uint64_t *start,
-                                          const uint16_t *p_length) {
+                                         const tdi_id_t field_id,
+                                         uint64_t *start,
+                                         uint16_t *p_length) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueLPM<uint64_t> keyFieldValue(*start, *p_length);
   return key->getValue(field_id, &keyFieldValue);
