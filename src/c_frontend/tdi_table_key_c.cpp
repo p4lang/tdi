@@ -138,7 +138,9 @@ tdi_status_t tdi_key_field_get_value_ptr(const tdi_table_key_hdl *key_hdl,
                                          uint8_t *value) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueExact <uint8_t *> keyFieldValue(value, size);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  value = keyFieldValue.value_;
+  return(sts);
 }
 
 /* string */
@@ -173,7 +175,10 @@ tdi_status_t tdi_key_field_get_value_and_mask(
     uint64_t *value2) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueTernary<uint64_t> keyFieldValue(*value1, *value2);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  *value1 = keyFieldValue.value_;
+  *value2 = keyFieldValue.mask_;
+  return sts;
 }
 
 tdi_status_t tdi_key_field_get_value_and_mask_ptr(
@@ -184,17 +189,23 @@ tdi_status_t tdi_key_field_get_value_and_mask_ptr(
     uint8_t *value2) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueTernary<uint8_t *> keyFieldValue(value1, value2, size);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  value1 = keyFieldValue.value_;
+  value2 = keyFieldValue.mask_;
+  return sts;
 }
 
 /* Range */
 tdi_status_t tdi_key_field_get_value_range(const tdi_table_key_hdl *key_hdl,
-                                            const tdi_id_t field_id,
-                                            uint64_t *start,
-                                            uint64_t *end) {
+                                           const tdi_id_t field_id,
+                                           uint64_t *start,
+                                           uint64_t *end) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueRange<uint64_t> keyFieldValue(*start, *end);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  *start = keyFieldValue.low_;
+  *end = keyFieldValue.high_;
+  return sts;
 }
 
 tdi_status_t tdi_key_field_get_value_range_ptr(
@@ -205,7 +216,10 @@ tdi_status_t tdi_key_field_get_value_range_ptr(
     uint8_t *end) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueRange<uint8_t *> keyFieldValue(start, end, size);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  start = keyFieldValue.low_;
+  end = keyFieldValue.high_;
+  return sts;
 }
 
 /* LPM */
@@ -215,7 +229,10 @@ tdi_status_t tdi_key_field_get_value_lpm(const tdi_table_key_hdl *key_hdl,
                                          uint16_t *p_length) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueLPM<uint64_t> keyFieldValue(*start, *p_length);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts=key->getValue(field_id, &keyFieldValue);
+  *start = keyFieldValue.value_;
+  *p_length = keyFieldValue.prefix_len_;
+  return(sts);
 }
 
 tdi_status_t tdi_key_field_get_value_lpm_ptr(
@@ -223,8 +240,11 @@ tdi_status_t tdi_key_field_get_value_lpm_ptr(
     const tdi_id_t field_id,
     const size_t size,
     uint8_t *value1,
-    const uint16_t *p_length) {
+    uint16_t *p_length) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueLPM<uint8_t *> keyFieldValue(value1, *p_length, size);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  value1 = keyFieldValue.value_;
+  *p_length = keyFieldValue.prefix_len_;
+  return(sts);
 }
