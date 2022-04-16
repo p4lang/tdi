@@ -58,7 +58,10 @@ tdi_status_t tdi_key_field_get_value_optional(
     bool *is_valid) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueOptional<long unsigned int> keyFieldValue(*value, *is_valid);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  *value = keyFieldValue.value_;
+  *is_valid = keyFieldValue.is_valid_;
+  return sts; 
 }
 
 tdi_status_t tdi_key_field_get_value_optional_ptr(
@@ -69,5 +72,8 @@ tdi_status_t tdi_key_field_get_value_optional_ptr(
     bool *is_valid) {
   auto key = reinterpret_cast<const tdi::TableKey *>(key_hdl);
   tdi::KeyFieldValueOptional<uint8_t *> keyFieldValue(value1, *is_valid, size);
-  return key->getValue(field_id, &keyFieldValue);
+  auto sts = key->getValue(field_id, &keyFieldValue);
+  value1 = keyFieldValue.value_;
+  *is_valid = keyFieldValue.is_valid_;
+  return sts; 
 }
