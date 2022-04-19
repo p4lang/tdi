@@ -47,46 +47,50 @@ typedef uint32_t tdi_dev_id_t;
  * @brief enum of table APIs available
  */
 enum tdi_table_api_type_e {
-  /** Entry Add. Most common API. Applicable to most tables*/
+  /** Entry Add. Most common API. Applicable to most tables. Adds an entry
+     (key,data)*/
   TDI_TABLE_API_TYPE_ADD = 0,
-  /** Entry Modify. Applicable to most tables*/
+  /** Entry Modify. Like Add but users can change selective fields. Entry should
+     be present*/
   TDI_TABLE_API_TYPE_MODIFY = 1,
   /** Entry Modify incremental. Useful in cases where the data is an
   array and only one element needs to be changed.*/
   TDI_TABLE_API_TYPE_MODIFY_INC = 2,
 
-  /** Entry Delete. Not applicable for some tables like counter,
-                  register, meter*/
+  /** Entry Delete. Deletes an entry. If mod-only table, then this will reset an
+     entry to defaults*/
   TDI_TABLE_API_TYPE_DELETE = 3,
-  /** Clear. Only applicable for tables which have DELETE right now*/
+  /** Clear. Removes all entries. If mod-only table, then defaults all entries*/
   TDI_TABLE_API_TYPE_CLEAR = 4,
-  /** Default Entry Set. Only applicable for Match
-                              action tables, direct or indirect. If table has
+  /** Default Entry Set. Set default entry. If table has
                               const default action, then this would fail*/
   TDI_TABLE_API_TYPE_DEFAULT_ENTRY_SET = 5,
-  /** Default Entry Reset. Only applicable for Match
-                             action tables, direct or indirect. Idempotent*/
-  TDI_TABLE_API_TYPE_DEFAULT_ENTRY_RESET = 6,
-  /** Default Entry Get. Only applicable for Match
-                            action tables, direct or indirect.*/
-  TDI_TABLE_API_TYPE_DEFAULT_ENTRY_GET = 7,
-  /** Entry Get. Applicable to most tables.*/
-  TDI_TABLE_API_TYPE_GET = 8,
-  /** Entry Get First. Applicable to most tables.*/
-  TDI_TABLE_API_TYPE_GET_FIRST = 9,
-  /** Entry Get Next n entries. Applicable for most tables*/
-  TDI_TABLE_API_TYPE_GET_NEXT_N = 10,
-  /** Get Usage. get the current usage of the tables. Not applicable
-             for some tables like counter, register, meter */
-  TDI_TABLE_API_TYPE_USAGE_GET = 11,
+  /** Default Entry Mod. Differs from set in a way that only specified data
+   * fields would be affected*/
+  TDI_TABLE_API_TYPE_DEFAULT_ENTRY_MODIFY = 6,
+  /** Default Entry Reset. */
+  TDI_TABLE_API_TYPE_DEFAULT_ENTRY_RESET = 7,
+  /** Default Entry Get. */
+  TDI_TABLE_API_TYPE_DEFAULT_ENTRY_GET = 8,
+  /** Entry Get. */
+  TDI_TABLE_API_TYPE_GET = 9,
+  /** Entry Get First. */
+  TDI_TABLE_API_TYPE_GET_FIRST = 10,
+  /** Entry Get Next n entries. */
+  TDI_TABLE_API_TYPE_GET_NEXT_N = 11,
+  /** Get Usage. Get the current usage of the tables.*/
+  TDI_TABLE_API_TYPE_USAGE_GET = 12,
+  /** Get Size. Get the runtime size. Only needed for tables which can have
+     different runtime size than the size present in json info.*/
+  TDI_TABLE_API_TYPE_SIZE_GET = 13,
   /** Get entry by handle instead of key. */
-  TDI_TABLE_API_TYPE_GET_BY_HANDLE = 12,
+  TDI_TABLE_API_TYPE_GET_BY_HANDLE = 14,
   /** Get entry key by handle. */
-  TDI_TABLE_API_TYPE_KEY_GET = 13,
+  TDI_TABLE_API_TYPE_KEY_GET = 15,
   /** Get entry handle from key. */
-  TDI_TABLE_API_TYPE_HANDLE_GET = 14,
+  TDI_TABLE_API_TYPE_HANDLE_GET = 16,
   /** Invalid not supported API. */
-  TDI_TABLE_API_TYPE_INVALID_API = 15
+  TDI_TABLE_API_TYPE_INVALID_API = 17
 };
 
 /**
@@ -319,7 +323,7 @@ typedef uint32_t tdi_dev_pipe_t;
  * @param[out] err_str Pointer to error string. Doesn't require user to allocate
  *space
  */
-//void tdi_err_str(tdi_status_t sts, const char **err_str);
+// void tdi_err_str(tdi_status_t sts, const char **err_str);
 
 #ifdef __cplusplus
 }
