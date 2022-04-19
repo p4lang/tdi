@@ -192,6 +192,10 @@ tdi_status_t TableData::isActive(const tdi_id_t &field_id,
     *is_active = false;
     return TDI_SUCCESS;
   }
+  if (this->all_fields_set_) {
+    *is_active = true;
+    return TDI_SUCCESS;
+  }
 
   auto it2 = this->active_fields_s_.find(field_id);
   if (it2 != this->active_fields_s_.end()) {

@@ -51,6 +51,15 @@ class Session {
    */
 
   /**
+   * @brief Create session. Creation and destruction
+   * of a session is not tied to the ctor and dtor of this
+   * class but rather a separate API is provided for
+   * ease of error handling
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t create() = 0;
+  /**
    * @brief Destroy session
    *
    * @return Status of the API call
@@ -166,8 +175,6 @@ class Session {
   virtual tdi_status_t abortTransaction() const = 0;
   /** @} */  // End of group Transaction
  protected:
-  virtual tdi_status_t create() = 0;
-
   std::vector<tdi_mgr_type_e> mgr_type_list_;
   bool is_valid_ = true;
 };

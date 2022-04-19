@@ -369,8 +369,8 @@ class TableData {
    *
    * @return Status of the API call
    */
-  tdi_status_t reset(const tdi_id_t &action_id,
-                     const std::vector<tdi_id_t> &fields);
+  virtual tdi_status_t reset(const tdi_id_t &action_id,
+                             const std::vector<tdi_id_t> &fields);
 
   /**
    * @brief Data object reset, container version
@@ -383,9 +383,9 @@ class TableData {
    *
    * @return Status of the API call
    */
-  tdi_status_t reset(const tdi_id_t &action_id,
-                     const tdi_id_t &container_id,
-                     const std::vector<tdi_id_t> &fields);
+  virtual tdi_status_t reset(const tdi_id_t &action_id,
+                             const tdi_id_t &container_id,
+                             const std::vector<tdi_id_t> &fields);
 
   /**
    * @brief Get parent Table object.
