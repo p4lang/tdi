@@ -187,16 +187,23 @@ tdi_status_t TableData::getParent(const tdi::Learn ** /*learn*/) const {
 
 tdi_status_t TableData::isActive(const tdi_id_t &field_id,
                                  bool *is_active) const {
+  // 1. Check if the input field was part of an explicit
+  // field removal which can be done via removeActiveField.
   auto it = this->removed_one_ofs_.find(field_id);
   if (it != this->removed_one_ofs_.end()) {
     *is_active = false;
     return TDI_SUCCESS;
   }
+  // 2. Check if all fields were set. Then all fields are
+  // active
+
   if (this->all_fields_set_) {
     *is_active = true;
     return TDI_SUCCESS;
   }
 
+  // Lastly check if they are explicitly set in the active
+  // fields set
   auto it2 = this->active_fields_s_.find(field_id);
   if (it2 != this->active_fields_s_.end()) {
     *is_active = true;

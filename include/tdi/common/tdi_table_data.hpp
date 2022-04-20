@@ -429,9 +429,22 @@ class TableData {
 
   const bool &allFieldsSetGet() const { return all_fields_set_; };
 
+  /**
+   * @brief Can be used to mark a field as inactive.
+   *
+   * @param field_id Data field ID
+   */
   void removeActiveField(const tdi_id_t &field_id) {
+    // The reason a separate set of removed_one_ofs_ is maintained
+    // is because the active_field_s_ set doesn't always
+    // contain the list of all fields. It cannot keep it especially
+    // if the action_id is not known beforehand. So in those cases,
+    // we need to mark if a field was removed.
     this->removed_one_ofs_.insert(field_id);
     this->active_fields_s_.erase(field_id);
+    if (all_fields_set_) {
+      all_fields_set_ = false;
+    }
   }
 
   /**
