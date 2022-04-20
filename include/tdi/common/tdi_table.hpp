@@ -653,8 +653,18 @@ class Table {
   const TdiInfo *tdiInfoGet() const { return tdi_info_; };
 
  protected:
+  // Targets can choose to use any ctor to create tables. The 2nd one
+  // assists with setting table APIs during runtime rather than
+  // relying on json schema. If using 2nd ctor and json schema
+  // is also provided then it is overridden
   Table(const TdiInfo *tdi_info, const TableInfo *table_info)
       : tdi_info_(tdi_info), table_info_(table_info){};
+  Table(const TdiInfo *tdi_info,
+        const tdi::SupportedApis table_apis,
+        const TableInfo *table_info)
+      : tdi_info_(tdi_info), table_info_(table_info) {
+    table_info_->apiSupportedSet(std::move(table_apis));
+  };
 
  private:
   // Backpinter to the TdiInfo

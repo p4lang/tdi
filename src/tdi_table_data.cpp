@@ -151,6 +151,29 @@ tdi_status_t TableData::dataAllocateContainer(
   return TDI_NOT_SUPPORTED;
 }
 
+tdi_status_t TableData::reset(const tdi_id_t &action_id,
+                              const std::vector<tdi_id_t> &fields) {
+  return reset(action_id, 0, fields);
+}
+
+tdi_status_t TableData::reset(const tdi_id_t &action_id,
+                              const tdi_id_t &container_id,
+                              const std::vector<tdi_id_t> &fields) {
+  this->action_id_ = action_id;
+  this->container_id_ = container_id;
+  this->removed_one_ofs_ = {};
+  this->active_fields_s_ = {};
+  if (fields.empty()) {
+    this->all_fields_set_ = true;
+  } else {
+    this->all_fields_set_ = false;
+    std::copy(fields.begin(),
+              fields.end(),
+              std::inserter(active_fields_s_, active_fields_s_.end()));
+  }
+  return TDI_SUCCESS;
+}
+
 tdi_status_t TableData::getParent(const tdi::Table **table) const {
   *table = this->table_;
   return TDI_SUCCESS;
@@ -161,11 +184,32 @@ tdi_status_t TableData::getParent(const tdi::Learn ** /*learn*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
+
 tdi_status_t TableData::isActive(const tdi_id_t &field_id,
                                  bool *is_active) const {
-  *is_active =
-      std::find(active_fields_.begin(), active_fields_.end(), field_id) !=
-      active_fields_.end();
+  // 1. Check if the input field was part of an explicit
+  // field removal which can be done via removeActiveField.
+  auto it = this->removed_one_ofs_.find(field_id);
+  if (it != this->removed_one_ofs_.end()) {
+    *is_active = false;
+    return TDI_SUCCESS;
+  }
+  // 2. Check if all fields were set. Then all fields are
+  // active
+
+  if (this->all_fields_set_) {
+    *is_active = true;
+    return TDI_SUCCESS;
+  }
+
+  // Lastly check if they are explicitly set in the active
+  // fields set
+  auto it2 = this->active_fields_s_.find(field_id);
+  if (it2 != this->active_fields_s_.end()) {
+    *is_active = true;
+    return TDI_SUCCESS;
+  }
+  *is_active = false;
   return TDI_SUCCESS;
 }
 

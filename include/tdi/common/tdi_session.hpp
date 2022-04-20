@@ -41,6 +41,7 @@ class Session {
    */
   virtual ~Session() = default;
 
+  Session() = delete;
   Session(const std::vector<tdi_mgr_type_e> &mgr_type_list)
       : mgr_type_list_(mgr_type_list){};
 
@@ -49,6 +50,15 @@ class Session {
    * @{
    */
 
+  /**
+   * @brief Create session. Creation and destruction
+   * of a session is not tied to the ctor and dtor of this
+   * class but rather a separate API is provided for
+   * ease of error handling
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t create() = 0;
   /**
    * @brief Destroy session
    *
@@ -70,7 +80,7 @@ class Session {
    * @param [in]
    * @returns Session Handle of an active session
    */
-  virtual const tdi_handle_t &handleGet(const tdi_mgr_type_e& mgr_type) const = 0;
+  virtual tdi_handle_t handleGet(const tdi_mgr_type_e &mgr_type) const = 0;
 
   /**
    * @brief Check whether this Session Object's handle is still valid or not
@@ -169,6 +179,6 @@ class Session {
   bool is_valid_ = true;
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif

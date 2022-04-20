@@ -91,6 +91,18 @@ class Annotation {
   std::string full_name_{""};
 };
 
+class SupportedApis {
+ public:
+  SupportedApis(){};
+  SupportedApis(
+      std::map<tdi_table_api_type_e, std::vector<std::string>> api_map)
+      : api_target_attributes_map_(api_map){};
+  // Contains a map of supported API to the supported target attribtues like
+  // dev_id, pipe_id, pipe_all etc. These target attribtues are device specific
+  std::map<tdi_table_api_type_e, std::vector<std::string>>
+      api_target_attributes_map_{};
+};
+
 class KeyFieldInfo {
  public:
   /**
@@ -131,8 +143,8 @@ class KeyFieldInfo {
    * @brief Get whether Key Field is of type ptr or not. This is true for
    * fields of size>64 bits and false if <=64
    * If the field is
-   * of ptr type, then only byte array sets/gets are applicable on the field. Else
-   * both the ptr versions and the primitive template versions work
+   * of ptr type, then only byte array sets/gets are applicable on the field.
+   * Else both the ptr versions and the primitive template versions work
    *
    * @return Boolean type indicating whether Field is of type ptr
    *
@@ -163,7 +175,6 @@ class KeyFieldInfo {
    * @return field ID
    */
   const tdi_id_t &idGet() const { return field_id_; };
-  
 
   /** @} */  // End of group Key
 
@@ -551,8 +562,14 @@ class TableInfo {
    * @brief Get a set of APIs which are supported by this table.
    * @return The set of APIs which are supported by this table
    */
-  const std::set<tdi_table_api_type_e> &apiSupportedGet() const {
-    return table_apis_;
+  const SupportedApis &apiSupportedGet() const { return table_apis_; };
+
+  /**
+   * @brief Set supported APIs
+   * @return void
+   */
+  void apiSupportedSet(tdi::SupportedApis table_apis) const {
+    table_apis_ = std::move(table_apis);
   };
 
   /**
@@ -575,9 +592,7 @@ class TableInfo {
    * @brief Get set of table_ids this table depends on
    * @return Set of table_ids this table depends on
    */
-  const std::set<tdi_id_t> &dependsOnGet() const {
-    return depends_on_set_;
-  };
+  const std::set<tdi_id_t> &dependsOnGet() const { return depends_on_set_; };
 
   /**
    * @brief Get a vector of Key field IDs
@@ -740,7 +755,7 @@ class TableInfo {
             std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map,
             std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map,
             std::set<tdi_id_t> depends_on_set,
-            std::set<tdi_table_api_type_e> table_apis,
+            SupportedApis table_apis,
             std::set<tdi_operations_type_e> operations_type_set,
             std::set<tdi_attributes_type_e> attributes_type_set,
             std::set<Annotation> annotations)
@@ -754,11 +769,10 @@ class TableInfo {
         table_data_map_(std::move(table_data_map)),
         table_action_map_(std::move(table_action_map)),
         depends_on_set_(depends_on_set),
-        table_apis_(table_apis),
+        table_apis_(std::move(table_apis)),
         operations_type_set_(operations_type_set),
         attributes_type_set_(attributes_type_set),
         annotations_(annotations) {
-
     // update relevant maps
     for (const auto &kv : table_key_map_) {
       const KeyFieldInfo *key_field = kv.second.get();
@@ -786,7 +800,7 @@ class TableInfo {
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
   const std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map_;
   const std::set<tdi_id_t> depends_on_set_;
-  const std::set<tdi_table_api_type_e> table_apis_{};
+  mutable tdi::SupportedApis table_apis_{};
   const std::set<tdi_operations_type_e> operations_type_set_;
   const std::set<tdi_attributes_type_e> attributes_type_set_;
   const std::set<Annotation> annotations_{};

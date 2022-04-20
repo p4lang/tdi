@@ -404,7 +404,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map;
   std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map;
   std::set<tdi_id_t> depends_on_set;
-  std::set<tdi_table_api_type_e> table_apis{};
+  SupportedApis table_apis;
   std::set<tdi_operations_type_e> operations_type_set;
   std::set<tdi_attributes_type_e> attributes_type_set;
 
@@ -522,7 +522,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
                     std::move(table_data_map),
                     std::move(table_action_map),
                     depends_on_set,
-                    table_apis,
+                    std::move(table_apis),
                     operations_type_set,
                     attributes_type_set,
                     parseAnnotations(table_tdi[tdi_json::TABLE_ANNOTATIONS])));
