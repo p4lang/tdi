@@ -63,10 +63,6 @@ class TdiTable:
         self.string_choices = {}
         self.annotations = {}
         self.has_const_default_action = False
-        self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
-        #self.set_supported_attributes_to_supported_commands()
-        self.set_supported_operations_to_supported_commands()
-        self.set_supported_apis_to_supported_commands()
         self.unimplemented_tables = ["TODO"]
         self.table_type = self.table_type_map((self.get_type()))
         self.table_ready = False if self.table_type in self.unimplemented_tables else True
@@ -95,6 +91,10 @@ class TdiTable:
         if self.table_type in ["SNAPSHOT", "SNAPSHOT_LIVENESS"]:
             self.name = "{}".format(name_lowercase_without_dollar)
         # print("{:40s} | {:30s} | {:10s}".format(self.name, self.table_type, "Ready" if self.table_ready else "TBD"))
+        self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
+        self.set_supported_attributes_to_supported_commands()
+        self.set_supported_operations_to_supported_commands()
+        self.set_supported_apis_to_supported_commands()
         if not self.table_ready:
             return
         #
@@ -1623,10 +1623,8 @@ class TdiTable:
             flag = 1
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(flag,  byref(flags_handle))
-        '''
         if not sts == 0:
             return -1
-        '''
         if entry_handle != None:
             key_handle = self._cintf.handle_type()
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
@@ -1867,27 +1865,20 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_attributes_supported(self._info_handle, byref(attributes_arr), byref(num_attrs))
         if sts != 0:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+        print("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
+        # based on tdi_rt_attributes_type_e
+        attributes_dic = {
+                  0: ["symmetric_mode_set", "symmetric_mode_get"],
+                  2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
+                  3: ["dynamic_hash_set", "dynamic_hash_get"],
+                  4: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
+                  5: ["port_status_notif_cb_set"],
+                  6: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
+                  8: ["selector_table_update_cb_set"]}
+        keys_list = attributes_dic.keys()
         for i in range(len(attributes_arr)):
-            if attributes_arr[i] == 0:
-                self.supported_commands.append("symmetric_mode_set")
-                self.supported_commands.append("symmetric_mode_get")
-            elif attributes_arr[i] == 2:
-                self.supported_commands.append("idle_table_set_poll")
-                self.supported_commands.append("idle_table_set_notify")
-                self.supported_commands.append("idle_table_get")
-            elif attributes_arr[i] == 3:
-                self.supported_commands.append("dynamic_hash_set")
-                self.supported_commands.append("dynamic_hash_get")
-            elif attributes_arr[i] == 4:
-                self.supported_commands.append("meter_byte_count_adjust_set")
-                self.supported_commands.append("meter_byte_count_adjust_get")
-            elif attributes_arr[i] == 5:
-                self.supported_commands.append("port_status_notif_cb_set")
-            elif attributes_arr[i] == 6:
-                self.supported_commands.append("port_stats_poll_intv_set")
-                self.supported_commands.append("port_stats_poll_intv_get")
-            elif attributes_arr[i] == 8:
-                self.supported_commands.append("selector_table_update_cb_set")
+            if attributes_arr[i] in keys_list:
+                self.supported_commands += attributes_dic[attributes_arr[i]]
 
     def set_supported_operations_to_supported_commands(self):
         num_opers = c_uint(0)
@@ -1899,14 +1890,15 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_operations_supported(self._info_handle, byref(operations_arr), byref(num_opers))
         if sts != 0:
             raise TdiTableError("Error: operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+        print("For Table={} operations_arr ==={}".format(self.name, str(operations_arr[0:])));
+        operations_dic = {
+            0: "operation_counter_sync",
+            1: "operation_register_sync",
+            2: "operation_hit_state_update"}
+        keys_list = operations_dic.keys()
         for i in range(len(operations_arr)):
-            if operations_arr[i] == 0:
-                self.supported_commands.append("operation_counter_sync")
-            elif operations_arr[i] == 1:
-                self.supported_commands.append("operation_register_sync")
-            elif operations_arr[i] == 2:
-                self.supported_commands.append("operation_hit_state_update")
-
+            if operations_arr[i] in keys_list:
+                self.supported_commands.append(operations_dic[operations_arr[i]])
 
     def set_supported_apis_to_supported_commands(self):
         num_api = c_uint(0)
@@ -1916,47 +1908,38 @@ class TdiTable:
         arr_type = c_uint * num_api.value
         api_arr = arr_type()
         sts = self._cintf.get_driver().tdi_table_api_supported(self._info_handle, byref(api_arr), byref(num_api))
-        self.supported_commands.append("add")
-        self.supported_commands.append("mod")
-        self.supported_commands.append("get")
-        self.supported_commands.append("delete")
         if sts != 0:
             raise TdiTableError("Error: apis supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+        # based on enum tdi_table_api_type_e
+        print("For Table={} api_arr ==={}".format(self.name, str(api_arr[0:])));
+        apis_dic = {0:  "add",
+                    1:  "mod",
+                    2:  "mod_inc",
+                    3:  "delete",
+                    4:  "clear",
+                    5:  "set_default",
+                    6:  "mod_default",
+                    7:  "reset_default",
+                    8:  "get_default",
+                    9:  "get",
+                    10: "get_first",
+                    11: "get_next_n",
+                    12: "usage_get",
+                    13: "get_size",
+                    14: "get_by_handle",
+                    15: "get_key",
+                    16: "get_handle",
+                    17: "invalid_api"}
+        keys_list = apis_dic.keys()
         for i in range(len(api_arr)):
-            if api_arr[i] == 0:
-                self.supported_commands.append("add")
-            elif api_arr[i] == 1:
-                self.supported_commands.append("mod")
-            elif api_arr[i] == 2:
-                self.supported_commands.append("mod_inc")
-            elif api_arr[i] == 3:
-                self.supported_commands.append("delete")
-            elif api_arr[i] == 4:
-                self.supported_commands.append("clear")
-            elif api_arr[i] == 5:
-                self.supported_commands.append("set_default")
-            elif api_arr[i] == 6:
-                self.supported_commands.append("reset_default")
-            elif api_arr[i] == 7:
-                self.supported_commands.append("get_default")
+            if api_arr[i] in keys_list:
+                self.supported_commands.append(apis_dic[api_arr[i]])
+            if apis_dic[api_arr[i]] == "get_default":
                 if "dump" not in self.supported_commands:
                     self.supported_commands.append("dump")
-            elif api_arr[i] == 8:
-                self.supported_commands.append("get")
-            elif api_arr[i] == 9:
-                self.supported_commands.append("get_first")
+            elif apis_dic[api_arr[i]] == "get_first":
                 if "dump" not in self.supported_commands:
                     self.supported_commands.append("dump")
-            elif api_arr[i] == 10:
-                self.supported_commands.append("get_next_n")
-            elif api_arr[i] == 11:
-                self.supported_commands.append("usage_get")
-            elif api_arr[i] == 12:
-                self.supported_commands.append("get_by_handle")
-            elif api_arr[i] == 13:
-                self.supported_commands.append("get_key")
-            elif api_arr[i] == 14:
-                self.supported_commands.append("get_handle")
 
     def _attr_deallocate(self, attr_hdl):
         sts = self._cintf.get_driver().tdi_table_attributes_deallocate(attr_hdl)
@@ -2475,7 +2458,6 @@ class TdiTable:
             for i in range(0, iterval):
                 action = None
                 if action_ids != None:
-
                     if len(table.actions) > 0:
                         action = table.action_id_name_map[action_ids[i]]
 

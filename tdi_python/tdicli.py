@@ -203,7 +203,7 @@ class CIntfTdi:
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             return -1
-        #self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
+        self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
@@ -1152,6 +1152,7 @@ Available Commands:
         for action_name, info in self._c_tbl.actions.items():
             data_fields = info["data_fields"]
             annotations = info["annotations"]
+            # print("annotaions {}".format(str(annotations)))
             if not self._c_tbl.has_const_default_action:
                 self._create_set_default_with_action(data_fields, action_name)
             if ("@defaultonly","") not in annotations:
