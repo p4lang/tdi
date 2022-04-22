@@ -102,6 +102,19 @@ std::vector<tdi_id_t> TableInfo::dataFieldIdListGet() const {
   return this->dataFieldIdListGet(0);
 }
 
+tdi_id_t TableInfo::dataFieldIdGet(const std::string &name) const {
+  return dataFieldIdGet(name, 0);
+}
+
+tdi_id_t TableInfo::dataFieldIdGet(const std::string &name,
+                                   const tdi_id_t &action_id) const {
+  const auto dataField = dataFieldGet(name, action_id);
+  if (dataField == nullptr) {
+    return 0;
+  }
+  return dataField->idGet();
+}
+
 const DataFieldInfo *TableInfo::dataFieldGet(const std::string &name,
                                              const tdi_id_t &action_id) const {
   if (action_id &&

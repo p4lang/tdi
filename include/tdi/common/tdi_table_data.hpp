@@ -329,6 +329,14 @@ class TableData {
   const tdi_id_t &actionIdGet() const { return action_id_; };
 
   /**
+   * @brief Set actionId
+   *
+   * @param[in] tdi_id_t action ID
+   *
+   */
+  void actionIdSet(tdi_id_t action_id) { this->action_id_ = action_id; }
+
+  /**
    * @brief Data Allocate for a container field ID. Container ID
    * is field ID of a container field. If container ID doesn't
    * exist, then the API will fail
