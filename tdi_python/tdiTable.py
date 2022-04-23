@@ -1767,11 +1767,11 @@ class TdiTable:
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
         sts = self._cintf.tdi_table_entry_get_first(self._handle,
-                                                      self._cintf.get_session(),
-                                                      self._cintf.get_dev_tgt(),
-                                                      flags_handle,
-                                                      key_handle,
-                                                      data_handle)
+                                                    self._cintf.get_session(),
+                                                    self._cintf.get_dev_tgt(),
+                                                    key_handle,
+                                                    data_handle,
+                                                    flags_handle)
         if sts == 6 and print_ents:
             print("Table {} has no entries.".format(self.name))
             return -1, -1
@@ -1798,14 +1798,14 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
         num_returned = c_uint(0)
         sts = self._cintf.tdi_table_entry_get_next_n(self._handle,
-                                                       self._cintf.get_session(),
-                                                       self._cintf.get_dev_tgt(),
-                                                       flags_handle,
-                                                       prev_key,
-                                                       key_hdls,
-                                                       data_hdls,
-                                                       n,
-                                                       byref(num_returned))
+                                                     self._cintf.get_session(),
+                                                     self._cintf.get_dev_tgt(),
+                                                     prev_key,
+                                                     key_hdls,
+                                                     data_hdls,
+                                                     n,
+                                                     byref(num_returned),
+                                                     flags_handle)
         if not sts == 0 and not sts == 6:
             # Once we are done reading all the entries from the table, tdi will
             # return an TDI_OBJECT_NOT_FOUND error
@@ -1832,7 +1832,11 @@ class TdiTable:
         count = c_uint(0)
         session = self._cintf.get_session()
         dev_target = self._cintf.get_dev_tgt()
-        sts = self._cintf.tdi_table_usage_get(self._handle, session, dev_target, flags_handle, byref(count))
+        sts = self._cintf.tdi_table_usage_get(self._handle,
+                                              session,
+                                              dev_target,
+                                              byref(count),
+                                              flags_handle)
         if not sts == 0:
             raise TdiTableError("Error: get usage failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         return count.value
