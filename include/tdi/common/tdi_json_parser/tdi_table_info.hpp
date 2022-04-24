@@ -375,6 +375,30 @@ class DataFieldInfo {
     return data_field_context_info_.get();
   };
 
+  /**
+   * @brief Get defaultValue of data object.
+   *
+   * @return default value of data object as uint64.
+   *
+   */
+  uint64_t defaultValueGet() const { return default_value_; }
+
+  /**
+   * @brief Get defaultValue of data object.
+   *
+   * @return default value of data object as string.
+   *
+   */
+  std::string defaultStrValueGet() const { return default_str_value_; }
+
+  /**
+   * @brief Get defaultValue of data object.
+   *
+   * @return default value of data object as float.
+   *
+   */
+  float defaultFlValueGet() const { return default_fl_value_; }
+
  private:
   DataFieldInfo(tdi_id_t field_id,
                 std::string name,
