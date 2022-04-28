@@ -78,7 +78,6 @@ class CIntfTdi:
 
         def tdi_table_entry_get_first(tbl_hdl, session, dev_tgt, key, data, flag):
             flags = self.get_flags()
-            print("tdi_table_entry_get_first data={} byref={} key={}".format(str(data), str(byref(data)), str(key)))
             return self._driver.tdi_table_entry_get_first(tbl_hdl, session, dev_tgt, flags, key, data)
         setattr(self, 'tdi_table_entry_get_first', tdi_table_entry_get_first)
 
