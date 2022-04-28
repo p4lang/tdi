@@ -62,83 +62,82 @@ class CIntfTdi:
         setattr(self, 'tdi_table_entry_get', tdi_table_entry_get)
 
         def tdi_table_entry_get_by_handle(tbl_hdl, session, dev_tgt, ent_hdl, key, data, flag):
-            flags = c_uint64(flag)
+            flags = self.get_flags()
             return self._driver.tdi_table_entry_get_by_handle(tbl_hdl, session, dev_tgt, flags, ent_hdl, key, data)
         setattr(self, 'tdi_table_entry_get_by_handle', tdi_table_entry_get_by_handle)
 
         def tdi_table_entry_handle_get(tbl_hdl, session, dev_tgt, key, handle):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_entry_handle_get(tbl_hdl, session, dev_tgt, flags, key, handle)
         setattr(self, 'tdi_table_entry_handle_get', tdi_table_entry_handle_get)
 
         def tdi_table_entry_key_get(tbl_hdl, session, dev_tgt, handle, e_tgt, key):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_entry_key_get(tbl_hdl, session, dev_tgt, flags, handle, e_tgt, key)
         setattr(self, 'tdi_table_entry_key_get', tdi_table_entry_key_get)
 
         def tdi_table_entry_get_first(tbl_hdl, session, dev_tgt, key, data, flag):
-            flags = c_uint64(flag.value)
+            flags = self.get_flags()
             return self._driver.tdi_table_entry_get_first(tbl_hdl, session, dev_tgt, flags, key, data)
         setattr(self, 'tdi_table_entry_get_first', tdi_table_entry_get_first)
 
         def tdi_table_entry_get_next_n(tbl_hdl, session, dev_tgt, key, keys, data, n, num_ret, flag):
-            flags = c_uint64(flag.value)
+            flags = self.get_flags()
             return self._driver.tdi_table_entry_get_next_n(tbl_hdl, session, dev_tgt, flags, key, keys, data, n, num_ret)
         setattr(self, 'tdi_table_entry_get_next_n', tdi_table_entry_get_next_n)
 
         def tdi_table_default_entry_get(tbl_hdl, session, dev_tgt, data, flag):
-            flags = c_uint64(flag)
+            flags = self.get_flags()
             return self._driver.tdi_table_default_entry_get(tbl_hdl, session, dev_tgt, flags, data)
         setattr(self, 'tdi_table_default_entry_get', tdi_table_default_entry_get)
 
         def tdi_table_default_entry_set(tbl_hdl, session, dev_tgt, data):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_default_entry_set(tbl_hdl, session, dev_tgt, flags, data)
         setattr(self, 'tdi_table_default_entry_set', tdi_table_default_entry_set)
 
         def tdi_table_default_entry_reset(tbl_hdl, session, dev_tgt):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_default_entry_reset(tbl_hdl, session, dev_tgt, flags)
         setattr(self, 'tdi_table_default_entry_reset', tdi_table_default_entry_reset)
 
 
         def tdi_table_usage_get(tbl_hdl, session, dev_tgt, count, flag):
-            flags = c_uint64(flag)
+            flags = self.get_flags()
             return self._driver.tdi_table_usage_get(tbl_hdl, session, dev_tgt, flags, count)
         setattr(self, 'tdi_table_usage_get', tdi_table_usage_get)
 
         def tdi_table_size_get(tbl_hdl, session, dev_tgt, count):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_size_get(tbl_hdl, session, dev_tgt, flags, count)
         setattr(self, 'tdi_table_size_get', tdi_table_size_get)
 
         def tdi_table_attributes_set(tbl_hdl, session, dev_tgt, attr):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_attributes_set(tbl_hdl, session, dev_tgt, flags, attr)
         setattr(self, 'tdi_table_attributes_set', tdi_table_attributes_set)
 
         def tdi_table_attributes_get(tbl_hdl, session, dev_tgt, attr):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_attributes_get(tbl_hdl, session, dev_tgt, flags, attr)
         setattr(self, 'tdi_table_attributes_get', tdi_table_attributes_get)
 
         def tdi_table_clear(tbl_hdl, session, dev_tgt):
-            flags = c_uint64(0)
+            flags = self.get_flags()
             return self._driver.tdi_table_clear(tbl_hdl, session, dev_tgt, flags)
         setattr(self, 'tdi_table_clear', tdi_table_clear)
 
         def tdi_table_entry_del(tbl_hdl, session, dev_tgt, key):
-                flags = c_uint64(0)
-                return self._driver.tdi_table_entry_del(tbl_hdl, session, dev_tgt, flags, key)
+            flags = self.get_flags()
+            return self._driver.tdi_table_entry_del(tbl_hdl, session, dev_tgt, flags, key)
         setattr(self, 'tdi_table_entry_del', tdi_table_entry_del)
 
         def tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data):
-                #flags = c_uint64(flags)
-                return self._driver.tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data)
+            return self._driver.tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data)
         setattr(self, 'tdi_table_entry_add', tdi_table_entry_add)
 
         def tdi_table_entry_mod(tbl_hdl, session, dev_tgt, flags, key, data):
-                return self._driver.tdi_table_entry_mod(tbl_hdl, session, dev_tgt, flags, key, data)
+            return self._driver.tdi_table_entry_mod(tbl_hdl, session, dev_tgt, flags, key, data)
         setattr(self, 'tdi_table_entry_mod', tdi_table_entry_mod)
 
         def tdi_table_entry_mod_inc(tbl_hdl, session, dev_tgt, key, data, flag):
