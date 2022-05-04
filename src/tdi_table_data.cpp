@@ -151,16 +151,27 @@ tdi_status_t TableData::dataAllocateContainer(
   return TDI_NOT_SUPPORTED;
 }
 
+tdi_status_t TableData::reset() { return this->reset(0, 0, {}); }
+
+tdi_status_t TableData::reset(const tdi_id_t &action_id) {
+  return this->reset(action_id, 0, {});
+}
+
 tdi_status_t TableData::reset(const tdi_id_t &action_id,
                               const std::vector<tdi_id_t> &fields) {
-  return reset(action_id, 0, fields);
+  return this->reset(action_id, 0, fields);
 }
 
 tdi_status_t TableData::reset(const tdi_id_t &action_id,
                               const tdi_id_t &container_id,
                               const std::vector<tdi_id_t> &fields) {
-  this->action_id_ = action_id;
+  this->actionIdSet(action_id);
   this->container_id_ = container_id;
+  this->activeFieldsSet(fields);
+  return this->resetDerived();
+}
+
+tdi_status_t TableData::activeFieldsSet(const std::vector<tdi_id_t> &fields) {
   this->removed_one_ofs_ = {};
   this->active_fields_s_ = {};
   if (fields.empty()) {
@@ -174,15 +185,21 @@ tdi_status_t TableData::reset(const tdi_id_t &action_id,
   return TDI_SUCCESS;
 }
 
-tdi_status_t TableData::getParent(const tdi::Table **table) const {
-  *table = this->table_;
-  return TDI_SUCCESS;
-}
+void TableData::removeActiveField(const tdi_id_t &field_id) {
+  // The reason a separate set of removed_one_ofs_ is maintained
+  // is because the active_field_s_ set doesn't always
+  // contain the list of all fields. It cannot keep it especially
+  // if the action_id is not known beforehand. So in those cases,
+  // we need to mark if a field was removed.
+  this->removed_one_ofs_.insert(field_id);
 
-// Learn object needs to override this
-tdi_status_t TableData::getParent(const tdi::Learn ** /*learn*/) const {
-  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
-  return TDI_NOT_SUPPORTED;
+  // If the set of active fields is empty,
+  // then no need to process it or change
+  // all_fields_set.
+  if (!active_fields_s_.empty()) {
+    this->active_fields_s_.erase(field_id);
+    all_fields_set_ = false;
+  }
 }
 
 tdi_status_t TableData::isActive(const tdi_id_t &field_id,
@@ -211,6 +228,17 @@ tdi_status_t TableData::isActive(const tdi_id_t &field_id,
   }
   *is_active = false;
   return TDI_SUCCESS;
+}
+
+tdi_status_t TableData::getParent(const tdi::Table **table) const {
+  *table = this->table_;
+  return TDI_SUCCESS;
+}
+
+// Learn object needs to override this
+tdi_status_t TableData::getParent(const tdi::Learn ** /*learn*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
 }
 
 }  // namespace tdi
