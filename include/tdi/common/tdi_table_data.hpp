@@ -375,7 +375,7 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t reset(const tdi_id_t &action_id);
+  virtual tdi_status_t reset(const tdi_id_t &action_id) final;
 
   /**
    * @brief Data object reset
@@ -386,8 +386,8 @@ class TableData {
    *
    * @return Status of the API call
    */
-  tdi_status_t reset(const tdi_id_t &action_id,
-                     const std::vector<tdi_id_t> &fields);
+  virtual tdi_status_t reset(const tdi_id_t &action_id,
+                             const std::vector<tdi_id_t> &fields) final;
 
   /**
    * @brief Data object reset.
