@@ -165,10 +165,10 @@ tdi_status_t TableData::reset(const tdi_id_t &action_id,
 tdi_status_t TableData::reset(const tdi_id_t &action_id,
                               const tdi_id_t &container_id,
                               const std::vector<tdi_id_t> &fields) {
-  this->resetDerived();
   this->actionIdSet(action_id);
   this->container_id_ = container_id;
-  return this->activeFieldsSet(fields);
+  this->activeFieldsSet(fields);
+  return this->resetDerived();
 }
 
 tdi_status_t TableData::activeFieldsSet(const std::vector<tdi_id_t> &fields) {
