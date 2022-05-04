@@ -361,6 +361,23 @@ class TableData {
       std::unique_ptr<tdi::TableData> *data_ret) const;
 
   /**
+   * @brief Data object reset. There are 4 flavors
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t reset();
+
+  /**
+   * @brief Data object reset
+   *
+   * @param[in] action_id Action ID. Can be put in as 0 if actions aren't
+   * supported by the table or if it is unknown.
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t reset(const tdi_id_t &action_id);
+
+  /**
    * @brief Data object reset
    *
    * @param[in] action_id Action ID. Can be put in as 0 if actions aren't
@@ -434,18 +451,7 @@ class TableData {
    *
    * @param field_id Data field ID
    */
-  void removeActiveField(const tdi_id_t &field_id) {
-    // The reason a separate set of removed_one_ofs_ is maintained
-    // is because the active_field_s_ set doesn't always
-    // contain the list of all fields. It cannot keep it especially
-    // if the action_id is not known beforehand. So in those cases,
-    // we need to mark if a field was removed.
-    this->removed_one_ofs_.insert(field_id);
-    this->active_fields_s_.erase(field_id);
-    if (all_fields_set_) {
-      all_fields_set_ = false;
-    }
-  }
+  void removeActiveField(const tdi_id_t &field_id);
 
   /**
    * @brief Returns a const ref to set of active fields. If empty
@@ -457,16 +463,31 @@ class TableData {
     return active_fields_s_;
   };
 
+  /**
+   * @brief Reset action ID. Caution: Only meant to be used by Target driver
+   * code and not application code. Applications should use reset APIs
+   *
+   * @param action_id
+   */
+  void actionIdSet(const tdi_id_t &action_id) { action_id_ = action_id; };
+  /**
+   * @brief Set active fields. Caution: Only meant to be used by Target driver
+   * code and not application code. Applications should use reset APIs
+   *
+   * @return Status of API call
+   */
+  tdi_status_t activeFieldsSet(const std::vector<tdi_id_t> &fields);
+
  protected:
   // For LearnData, this can be set to nullptr
   const tdi::Table *table_;
   // For TableData, this can be set to nullptr
   const tdi::Learn *learn_;
-  bool all_fields_set_{false};
 
  private:
   tdi_id_t action_id_{0};
   tdi_id_t container_id_{0};
+  bool all_fields_set_{false};
   // set for faster lookup
   std::set<tdi_id_t> active_fields_s_{};
   // set of removed oneofs
