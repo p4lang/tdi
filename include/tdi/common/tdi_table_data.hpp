@@ -365,7 +365,7 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t reset();
+  virtual tdi_status_t reset() final;
 
   /**
    * @brief Data object reset
@@ -386,11 +386,18 @@ class TableData {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t reset(const tdi_id_t &action_id,
-                             const std::vector<tdi_id_t> &fields);
+  tdi_status_t reset(const tdi_id_t &action_id,
+                     const std::vector<tdi_id_t> &fields);
 
   /**
-   * @brief Data object reset, container version
+   * @brief Data object reset.
+   *
+   * This version is the only virtual non-final version
+   * because target drivers should be able to override this function if
+   * required. Target drivers should be deriving resetDerived only but if
+   * something is required to do during reset with older action ID or older set
+   * of fields, then overriding this function might be needed. In every usual
+   * case, overriding resetDerived should be enough
    *
    * @param[in] action_id Action ID. Can be put in as 0 if actions aren't
    * supported by the table or if it is unknown.
@@ -479,6 +486,14 @@ class TableData {
   tdi_status_t activeFieldsSet(const std::vector<tdi_id_t> &fields);
 
  protected:
+  /**
+   * @brief Template pattern function which should be overridden by Derived
+   * classes for any Table specific reset
+   *
+   * @return Status of API call
+   */
+  virtual tdi_status_t resetDerived() { return TDI_SUCCESS; };
+
   // For LearnData, this can be set to nullptr
   const tdi::Table *table_;
   // For TableData, this can be set to nullptr

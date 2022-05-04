@@ -151,10 +151,10 @@ tdi_status_t TableData::dataAllocateContainer(
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t TableData::reset() { return this->reset(0); }
+tdi_status_t TableData::reset() { return this->reset(0, 0, {}); }
 
 tdi_status_t TableData::reset(const tdi_id_t &action_id) {
-  return this->reset(action_id, {});
+  return this->reset(action_id, 0, {});
 }
 
 tdi_status_t TableData::reset(const tdi_id_t &action_id,
@@ -165,19 +165,10 @@ tdi_status_t TableData::reset(const tdi_id_t &action_id,
 tdi_status_t TableData::reset(const tdi_id_t &action_id,
                               const tdi_id_t &container_id,
                               const std::vector<tdi_id_t> &fields) {
-  this->action_id_ = action_id;
+  this->resetDerived();
+  this->actionIdSet(action_id);
   this->container_id_ = container_id;
-  this->removed_one_ofs_ = {};
-  this->active_fields_s_ = {};
-  if (fields.empty()) {
-    this->all_fields_set_ = true;
-  } else {
-    this->all_fields_set_ = false;
-    std::copy(fields.begin(),
-              fields.end(),
-              std::inserter(active_fields_s_, active_fields_s_.end()));
-  }
-  return TDI_SUCCESS;
+  return this->activeFieldsSet(fields);
 }
 
 tdi_status_t TableData::activeFieldsSet(const std::vector<tdi_id_t> &fields) {
