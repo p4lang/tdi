@@ -96,7 +96,7 @@ class TdiInfo:
                 continue
             array_type = c_uint * num_deps.value
             deps = array_type()
-            self._cintf.get_driver().tdi_tables_this_table_depends_on_get(table_info_hdl, tbl_id, deps)
+            self._cintf.get_driver().tdi_tables_this_table_depends_on_get(table_info, deps)
             self.tbl_dep_map[tbl_id] = deps
             # Nested tables are to be included in the parent table from depends_on field
             if tbl_obj.table_type in self.nested_tables:
