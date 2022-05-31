@@ -235,15 +235,18 @@ std::set<tdi::Annotation> TdiInfoParser::parseAnnotations(
 std::unique_ptr<struct DataFieldInfo> TdiInfoParser::parseDataField(
     const tdi::Cjson &data_json_in, const uint64_t &oneof_index) {
   tdi::Cjson data_json = data_json_in;
+
+  // first get mandatory and read_only
+  // because it exists outside oneof and singleton
+  auto mandatory = bool(data_json["mandatory"]);
+  auto read_only = bool(data_json["read_only"]);
+
   // if "singleton" field exists, then
   // lets point to it for further parsing
   if (data_json["singleton"].exists()) {
     data_json = data_json["singleton"];
   }
-  // first get mandatory and read_only
-  // because it exists outside oneof and singleton
-  auto mandatory = bool(data_json["mandatory"]);
-  auto read_only = bool(data_json["read_only"]);
+
   std::set<tdi_id_t> oneof_siblings;
   if (data_json["oneof"].exists()) {
     // Create a set of all the oneof members IDs
