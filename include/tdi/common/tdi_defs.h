@@ -295,12 +295,11 @@ DECLARE_HANDLE(tdi_target_hdl);
 DECLARE_HANDLE(tdi_flags_hdl);
 DECLARE_HANDLE(tdi_table_key_hdl);
 DECLARE_HANDLE(tdi_table_data_hdl);
-DECLARE_HANDLE(tdi_table_attributes_hdl);
-DECLARE_HANDLE(tdi_entry_scope_arguments_hdl);
+DECLARE_HANDLE(tdi_attributes_hdl);
 DECLARE_HANDLE(tdi_learn_hdl);
 DECLARE_HANDLE(tdi_learn_info_hdl);
 DECLARE_HANDLE(tdi_learn_field_info_hdl);
-DECLARE_HANDLE(tdi_table_operations_hdl);
+DECLARE_HANDLE(tdi_operations_hdl);
 
 /**
  * @brief learn_data_hdl and table_data_hdl are the same,

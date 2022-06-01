@@ -52,12 +52,13 @@ class TableAttributes {
                         uint64_t * /*value*/) {
     return TDI_NOT_SUPPORTED;
   };
+  const tdi_attributes_type_e &attributeTypeGet() const { return attr_type_; };
 
  private:
   const Table *table_;
   tdi_attributes_type_e attr_type_;
 };
 
-}  // tdi
+}  // namespace tdi
 
 #endif  // _TDI_TABLE_ATTRIBUTES_HPP

@@ -23,8 +23,8 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
-#include <tdi/common/c_frontend/tdi_table_operations.h>
-//#include <tdi/common/c_frontend/tdi_table_attributes.h>
+#include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/c_frontend/tdi_attributes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -418,10 +418,9 @@ tdi_status_t tdi_key_field_num_allowed_choices_get(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_key_field_allowed_choices_get(
-    const tdi_table_hdl *table_hdl,
-    const tdi_id_t field_id,
-    const char *choices[]);
+tdi_status_t tdi_key_field_allowed_choices_get(const tdi_table_hdl *table_hdl,
+                                               const tdi_id_t field_id,
+                                               const char *choices[]);
 
 /******************** Data APIs *******************/
 
@@ -445,10 +444,9 @@ tdi_status_t tdi_table_data_allocate(const tdi_table_hdl *table_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_action_data_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_id_t action_id,
-    tdi_table_data_hdl **data_hdl_ret);
+tdi_status_t tdi_table_action_data_allocate(const tdi_table_hdl *table_hdl,
+                                            const tdi_id_t action_id,
+                                            tdi_table_data_hdl **data_hdl_ret);
 
 /**
  * @brief Data Allocate with a list of field-ids. This allocates the data
@@ -708,21 +706,7 @@ tdi_status_t tdi_table_data_deallocate(tdi_table_data_hdl *data_hdl);
 tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
                                       bool *ret_val);
 
-
 /********************** Attribute APIs ***********************/
-/**
- * @brief Allocate attribute object for entry scope
- *
- * @param[in] table_hdl Table object
- * @param[out] tbl_attr_hdl_ret Attribute object
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_table_entry_scope_attributes_allocate(
-    const tdi_table_hdl *table_hdl,
-    tdi_table_attributes_hdl **tbl_attr_hdl_ret);
-
-#ifdef _TDI_FROM_BFRT
 
 /**
  * @brief Deallocate attribute object
@@ -731,8 +715,7 @@ tdi_status_t tdi_table_entry_scope_attributes_allocate(
  *
  * @return Status of API call
  */
-tdi_status_t tdi_table_attributes_deallocate(
-    tdi_table_attributes_hdl *tbl_attr_hdl);
+tdi_status_t tdi_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl);
 
 /**
  * @brief Apply an Attribute from an Attribute Object on the
@@ -748,19 +731,18 @@ tdi_status_t tdi_table_attributes_deallocate(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_attributes_set(
-    const tdi_table_hdl *table_hdl,
-    const tdi_session_hdl *session,
-    const tdi_target_hdl *dev_tgt,
-    const tdi_flags_hdl *flags,
-    const tdi_table_attributes_hdl *tbl_attr);
+tdi_status_t tdi_table_attributes_set(const tdi_table_hdl *table_hdl,
+                                      const tdi_session_hdl *session,
+                                      const tdi_target_hdl *dev_tgt,
+                                      const tdi_flags_hdl *flags,
+                                      const tdi_attributes_hdl *tbl_attr);
 
 /**
  * @brief Get the current value of an Attribute set on the table.
  * The attribute object passed in as input param needs to be allocated
  * first with the required attribute type.
  * After this API call, invidual gets need to be called on the attribute
- * object. Refer to tdi_table_attributes.h for those APIs
+ * object. Refer to tdi_attributes.h for those APIs
  *
  * @param[in] table_hdl Table object
  * @param[in] session Session Object
@@ -774,9 +756,7 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
                                       const tdi_target_hdl *dev_tgt,
                                       const tdi_flags_hdl *flags,
-                                      tdi_table_attributes_hdl *tbl_attr);
-
-#endif
+                                      tdi_attributes_hdl *tbl_attr);
 
 /********************* Operations APIs ***********************/
 
@@ -791,10 +771,9 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_operations_allocate(
-    const tdi_table_hdl *table_hdl,
-    const tdi_operations_type_e op_type,
-    tdi_table_operations_hdl **tbl_ops);
+tdi_status_t tdi_operations_allocate(const tdi_table_hdl *table_hdl,
+                                     const tdi_operations_type_e op_type,
+                                     tdi_operations_hdl **tbl_ops);
 
 /**
  * @brief Deallocate operations object
@@ -803,8 +782,7 @@ tdi_status_t tdi_table_operations_allocate(
  *
  * @return Status of API call
  */
-tdi_status_t tdi_table_operations_deallocate(
-    tdi_table_operations_hdl *tbl_op_hdl);
+tdi_status_t tdi_operations_deallocate(tdi_operations_hdl *tbl_op_hdl);
 
 /**
  * @brief Execute Operations on a table. User
@@ -816,9 +794,8 @@ tdi_status_t tdi_table_operations_deallocate(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_operations_execute(
-    const tdi_table_hdl *table_hdl,
-    const tdi_table_operations_hdl *tbl_ops);
+tdi_status_t tdi_table_operations_execute(const tdi_table_hdl *table_hdl,
+                                          const tdi_operations_hdl *tbl_ops);
 
 #ifdef __cplusplus
 }

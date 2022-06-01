@@ -23,8 +23,8 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
-#include <tdi/common/c_frontend/tdi_table_operations.h>
-#include <tdi/common/c_frontend/tdi_table_attributes.h>
+#include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/c_frontend/tdi_attributes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,8 +64,8 @@ tdi_status_t tdi_table_name_get(const tdi_table_info_hdl *table_info_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_id_from_handle_get(const tdi_table_info_hdl *table_info_hdl,
-                                          tdi_id_t *id);
+tdi_status_t tdi_table_id_from_handle_get(
+    const tdi_table_info_hdl *table_info_hdl, tdi_id_t *id);
 /**
  * @brief The type of the table
  *
@@ -96,8 +96,8 @@ tdi_status_t tdi_table_has_const_default_action(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_num_annotations_get(const tdi_table_info_hdl *table_info_hdl,
-                                           uint32_t *num_annotations);
+tdi_status_t tdi_table_num_annotations_get(
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num_annotations);
 /**
  * @brief Get an array of annotations on a Table
  *
@@ -117,8 +117,8 @@ tdi_status_t tdi_table_annotations_get(const tdi_table_info_hdl *table_info_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_key_field_id_list_size_get(const tdi_table_info_hdl *table_info_hdl,
-                                            uint32_t *num);
+tdi_status_t tdi_key_field_id_list_size_get(
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num);
 
 /**
  * @brief Get an array of Key field IDs
@@ -140,9 +140,10 @@ tdi_status_t tdi_key_field_id_list_get(const tdi_table_info_hdl *table_info_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_key_field_match_type_get(const tdi_table_info_hdl *table_info_hdl,
-                                          const tdi_id_t field_id,
-                                          tdi_match_type_e *field_type);
+tdi_status_t tdi_key_field_match_type_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    tdi_match_type_e *field_type);
 
 /**
  * @brief Get data type of Key Field
@@ -153,9 +154,10 @@ tdi_status_t tdi_key_field_match_type_get(const tdi_table_info_hdl *table_info_h
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_key_field_data_type_get(const tdi_table_info_hdl *table_info_hdl,
-                                         const tdi_id_t field_id,
-                                         tdi_field_data_type_e *data_type);
+tdi_status_t tdi_key_field_data_type_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    tdi_field_data_type_e *data_type);
 
 /**
  * @brief Get field ID of Key Field from name
@@ -219,8 +221,8 @@ tdi_status_t tdi_key_field_name_get(const tdi_table_info_hdl *table_info_hdl,
  *
  * @return Status of API call
  */
-tdi_status_t tdi_data_field_id_list_size_get(const tdi_table_info_hdl *table_info_hdl,
-                                             uint32_t *num);
+tdi_status_t tdi_data_field_id_list_size_get(
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num);
 /**
  * @brief Get Size of array of Data field IDs
  *
@@ -396,9 +398,10 @@ tdi_status_t tdi_data_field_is_ptr_with_action_get(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_data_field_is_mandatory_get(const tdi_table_info_hdl *table_info_hdl,
-                                             const tdi_id_t field_id,
-                                             bool *is_mandatory);
+tdi_status_t tdi_data_field_is_mandatory_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    bool *is_mandatory);
 
 /**
  * @brief Get whether a field is mandatory
@@ -417,28 +420,29 @@ tdi_status_t tdi_data_field_is_mandatory_with_action_get(
     bool *is_mandatory);
 
 /**
-* @brief Get whether a field is ReadOnly.
-*
-* @param[in] table_info_hdl Table object
-* @param[in] field_id Field ID
-* @param[out] is_read_only Boolean value indicating if it is ReadOnly
-*
-* @return Status of the API call
-*/
-tdi_status_t tdi_data_field_is_read_only_get(const tdi_table_info_hdl *table_info_hdl,
-                                             const tdi_id_t field_id,
-                                             bool *is_read_only_ret);
+ * @brief Get whether a field is ReadOnly.
+ *
+ * @param[in] table_info_hdl Table object
+ * @param[in] field_id Field ID
+ * @param[out] is_read_only Boolean value indicating if it is ReadOnly
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_data_field_is_read_only_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    bool *is_read_only_ret);
 
 /**
-* @brief Get whether a field is ReadOnly.
-*
-* @param[in] table_info_hdl Table object
-* @param[in] field_id Field ID
-* @param[in] action_id Action ID
-* @param[out] is_read_only Boolean value indicating if it is ReadOnly
-*
-* @return Status of the API call
-*/
+ * @brief Get whether a field is ReadOnly.
+ *
+ * @param[in] table_info_hdl Table object
+ * @param[in] field_id Field ID
+ * @param[in] action_id Action ID
+ * @param[out] is_read_only Boolean value indicating if it is ReadOnly
+ *
+ * @return Status of the API call
+ */
 tdi_status_t tdi_data_field_is_read_only_with_action_get(
     const tdi_table_info_hdl *table_info_hdl,
     const tdi_id_t field_id,
@@ -471,10 +475,11 @@ tdi_status_t tdi_data_field_name_get(const tdi_table_info_hdl *table_info_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_data_field_name_copy_get(const tdi_table_info_hdl *table_info_hdl,
-                                          const tdi_id_t field_id,
-                                          const uint32_t buf_sz,
-                                          char *name_ret);
+tdi_status_t tdi_data_field_name_copy_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    const uint32_t buf_sz,
+    char *name_ret);
 
 /**
  * @brief Get the Name of a field. Note that driver will return
@@ -532,7 +537,9 @@ tdi_status_t tdi_data_field_type_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_num_annotations_get(
-    const tdi_table_info_hdl *table_info_hdl, const tdi_id_t field_id, uint32_t *num);
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    uint32_t *num);
 
 /**
  * @brief Get array of annotations on a data field
@@ -543,9 +550,10 @@ tdi_status_t tdi_data_field_num_annotations_get(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_data_field_annotations_get(const tdi_table_info_hdl *table_info_hdl,
-                                            const tdi_id_t field_id,
-                                            tdi_annotation_t *annotations_c);
+tdi_status_t tdi_data_field_annotations_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    tdi_annotation_t *annotations_c);
 /**
  * @brief Get size of array annotations on a data field
  *
@@ -588,7 +596,9 @@ tdi_status_t tdi_data_field_annotations_with_action_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_data_field_num_oneof_siblings_get(
-    const tdi_table_info_hdl *table_info_hdl, const tdi_id_t field_id, uint32_t *num);
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t field_id,
+    uint32_t *num);
 
 /**
  * @brief Get the IDs of oneof siblings of a field. If a field is part of a
@@ -649,8 +659,8 @@ tdi_status_t tdi_data_field_oneof_siblings_with_action_get(
  *
  * @return Status of API call
  */
-tdi_status_t tdi_action_id_list_size_get(const tdi_table_info_hdl *table_info_hdl,
-                                         uint32_t *num);
+tdi_status_t tdi_action_id_list_size_get(
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num);
 
 /**
  * @brief Get array of action IDs
@@ -685,9 +695,10 @@ tdi_status_t tdi_action_name_get(const tdi_table_info_hdl *table_info_hdl,
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_action_num_annotations_get(const tdi_table_info_hdl *table_info_hdl,
-                                            const tdi_id_t action_id,
-                                            uint32_t *num);
+tdi_status_t tdi_action_num_annotations_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t action_id,
+    uint32_t *num);
 /**
  * @brief Get array of annotations on an action
  *
@@ -697,9 +708,10 @@ tdi_status_t tdi_action_num_annotations_get(const tdi_table_info_hdl *table_info
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_action_annotations_get(const tdi_table_info_hdl *table_info_hdl,
-                                        const tdi_id_t action_id,
-                                        tdi_annotation_t *annotations_c);
+tdi_status_t tdi_action_annotations_get(
+    const tdi_table_info_hdl *table_info_hdl,
+    const tdi_id_t action_id,
+    tdi_annotation_t *annotations_c);
 /**
  * @brief Get Action ID from Name
  *
@@ -735,7 +747,7 @@ tdi_status_t tdi_table_num_attributes_supported(
  */
 tdi_status_t tdi_table_attributes_supported(
     const tdi_table_info_hdl *table_info_hdl,
-    tdi_table_attributes_type_t *attributes,
+    tdi_attributes_type_e *attributes,
     uint32_t *num_returned);
 
 /**
@@ -746,8 +758,7 @@ tdi_status_t tdi_table_attributes_supported(
  * @return Status of the API call
  */
 tdi_status_t tdi_table_num_api_supported(
-    const tdi_table_info_hdl *table_info_hdl,
-    uint32_t *num);
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num);
 
 /**
  * @brief Get array of supported APIs on table
@@ -759,10 +770,9 @@ tdi_status_t tdi_table_num_api_supported(
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_api_supported(
-    const tdi_table_info_hdl *table_info_hdl,
-    tdi_table_api_type_e *apis,
-    uint32_t *num_returned);
+tdi_status_t tdi_table_api_supported(const tdi_table_info_hdl *table_info_hdl,
+                                     tdi_table_api_type_e *apis,
+                                     uint32_t *num_returned);
 
 /**
  * @brief Get size of list of all the allowed values that a particular field can
@@ -872,8 +882,7 @@ tdi_status_t tdi_table_operations_supported(
  * @return Status of the API call
  */
 tdi_status_t tdi_num_tables_this_table_depends_on_get(
-    const tdi_table_info_hdl *table_info_hdl,
-    int *num_tables);
+    const tdi_table_info_hdl *table_info_hdl, int *num_tables);
 
 /**
  * @brief Get a list of tables that the given table is dependent on. When
@@ -889,11 +898,10 @@ tdi_status_t tdi_num_tables_this_table_depends_on_get(
  * @return Status of the API call
  */
 tdi_status_t tdi_tables_this_table_depends_on_get(
-    const tdi_table_info_hdl *table_info_hdl,
-    tdi_id_t *table_list);
+    const tdi_table_info_hdl *table_info_hdl, tdi_id_t *table_list);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //_TDI_TABLE_INFO_H
+#endif  //_TDI_TABLE_INFO_H
