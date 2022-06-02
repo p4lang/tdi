@@ -445,11 +445,10 @@ tdi_status_t tdi_data_field_list_with_action_get(
   return TDI_SUCCESS;
 }
 
-#ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_data_field_id_get(const tdi_table_info_hdl *table_info_hdl,
                                    const char *data_field_name,
                                    tdi_id_t *field_id_ret) {
-  auto tableInfo = reinterpret_cast<const tdi::Table *>(table_info_hdl);
+  auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   *field_id_ret = tableInfo->dataFieldIdGet(data_field_name);
   return TDI_SUCCESS;
 }
@@ -463,7 +462,6 @@ tdi_status_t tdi_data_field_id_with_action_get(
   *field_id_ret = tableInfo->dataFieldIdGet(data_field_name, action_id);
   return TDI_SUCCESS;
 }
-#endif
 
 tdi_status_t tdi_data_field_size_get(const tdi_table_info_hdl *table_info_hdl,
                                      const tdi_id_t field_id,
