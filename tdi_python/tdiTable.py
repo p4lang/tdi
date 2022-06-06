@@ -1706,14 +1706,16 @@ class TdiTable:
         if not sts == 0:
             return -1
 
-        #entry_tgt = self._cintf.BfDevTgt(0, 0, 0, 0);
-        entry_tgt = self._cintf.get_dev_tgt()
+        entry_tgt = self._cintf.target_type()
+        sts = self._cintf.get_driver().tdi_target_create(self._cintf.get_device(), byref(entry_tgt))
+        if not sts == 0:
+            return -1
         sts = self._cintf.tdi_table_entry_key_get(
                 self._handle,
                 self._cintf.get_session(),
                 self._cintf.get_dev_tgt(),
                 entry_handle,
-                byref(entry_tgt),
+                entry_tgt,
                 key_handle)
         if not sts == 0:
             if not (sts == 6 and not print_entry):
@@ -1726,8 +1728,7 @@ class TdiTable:
             key_str = ""
             for fname, fvalue in key.items():
                 key_str += "{}={}, ".format(fname.decode("ascii"), fvalue)
-            key_str += "gress_dir={}, pipe={}, prsr_id={}".format(entry_tgt.direction,
-                    entry_tgt.pipe_id, entry_tgt.prsr_id)
+            key_str += self._cintf.print_target(entry_tgt)
             print(key_str)
             stream_printer = self.make_entry_stream_printer()
             stream_printer([key_handle], None, None)

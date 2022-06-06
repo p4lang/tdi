@@ -43,9 +43,9 @@ class Target : public tdi::Target {
  public:
   virtual ~Target() = default;
   virtual tdi_status_t setValue(const tdi_target_e & /*target*/,
-                                const uint32_t & /*value*/) override;
+                                const uint64_t & /*value*/) override;
   virtual tdi_status_t getValue(const tdi_target_e & /*target*/,
-                                uint32_t * /*value*/) const override;
+                                uint64_t * /*value*/) const override;
 
  protected:
   Target(tdi_dev_id_t dev_id, tna_pipe_id_t pipe_id, tna_direction_e direction)

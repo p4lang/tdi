@@ -17,12 +17,13 @@
 #include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_init.hpp>
 
-//local includes
+// local includes
 #include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 
-tdi_status_t Target::setValue(const tdi_target_e &target_e, const uint32_t &value) {
+tdi_status_t Target::setValue(const tdi_target_e &target_e,
+                              const uint64_t &value) {
   if (target_e == static_cast<tdi_target_e>(TDI_TARGET_DEV_ID)) {
     this->dev_id_ = value;
   } else {
@@ -31,7 +32,8 @@ tdi_status_t Target::setValue(const tdi_target_e &target_e, const uint32_t &valu
   return TDI_SUCCESS;
 }
 
-tdi_status_t Target::getValue(const tdi_target_e &target_e, uint32_t *value) const {
+tdi_status_t Target::getValue(const tdi_target_e &target_e,
+                              uint64_t *value) const {
   if (target_e == static_cast<tdi_target_e>(TDI_TARGET_DEV_ID)) {
     *value = this->dev_id_;
   } else {
@@ -53,5 +55,4 @@ tdi_status_t Flags::getValue(const tdi_flags_e &flags_e, bool *value) const {
   return TDI_SUCCESS;
 }
 
-
-}  // tdi
+}  // namespace tdi

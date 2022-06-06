@@ -23,7 +23,7 @@
 #include <tdi/common/c_frontend/tdi_init.h>
 
 tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
-		            const tdi_device_hdl **device_hdl_ret) {
+                            const tdi_device_hdl **device_hdl_ret) {
   tdi_status_t sts = TDI_SUCCESS;
   const tdi::Device *device = nullptr;
   tdi::DevMgr &devMgrObj = tdi::DevMgr::getInstance();
@@ -33,7 +33,7 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
 }
 
 tdi_status_t tdi_flags_create(const uint64_t flag_value,
-			      const tdi_flags_hdl **flags) {
+                              const tdi_flags_hdl **flags) {
   tdi_status_t sts = TDI_SUCCESS;
   tdi::Flags *flgs = new tdi::Flags(flag_value);
   *flags = reinterpret_cast<const tdi_flags_hdl *>(flgs);
@@ -107,9 +107,10 @@ tdi_status_t tdi_device_id_list_get(tdi_dev_id_t *device_id_list_out) {
   return TDI_SUCCESS;
 }
 
-tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl, tdi_target_hdl **target_hdl) {
+tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl,
+                               tdi_target_hdl **target_hdl) {
   const tdi::Device *device = reinterpret_cast<const tdi::Device *>(device_hdl);
-  std::unique_ptr<tdi::Target >target;
+  std::unique_ptr<tdi::Target> target;
   device->createTarget(&target);
   *target_hdl = reinterpret_cast<tdi_target_hdl *>(target.release());
   return TDI_SUCCESS;
@@ -117,8 +118,24 @@ tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl, tdi_target_hdl 
 
 tdi_status_t tdi_target_delete(tdi_target_hdl *target_hdl) {
   const tdi::Target *target = reinterpret_cast<const tdi::Target *>(target_hdl);
-  delete(target);
+  delete (target);
   return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_target_set_value(tdi_target_hdl *target_hdl,
+                                  enum tdi_target_e target_field,
+                                  uint64_t value) {
+  auto target = reinterpret_cast<tdi::Target *>(target_hdl);
+  auto sts = target->setValue(target_field, value);
+  return sts;
+}
+
+tdi_status_t tdi_target_get_value(const tdi_target_hdl *target_hdl,
+                                  enum tdi_target_e target_field,
+                                  uint64_t *value) {
+  auto target = reinterpret_cast<const tdi::Target *>(target_hdl);
+  auto sts = target->getValue(target_field, value);
+  return sts;
 }
 
 tdi_status_t tdi_num_p4_names_get(const tdi_dev_id_t dev_id, int *num_names) {
@@ -141,7 +158,7 @@ tdi_status_t tdi_num_p4_names_get(const tdi_dev_id_t dev_id, int *num_names) {
 }
 
 tdi_status_t tdi_p4_names_get(const tdi_dev_id_t dev_id,
-                               const char **prog_names) {
+                              const char **prog_names) {
   tdi_status_t sts = TDI_SUCCESS;
   std::vector<std::reference_wrapper<const std::string>> p4_names;
   tdi::DevMgr &devMgrObj = tdi::DevMgr::getInstance();

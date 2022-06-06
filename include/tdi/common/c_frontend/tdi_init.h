@@ -71,8 +71,8 @@ tdi_status_t tdi_flags_delete(tdi_flags_hdl *flags_hdl);
  * @return Status of the API call
  */
 tdi_status_t tdi_info_get(const tdi_dev_id_t dev_id,
-                           const char *prog_name,
-                           const tdi_info_hdl **info_hdl_ret);
+                          const char *prog_name,
+                          const tdi_info_hdl **info_hdl_ret);
 
 /**
  * @brief Get size of list of all device IDs currently added
@@ -113,6 +113,34 @@ tdi_status_t tdi_target_create(const tdi_device_hdl *device_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_target_delete(tdi_target_hdl *target_hdl);
+
+/**
+ * @brief Set value of a target field like device_id in the
+ * target object
+ *
+ * @param[in] target_hdl hdl to the target object
+ * @param[in] target_field enum specifying target field
+ * @param[in] value value of the target field
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_target_set_value(tdi_target_hdl *target_hdl,
+                                  enum tdi_target_e target_field,
+                                  uint64_t value);
+
+/**
+ * @brief Get value of a target field like device_id from the
+ * target object
+ *
+ * @param[in] target_hdl hdl to the target object
+ * @param[in] target_field enum specifying target field
+ * @param[out] value value of the target field
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_target_get_value(const tdi_target_hdl *target_hdl,
+                                  enum tdi_target_e target_field,
+                                  uint64_t *value);
 
 /**
  * @brief Get size of list of loaded p4 program names on a particular device

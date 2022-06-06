@@ -329,6 +329,7 @@ tdi_status_t Table::attributeReset(
             tableInfoGet()->nameGet().c_str());
   return TDI_NOT_SUPPORTED;
 }
+
 tdi_status_t Table::tableAttributesSet(
     const Session & /*session*/,
     const Target & /*dev_tgt*/,

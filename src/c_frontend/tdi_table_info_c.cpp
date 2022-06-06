@@ -22,8 +22,8 @@
 //#include <tdi/common/tdi_table.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_attributes.hpp>
-#include <tdi/common/c_frontend/tdi_table_attributes.h>
-#include <tdi/common/c_frontend/tdi_table_operations.h>
+#include <tdi/common/c_frontend/tdi_attributes.h>
+#include <tdi/common/c_frontend/tdi_operations.h>
 //#include <tdi/common/tdi_table_data.hpp>
 #//include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_operations.hpp>
@@ -858,7 +858,7 @@ tdi_status_t tdi_table_num_attributes_supported(
 
 tdi_status_t tdi_table_attributes_supported(
     const tdi_table_info_hdl *table_info_hdl,
-    tdi_table_attributes_type_t *attributes,
+    tdi_attributes_type_e *attributes,
     uint32_t *num_returned) {
   if (table_info_hdl == nullptr || num_returned == nullptr ||
       attributes == nullptr) {
@@ -870,7 +870,7 @@ tdi_status_t tdi_table_attributes_supported(
   auto type_set = tableInfo->attributesSupported();
   int i = 0;
   for (const auto &iter : type_set) {
-    attributes[i] = static_cast<tdi_table_attributes_type_t>(iter);
+    attributes[i] = static_cast<tdi_attributes_type_e>(iter);
     i++;
   }
   *num_returned = i;
