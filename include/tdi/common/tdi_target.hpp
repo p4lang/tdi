@@ -80,9 +80,9 @@ class Target {
  public:
   virtual ~Target() = default;
   virtual tdi_status_t setValue(const tdi_target_e &target,
-                                const uint32_t &value);
+                                const uint64_t &value);
   virtual tdi_status_t getValue(const tdi_target_e &target,
-                                uint32_t *value) const;
+                                uint64_t *value) const;
 
  protected:
   Target(const tdi_dev_id_t &dev_id) : dev_id_(dev_id){};

@@ -20,13 +20,14 @@
 // arch include
 #include <tdi/arch/pna/pna_target.hpp>
 
-//local includes
+// local includes
 #include <tdi/common/tdi_utils.hpp>
 
 namespace tdi {
 namespace pna {
 
-tdi_status_t Target::setValue(const tdi_target_e &target_field, const uint32_t &value) {
+tdi_status_t Target::setValue(const tdi_target_e &target_field,
+                              const uint64_t &value) {
   if (target_field == static_cast<tdi_target_e>(PNA_TARGET_PIPE_ID)) {
     this->pipe_id_ = value;
   } else if (target_field == static_cast<tdi_target_e>(PNA_TARGET_DIRECTION)) {
@@ -37,17 +38,17 @@ tdi_status_t Target::setValue(const tdi_target_e &target_field, const uint32_t &
   return TDI_SUCCESS;
 }
 
-tdi_status_t Target::getValue(const tdi_target_e &target_field, uint32_t *value) const {
+tdi_status_t Target::getValue(const tdi_target_e &target_field,
+                              uint64_t *value) const {
   if (target_field == static_cast<tdi_target_e>(PNA_TARGET_PIPE_ID)) {
     *value = this->pipe_id_;
   } else if (target_field == static_cast<tdi_target_e>(PNA_TARGET_DIRECTION)) {
-    *value = static_cast<uint32_t>(this->direction_);
+    *value = static_cast<uint64_t>(this->direction_);
   } else {
     return tdi::Target::getValue(target_field, value);
   }
   return TDI_SUCCESS;
 }
 
-
-} // pna
-}  // tdi
+}  // namespace pna
+}  // namespace tdi

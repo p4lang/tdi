@@ -27,7 +27,7 @@ namespace tdi {
 namespace tna {
 
 tdi_status_t Target::setValue(const tdi_target_e &target_field,
-                              const uint32_t &value) {
+                              const uint64_t &value) {
   if (target_field == static_cast<tdi_target_e>(TDI_TNA_TARGET_PIPE_ID)) {
     this->pipe_id_ = value;
   } else if (target_field ==
@@ -40,12 +40,12 @@ tdi_status_t Target::setValue(const tdi_target_e &target_field,
 }
 
 tdi_status_t Target::getValue(const tdi_target_e &target_field,
-                              uint32_t *value) const {
+                              uint64_t *value) const {
   if (target_field == static_cast<tdi_target_e>(TDI_TNA_TARGET_PIPE_ID)) {
     *value = this->pipe_id_;
   } else if (target_field ==
              static_cast<tdi_target_e>(TDI_TNA_TARGET_DIRECTION)) {
-    *value = static_cast<uint32_t>(this->direction_);
+    *value = static_cast<uint64_t>(this->direction_);
   } else {
     return tdi::Target::getValue(target_field, value);
   }

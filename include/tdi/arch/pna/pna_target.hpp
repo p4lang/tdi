@@ -49,9 +49,9 @@ class Target : public tdi::Target {
  public:
   virtual ~Target() = default;
   virtual tdi_status_t setValue(const tdi_target_e & /*target*/,
-                        const uint32_t & /*value*/) override;
+                                const uint64_t & /*value*/) override;
   virtual tdi_status_t getValue(const tdi_target_e & /*target*/,
-                                uint32_t * /*value*/) const override;
+                                uint64_t * /*value*/) const override;
 
  protected:
   Target(tdi_dev_id_t dev_id, pna_pipe_id_t pipe_id, pna_direction_e direction)
@@ -62,7 +62,7 @@ class Target : public tdi::Target {
   friend class tdi::pna::Device;
 };
 
-}  // pna
-}  // tdi
+}  // namespace pna
+}  // namespace tdi
 
 #endif  // _PNA_TARGET_HPP_

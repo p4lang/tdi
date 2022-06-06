@@ -304,12 +304,46 @@ class CIntfTdi:
     def get_target(self):
         return self._target
 
+    def print_target(self, target):
+        dev_id = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="dev_id"), byref(dev_id));
+        pipe_id = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="pipe_id"), byref(pipe_id));
+        direction = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="direction"), byref(direction));
+        prsr_id = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="prsr_id"), byref(prsr_id));
+        return "dev_id={} pipe={} direction={} prsr_id={}".format(dev_id.value, pipe_id.value, direction.value, prsr_id.value)
+
     def get_dev_tgt(self):
         #return byref(self._dev_tgt)
         return self._target
 
     def get_flags(self):
         return byref(self._flags)
+
+    @staticmethod
+    def target_type_map(target_type_enum=None, target_type_str=None):
+        TDI_TARGET_CORE=0
+        TDI_TARGET_ARCH=0x08
+        TDI_TARGET_DEVICE=0x80
+        target_type_dict = {
+                TDI_TARGET_CORE+0:"dev_id",
+                TDI_TARGET_ARCH+0:"pipe_id",
+                TDI_TARGET_ARCH+1:"direction",
+                TDI_TARGET_DEVICE+1:"prsr_id",
+        }
+        target_type_rev_dict = {
+                "dev_id":    TDI_TARGET_CORE+0,
+                "pipe_id":   TDI_TARGET_ARCH+0,
+                "direction": TDI_TARGET_ARCH+1,
+                "prsr_id":   TDI_TARGET_DEVICE+1,
+        }
+        if target_type_enum is not None:
+            return target_type_dict[target_type_enum]
+        if target_type_str is not None:
+            return target_type_rev_dict[target_type_str]
+
 
 
 class TableEntryDumper:
