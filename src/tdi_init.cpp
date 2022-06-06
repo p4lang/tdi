@@ -110,6 +110,10 @@ tdi_status_t DevMgr::deviceIdListGet(
 }
 
 tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t &dev_id) {
+
+  if (this->dev_map_.find(dev_id) != this->dev_map_.end())
+    this->dev_map_.erase(dev_id);
+
   LOG_DBG(
       "%s:%d  Device Remove called for dev : %d", __func__, __LINE__, dev_id);
   return TDI_SUCCESS;
