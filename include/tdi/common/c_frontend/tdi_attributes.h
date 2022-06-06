@@ -24,11 +24,11 @@
 extern "C" {
 #endif
 
-tdi_status_t tdi_attributes_set_value(tdi_attributes_hdl attributes,
+tdi_status_t tdi_attributes_set_value(tdi_attributes_hdl *attributes,
                                       tdi_attributes_field_type_e type,
                                       const uint64_t value);
 
-tdi_status_t tdi_attributes_get_value(tdi_attributes_hdl attributes,
+tdi_status_t tdi_attributes_get_value(const tdi_attributes_hdl *attributes,
                                       tdi_attributes_field_type_e type,
                                       uint64_t *value);
 
