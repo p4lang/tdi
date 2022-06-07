@@ -52,8 +52,9 @@ class TdiInfoMapper : public tdi::TdiInfoMapper {
  public:
   TdiInfoMapper() {
     // Match types
+    // ATCAM match type treated as exact match
     matchEnumMapAdd(tdi_json::values::tna::TABLE_KEY_MATCH_TYPE_ATCAM,
-                    static_cast<tdi_match_type_e>(TDI_TNA_MATCH_TYPE_ATCAM));
+                    static_cast<tdi_match_type_e>(TDI_MATCH_TYPE_EXACT));
   }
 };
 
