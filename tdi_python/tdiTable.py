@@ -203,8 +203,8 @@ class TdiTable:
                 return
             for ann in annotations_arr:
                 print("num ann {} table name {}  field name = {} annotations = {} {} ".format(str(num_annotations.value), self.table.name,  str(self.name), str(ann.name), str(ann.value.decode('ascii'))))
-                #annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
-            #self.annotations = annotations
+                annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
+            self.annotations = annotations
 
         def _init_choices(self):
             nchoices_func = None

@@ -643,7 +643,6 @@ tdi_status_t tdi_data_field_num_annotations_get(
     const tdi_table_info_hdl *table_info_hdl,
     const tdi_id_t field_id,
     uint32_t *num_annotations) {
-  // tdi::AnnotationSet annotations;
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
   auto annotations = dataFieldInfo->annotationsGet();
@@ -684,7 +683,7 @@ tdi_status_t tdi_data_field_annotations_with_action_get(
     tdi_annotation_t *annotations_c) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
-  auto annotations = dataFieldInfo->annotationsGet();
+  const auto &annotations = dataFieldInfo->annotationsGet();
   int i = 0;
   for (const auto &annotation : annotations) {
     annotations_c[i++] = convert_annotation(annotation);
