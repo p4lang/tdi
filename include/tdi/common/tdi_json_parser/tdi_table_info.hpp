@@ -499,6 +499,17 @@ class ActionInfo {
     return action_context_info_.get();
   };
 
+  /**
+   * @brief Get action data fields map.
+   *
+   * @return action's id<->dataField map.
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> &actionDataMapGet()
+      const {
+    return data_fields_;
+  };
+
   // Map of table_data_fields with names
   std::map<std::string, const DataFieldInfo *> data_fields_names_;
 
@@ -763,6 +774,39 @@ class TableInfo {
   const TableContextInfo *tableContextInfoGet() const {
     return table_context_info_.get();
   };
+
+  /**
+   * @brief Get table key fields map.
+   *
+   * @return table's id<->keyField map.
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> &tableKeyMapGet()
+      const {
+    return table_key_map_;
+  }
+
+  /**
+   * @brief Get table data fields map.
+   *
+   * @return table's id<->dataField map.
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> &tableDataMapGet()
+      const {
+    return table_data_map_;
+  }
+
+  /**
+   * @brief Get table action map.
+   *
+   * @return table's id<->action map.
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<ActionInfo>> &tableActionMapGet()
+      const {
+    return table_action_map_;
+  }
 
   std::map<std::string, const KeyFieldInfo *> name_key_map_;
   std::map<std::string, const DataFieldInfo *> name_data_map_;
