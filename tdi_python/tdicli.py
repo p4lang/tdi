@@ -2190,7 +2190,7 @@ def page_printer(data, start=0, screen_lines=0, pager_cmd=None):
         data = data['text/plain']
     print(data)
 
-def ipython_reitnialize_input():
+def ipython_reinitialize_io():
     ipython_app.input = create_input()
     ipython_app.output = create_output()
     session = get_app_session()
@@ -2335,7 +2335,7 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
                         ipython_dir=ipython_app.ipython_dir, user_ns=ipython_app.user_ns)
 
         # reinitialize input output streams in case switching api
-        ipython_reitnialize_input()
+        ipython_reinitialize_io()
 
         IPython.terminal.interactiveshell.TerminalInteractiveShell._instance = ipython_appshell
         for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
@@ -2347,7 +2347,7 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
 
         # use saved instances of TerminalIPythonApp, but we need reinitialize input output streams
         # for ability use new shell from another terminal
-        ipython_reitnialize_input()
+        ipython_reinitialize_io()
         for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
             subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
         if udf is not None:
