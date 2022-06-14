@@ -38,26 +38,24 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS}")
 
 add_subdirectory(src)
 
-#
-## Building tdi doxygen
-#find_package(Doxygen)
-#if(DOXYGEN_FOUND)
-#  set(srcdir ${CMAKE_CURRENT_SOURCE_DIR}/docs)
-#  set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
-#  set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-#  configure_file(${doxyfile_in} ${doxyfile} @ONLY)
-#  add_custom_target(doc-tdi
-#                    COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-#                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#                    COMMENT "Generating TDI Doxygen"
-#                    VERBATIM)
-#  set_target_properties(doc-tdi PROPERTIES EXCLUDE_FROM_ALL TRUE)
-#  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION
-#    share/doc/tdi OPTIONAL)
-#  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex DESTINATION
-#    share/doc/tdi OPTIONAL)
-#
-#else()
-#  message(WARNING "Doxygen is needed to build the documentation. Please install doxygen.")
-#endif()
-#
+#Building tdi doxygen
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+  set(srcdir ${CMAKE_CURRENT_SOURCE_DIR}/docs)
+  set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+  set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+  configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+  add_custom_target(doc-tdi
+                    COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                    COMMENT "Generating TDI Doxygen"
+                    VERBATIM)
+  set_target_properties(doc-tdi PROPERTIES EXCLUDE_FROM_ALL TRUE)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION
+    share/doc/tdi OPTIONAL)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex DESTINATION
+    share/doc/tdi OPTIONAL)
+
+else()
+  message(WARNING "Doxygen is needed to build the documentation. Please install doxygen.")
+endif()
