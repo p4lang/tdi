@@ -34,16 +34,12 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
 
 tdi_status_t tdi_flags_create(const uint64_t flag_value,
                               const tdi_flags_hdl **flags) {
-  tdi_status_t sts = TDI_SUCCESS;
+  if (flags == nullptr) {
+    LOG_ERROR("%s:%d null param passed", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
   tdi::Flags *flgs = new tdi::Flags(flag_value);
   *flags = reinterpret_cast<const tdi_flags_hdl *>(flgs);
-  if (sts != TDI_SUCCESS) {
-    return sts;
-  }
-  if (flags == nullptr) {
-    LOG_ERROR("%s:%d Unable to create flags", __func__, __LINE__);
-    return TDI_UNEXPECTED;
-  }
   return TDI_SUCCESS;
 }
 
