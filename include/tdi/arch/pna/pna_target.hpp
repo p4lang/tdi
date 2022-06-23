@@ -37,9 +37,8 @@ namespace pna {
 class Device;
 
 enum pna_target_e {
-  PNA_TARGET_PIPE_ID = TDI_TARGET_ARCH,
-  PNA_TARGET_DIRECTION,
-  PNA_TARGET_DEV_ID,
+  PNA_TARGET_PIPE_ID = TDI_TARGET_ARCH+0,
+  PNA_TARGET_DIRECTION = TDI_TARGET_ARCH+1,
 };
 
 /**
