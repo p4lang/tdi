@@ -77,11 +77,13 @@ tdi_status_t tdi_data_field_set_value_str_array(tdi_table_data_hdl *data_hdl,
                                                  const char *val) {
   auto data_field = reinterpret_cast<tdi::TableData *>(data_hdl);
   std::vector<std::string> vec;
-  char *token = strtok(strdup(val), " ");
+  char *val_dup = strdup(val);
+  char *token = strtok(val_dup, " ");
   while (token != NULL) {
     vec.push_back(std::string(token));
     token = strtok(NULL, " ");
   }
+  delete val_dup;
   return data_field->setValue(field_id, vec);
 }
 
