@@ -16,6 +16,7 @@
 // tdi includes
 #include <tdi/common/tdi_info.hpp>
 #include <tdi/common/tdi_init.hpp>
+#include <tdi/common/tdi_defs.h>
 
 // local includes
 #include <tdi/common/tdi_utils.hpp>

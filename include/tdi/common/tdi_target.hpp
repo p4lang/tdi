@@ -70,9 +70,6 @@ class ProgramConfig {
   const std::vector<tdi::P4Pipeline> p4_pipelines_;
 };
 
-enum tdi_target_core_enum_e {
-  TDI_TARGET_DEV_ID = TDI_TARGET_CORE,
-};
 /**
  * @brief Can be constructed by \ref tdi::Device::createTarget()
  */

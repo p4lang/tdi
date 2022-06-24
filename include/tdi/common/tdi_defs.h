@@ -140,6 +140,13 @@ enum tdi_target_e {
 };
 
 /**
+* @brief Target core top level enum and reservation
+*/
+enum tdi_target_core_enum_e {
+  TDI_TARGET_DEV_ID = TDI_TARGET_CORE,
+};
+
+/**
  * @brief Flags top level enum and reservation
  * This enum denotes the index in a 64 bit flag.
  * So the first 8(0-7) bits are reserved for core.
