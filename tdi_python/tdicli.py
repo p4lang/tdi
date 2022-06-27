@@ -39,6 +39,7 @@ from tdiTableEntry import TableEntry, target_check_and_set
 
 from ipaddress import ip_address as ip
 from netaddr import EUI as mac
+import logging
 
 # Fixed Tables created at child Nodes of the root 'tdi' Node.
 _tdi_fixed_nodes = ["port", "mirror"]
@@ -164,7 +165,7 @@ class CIntfTdi:
         devices = array_type()
         sts = self._driver.tdi_device_id_list_get(byref(devices))
         for dev in devices:
-          print("device_id_list="+str(dev))
+          logging.debug("device_id_list="+str(dev))
       
         num_names = c_int(-1)
         self._driver.tdi_num_p4_names_get(self._dev_id, byref(num_names))
@@ -2027,7 +2028,7 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
         p4_name_str_ = p4_name
     # Sort tables in reverse order, so nested table children are added first.
     for table_name, tbl_obj in sorted(tdi_info.tables.items(), reverse=True):
-        print("table_name:"+str(table_name))
+        logging.debug("table_name:"+str(table_name))
         prefs = table_name.split('.')
         if prefs[0] in _tdi_fixed_nodes:
             parent_node = update_node_tree(dev_node, prefs, cintf)
@@ -2286,6 +2287,9 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
     global install_directory
     install_directory = install_dir
     inf, outf = set_io(in_fd, out_fd)
+
+    # set level to DEBUG to see the debug infomration
+    logging.basicConfig(level=logging.ERROR)
     print("Devices found : ", dev_id_list)
     sts = load_tdi(dev_id_list)
     if not sts == 0:

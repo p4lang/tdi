@@ -21,6 +21,7 @@ from tdiTableEntry import TableEntry
 import pdb
 import json
 import time
+import logging
 
 class TdiTableError(Exception):
     def __init__(self, str_rep, table_obj, sts, *args,**kwargs):
@@ -173,11 +174,11 @@ class TdiTable:
             # Annotations are not supported.
             if self.category == "data" and self.is_cont_field == False:
                 if self.action_id is None:
-                    print("This is None for table "+self.name)
+                    logging.debug("This is None for table "+self.name)
                     nannotations_func = self.table._cintf.get_driver().tdi_data_field_num_annotations_get
                     get_annotations_func = self.table._cintf.get_driver().tdi_data_field_annotations_get
                 else:
-                    print("This is action id "+str(self.action_id)+" for table "+str(self.name))
+                    logging.debug("This is action id "+str(self.action_id)+" for table "+str(self.name))
                     nannotations_func = self.table._cintf.get_driver().tdi_data_field_num_annotations_with_action_get
                     get_annotations_func = self.table._cintf.get_driver().tdi_data_field_annotations_with_action_get
             else:
@@ -202,7 +203,7 @@ class TdiTable:
                 print("Error: get annotations for field {} in table {} failed. [{}]".format(self.name, self.table.name, self.table._cintf.err_str(sts)))
                 return
             for ann in annotations_arr:
-                print("num ann {} table name {}  field name = {} annotations = {} {} ".format(str(num_annotations.value), self.table.name,  str(self.name), str(ann.name), str(ann.value.decode('ascii'))))
+                logging.debug("num ann {} table name {}  field name = {} annotations = {} {} ".format(str(num_annotations.value), self.table.name,  str(self.name), str(ann.name), str(ann.value.decode('ascii'))))
                 annotations += [(ann.name.decode('ascii'), ann.value.decode('ascii'))]
             self.annotations = annotations
 
@@ -987,7 +988,7 @@ class TdiTable:
             print("CLI Error: get action id list failed for {}.".format(self.name))
             return sts
         
-        print("self.name="+str(self.name))
+        logging.debug("self.name="+str(self.name))
         '''
         if self.name == "pipe.ingress.mymac":
             action_ids = [21257015]
@@ -1855,7 +1856,7 @@ class TdiTable:
         table_type = c_int(-1)
         sts = self._cintf.get_driver().tdi_table_type_get(self._info_handle, byref(table_type))
         #print("table name= "+str(self.name)+" table_type="+str(table_type))
-        print("table_type=0x%x" % table_type.value)
+        logging.debug("table_type=0x%x" % table_type.value)
         if not sts == 0:
             raise TdiTableError("Error: get table_type failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         return table_type.value
@@ -1870,7 +1871,7 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_attributes_supported(self._info_handle, byref(attributes_arr), byref(num_attrs))
         if sts != 0:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-        print("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
+        logging.debug("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
         # based on tdi_rt_attributes_type_e
         attributes_dic = {
                   0: ["symmetric_mode_set", "symmetric_mode_get"],
@@ -1895,7 +1896,7 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_operations_supported(self._info_handle, byref(operations_arr), byref(num_opers))
         if sts != 0:
             raise TdiTableError("Error: operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-        print("For Table={} operations_arr ==={}".format(self.name, str(operations_arr[0:])));
+        logging.debug("For Table={} operations_arr ==={}".format(self.name, str(operations_arr[0:])));
         operations_dic = {
             0: "operation_counter_sync",
             1: "operation_register_sync",
@@ -1916,7 +1917,7 @@ class TdiTable:
         if sts != 0:
             raise TdiTableError("Error: apis supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         # based on enum tdi_table_api_type_e
-        print("For Table={} api_arr ==={}".format(self.name, str(api_arr[0:])));
+        logging.debug("For Table={} api_arr ==={}".format(self.name, str(api_arr[0:])));
         apis_dic = {0:  "add",
                     1:  "mod",
                     2:  "mod_inc",
