@@ -1,0 +1,494 @@
+Title : TDI CLI User Guide
+Title Note: version 1.0.0
+Title Footer: &date;
+Author: Sayan Bandyopadhyay and James Choi
+Heading depth: 5
+Pdf Latex: xelatex
+Document Class: [11pt]article
+Package: [top=1in, bottom=1.25in, left=1in, right=1in]geometry
+Package: fancyhdr
+
+Tex Header:
+  \setlength{\headheight}{30pt}
+  \setlength{\emergencystretch}{2em}
+
+Bib: references.bib
+Bib Search Url:
+
+Script: https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js
+Script: bibref_no_title.js
+
+@if html {
+body.madoko {
+  font-family: utopia-std, serif;
+}
+title,titlenote,titlefooter,authors,h1,h2,h3,h4,h5 {
+  font-family: helvetica, sans-serif;
+  font-weight: bold;
+}
+pre, code {
+  font-family: monospace;
+  font-size: 10pt;
+}
+}
+
+@if tex {
+body.madoko {
+  font-family: UtopiaStd-Regular;
+}
+title,titlenote,titlefooter,authors {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+pre, code {
+  font-family: LuxiMono;
+  font-size: 75%;
+}
+}
+
+Colorizer: p4
+Colorizer: proto
+Colorizer: prototext
+Colorizer: cpp
+
+.token.keyword    {
+    font-weight: bold;
+}
+
+@if html {
+p4example {
+  replace: "~ Begin P4ExampleBlock&nl;\
+                 ````p4&nl;&source;&nl;````&nl;\
+                 ~ End P4ExampleBlock";
+  padding:6pt;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  border: solid;
+  background-color: #ffffdd;
+  border-width: 0.5pt;
+}
+}
+
+@if tex {
+p4example {
+  replace: "~ Begin P4ExampleBlock&nl;\
+                 ````p4&nl;&source;&nl;````&nl;\
+                 ~ End P4ExampleBlock";
+  breakable: true;
+  padding: 6pt;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  border: solid;
+  background-color: #ffffdd;
+  border-width: 0.5pt;
+}
+}
+
+@if html {
+pseudo {
+  replace: "~ Begin PseudoBlock&nl;\
+                 ````&nl;&source;&nl;````&nl;\
+                 ~ End PseudoBlock";
+  padding: 6pt;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  border: solid;
+  background-color: #e9fce9;
+  border-width: 0.5pt;
+}
+}
+
+@if tex {
+pseudo {
+  replace: "~ Begin PseudoBlock&nl;\
+                 ````&nl;&source;&nl;````&nl;\
+                 ~ End PseudoBlock";
+  breakable : true;
+  padding: 6pt;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  background-color: #e9fce9;
+  border: solid;
+  border-width: 0.5pt;
+}
+}
+
+@if html {
+cpp {
+  replace: "~ Begin CPPblock&nl;\
+                 ````cpp&nl;&source;&nl;````&nl;\
+                 ~ End CPPblock";
+  border: solid;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  padding: 6pt;
+  background-color: #e9fce9;
+  border-width: 0.5pt;
+}
+}
+
+@if tex {
+cpp {
+  replace: "~ Begin CPPblock&nl;\
+                 ````cpp&nl;&source;&nl;````&nl;\
+                 ~ End CPPblock";
+  breakable: true;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  padding: 6pt;
+  background-color: #e9fce9;
+  border: solid;
+  border-width: 0.5pt;
+}
+}
+
+@if html {
+proto {
+  replace: "~ Begin Protoblock&nl;\
+                 ````proto&nl;&source;&nl;````&nl;\
+                 ~ End Protoblock";
+  border: solid;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  padding: 6pt;
+  background-color: #e6ffff;
+  border-width: 0.5pt;
+}
+}
+
+@if tex {
+proto {
+  replace: "~ Begin Protoblock&nl;\
+                 ````proto&nl;&source;&nl;````&nl;\
+                 ~ End Protoblock";
+  breakable: true;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  padding: 6pt;
+  background-color: #e6ffff;
+  border: solid;
+  border-width: 0.5pt;
+}
+}
+
+@if html {
+prototext {
+  replace: "~ Begin Prototextblock&nl;\
+                 ````prototext&nl;&source;&nl;````&nl;\
+                 ~ End Prototextblock";
+  border: solid;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  padding: 6pt;
+  background-color: #e6ffff;
+  border-width: 0.5pt;
+}
+}
+
+@if tex {
+prototext {
+  replace: "~ Begin Prototextblock&nl;\
+                 ````prototext&nl;&source;&nl;````&nl;\
+                 ~ End Prototextblock";
+  breakable: true;
+  margin-top: 6pt;
+  margin-bottom: 6pt;
+  padding: 6pt;
+  background-color: #e6ffff;
+  border: solid;
+  border-width: 0.5pt;
+  
+}
+}
+
+[TITLE]
+
+~ Begin Abstract
+TDI CLI is a Python shell command line interface used to interact with tables and get table information. 
+~ End Abstract
+
+[TOC]
+[TOC=figures]
+[TOC=tables]
+
+# Introduction
+
+A Python shell command line interface can be used in TDI implementation to interact with tables and get table information.
+
+# Getting Started
+
+**Note**: All the examples in this guide use tna_exact_match.p4  program to explain the concept and command output.
+
+1) Compile the P4 program (for example, tna_exact_match.p4).
+
+2) Make sure that the bf-driver is running and TDI is enabled.
+
+3) Start  the TDI shell by running the run_switchd.sh script in the tools directory.
+~ Begin Proto
+root@user: /home# ./tools/run_switchd.sh -p tna_exact_match
+~ End Proto
+where, home is the directory in which the P4 program is installed and tna_exact_match is the P4 program.
+
+4) Start the TDI python shell by entering tdi_python from the command-line. Now the TDI Python shell is ready to use.
+~ Begin Proto
+tdishell> tdi_python
+In [1]: 
+~ End Proto
+
+**Note**: You have full access to Python and its standard libraries/features to make this interface looks like a CLI.
+
+# Navigation
+
+The root node of the interface is the tdi object. The direct children of the node are loaded into the global namespace. 
+The shell prompt also changes to indicate which node is currently loaded.
+
+In case of P4 programs, the nodes are organized in the order of `tdi.<p4_program_name>.<dotted_prefix>.<dotted_prefix>.<table_name>`. 
+The prefix nodes are inserted between the program name and table name based on the fully qualified table names.
+
+~ TableFigure { #cli-basic-operations; \
+    caption: "CLI Basic Operations"; \
+    page-align: forcehere; }
+|--------------------------------|------------------------------------------------------------|
+|     Terms                      |        Definitions                                         |
++---{width:4cm}------------------+------------------------------------------------------------+
+| Navigate to parent node        | Enter the parent node name, that is `tdi`.                 |
+|                                | `In [1]: tdi `                                             |
+|                                | `------> tdi()`                                            |
+|                                | `Available symbols:`                                       |
+|                                | `dump                 - Command`                           |
+|                                | `info                 - Command`                           |
+|                                | `tna_exact_match      - Node`                              |
+|                                | `tdi>`                                                     |
+|                                | **Note**: You need not add parentheses when calling the tdi|
+|                                | object. In unambiguous cases, parentheses are automatically|
+|                                | inserted, and the shell indicates the autocompletion.      |
++--------------------------------+------------------------------------------------------------+
+| Navigate to node’s child       | Enter the complete program and table name. For example,    |
+|                                | call tdi.tna_exact_match.pipe.SwitchIngress.forward        |
+|                                | from shell.                                                |
+|                                | `In [1]: tdi.tna_exact_match.pipe.SwitchIngress.forward`   |
+|                                | `<Omitting output for the purpose of this guide>`          |
+|                                | `tdi.tna_exact_match.pipe.SwitchIngress.forward>`          |
++--------------------------------+------------------------------------------------------------+
+| Navigate to a node’s parent    | Use “..” command.                                          |
++--------------------------------+------------------------------------------------------------+
+| Command autocompletion         | Press the Tab key for autocompletion.                      |
+|                                | Note: When there are multiple possible completions,        |
+|                                | the possible completions are displayed in a list.          |
++--------------------------------+------------------------------------------------------------+
+| Identify tables available      | Use node’s info() method.                                  |
+| underneath a node              | Example (Other table details  such as type, usage,         |
+|                                | and capacity are omitted for the purpose of this guide):   |
+|                                | `tdi>tna_exact_match.info`                                 |
+|                                | `---> tna_exact_match.info()`                              |
+|                                | `Tables under this node:`                                  |
+|                                | `Full Table Name`                                          |
+|                                | `---------------------`                                    | 
+|                                | `SwitchIngress.ipRoute`                                    |
+|                                | `SwitchIngress.forward`                                    | 
++--------------------------------+------------------------------------------------------------+
+| Identify the available options | Enter “`?`” to get all available option for a node.        |
++--------------------------------+------------------------------------------------------------+
+~
+
+In addition to the basic commands explained above, TDI CLI design architecture provides the following user-friendly features:
+
+* While you can call a leaf node to load its methods into the global namespace, it is easier to keep the leaf objects in the global namespace and call methods as attributes.
+* The tdi node remains in the namespace, so you can always access the entirety of the object tree regardless of which node is currently loaded.
+
+# Interacting with Tables
+
+Load the required node first to interact with a table.
+
+~ Begin Proto
+Tdi>tna_exact_match
+tdi.tna_exact_match>
+~ End Proto
+
+## Adding, Deleting, and Modifying Commands
+
+The basic table operations such as add, modify, and delete can be accomplished by the required node. The following command shows how to add entries to the ‘**forward**’ table.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>forward.add_with_hit(dst_addr=0xABCDEF)
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+**Note**: In this example, the port parameter has been added by default as port number is not defined in the command. 
+The default value is 0 for all parameters in the add, modify, delete, and get methods.
+
+If there are multiple actions available in a table, there are multiple add and modify functions available. One for each action.
+
+## Using Get Command
+
+The get method returns a TableEntry object. See TableEntry for more information. The following example shows the **forward** table details.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>x = forward.get(dst_addr=0xABCDEF)
+Entry 0:
+Entry key:
+    hdr.ethernet.dst_addr          : 0x000000ABCDEF (11259375)
+Entry data (action : SwitchIngress.hit):
+    port                           : 0x00 (0)
+
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+The get command prints information about the object we just retrieved. If you do not want to print this output, set the print_ents parameter to False.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>entry_list = forward.get(dst_addr="*", 
+print_ents=False, regex=True)
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+To get multiple entries, you can perform a regex search on key fields. When regex=True, entries will be returned in a list. 
+The default for each parameter is to accept all values for the corresponding field.
+
+## Using Dump Command
+
+Use the dump command to retrieve the full contents of a table. The following example shows the dump output for the **forward** table.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress> forward.dump
+---------------------------------------> forward.dump()
+----- forward Dump Start -----
+Default Entry:
+Entry data (action : SwitchIngress.miss):
+    drop                           : 0x1
+Entry 0:
+Entry key:
+    hdr.ethernet.dst_addr          : 0x000012345678
+Entry data (action : SwitchIngress.hit):
+    port                           : 0x00
+
+----- forward Dump End -----
+
+tdi.tna_exact_match.pipe.SwitchIngress> 
+~ End Proto
+
+First, specify pipe for asymmetric table. For example:
+
+~ Begin Proto
+tdi.tna_exact_match>tdi.set_pipe(0)
+~ End Proto
+
+The table contents can also be extracted as JSON blob. The dump command has a JSON parameter which returns the table contents as a JSON blob. 
+Use the following dump command to generate JSON blob for the **forward** table.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>blob = forward.dump(json=True)
+<Omitting output for the purpose of this guide>
+tdi.tna_exact_match.pipe.SwitchIngress>for x in forward.get(regex=True, print_ents=False):
+           ...:     x.remove()
+           ...:     
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+**CAUTION**: It is recommended to use the add, modify, and delete methods to configure tables. 
+They provide a large amount of safety that is lost when configuring with add_from_json.
+
+You can use the blob alongside the add_from_json method to save a table’s state and reconfigure it later. 
+To avoid entry exists errors, a bit of TableEntry functionality has been teased. Use the following command to reconfigure the **forward** table using the JSON blob.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>forward.add_from_json(blob)
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+#	TableEntry
+
+TableEntry objects are returned by the get method. The entry* methods can also be used to create new entries.
+
+The following example shows the command to add an entry to the **forward** table and its behavior in different condition:
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>ent = forward.entry_with_hit(dst_addr=2)
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+The newly created TableEntry objects are not automatically pushed to the table. The push method configures the table with the entry by modifying an 
+existing one with a matching key or adding a new entry to the table. Enter the push command.
+
+The entry command output for a new entry to the table:
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>ent.push
+------------------------------------> ent.push()
+Checking for entry...
+table_entry_get failed on table b'SwitchIngress.forward' with sts Object not found
+Adding entry to table.
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+The entry command output for an existing entry in the table:
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress>ent.push
+------------------------------------> ent.push()
+Checking for entry...
+Entry found. Modifying existing entry.
+tdi.tna_exact_match.pipe.SwitchIngress>
+~ End Proto
+
+The update command updates the state of a TableEntry object from its corresponding table. You can delete an entry represented by a TableEntry object with the remove method.
+
+**Note**: In addition to `_str_and_repr_`, TableEntries also have raw() and json() methods available for exposing the contents of the objects.
+
+#	Getting Help
+
+Use the `help` command to identify the available and mandatory parameters for an argument. The following example shows the different available and 
+mandatory parameters of add_with_hit argument.
+
+~ Begin Proto
+tdi.tna_exact_match.pipe.SwitchIngress.forward> help(add_with_hit)
+Help on method add_with_hit in module tdicli:
+
+add_with_hit(dst_addr=None, port=None, pipe=None, gress_dir=None, prsr_id=None) 
+method of tdicli.BFLeaf instance
+    Add entry to forward table with action: SwitchIngress.hit
+
+    Parameters:
+    dst_addr                       type=EXACT      size=48 default=0
+    port                           type=BYTE_STREAM size=9  default=0
+
+tdi.tna_exact_match.pipe.SwitchIngress.forward>
+~ End Proto
+
+# Implementing Python with Third-Party Code
+
+Current Python CLI framework allows you to import third-party code into the shell. Perform the following steps to run third-party codes in a shell:
+
+1) Place the python file in $SDE_INSTALL/lib/python3.x.
+
+2) In the shell, enter the `import <filename>` command to load the code. 
+
+**Note 1**: You can also specify a file with the -b option.
+
+**Note 2**: The shell’s working directory is the driver’s install directory. To receive a CLI prompt after executing the -b script, pass the -i option as well. 
+
+**Example:**
+
+The following example shows a function you can copy-paste into an empty python file that demonstrates some of the functionalities covered in this user guide: 
+
+~ Begin p4example
+def example_demo(tdi):
+   tdi.tna_exact_match.pipe.SwitchIngress.forward.add_with_hit(dst_addr=0xABCDEF)
+   x = tdi.tna_exact_match.pipe.SwitchIngress.forward.get(dst_addr=0xABCDEF)
+   entry_list = tdi.tna_exact_match.pipe.SwitchIngress.forward.get(dst_addr="*", 
+   print_ents=False, regex=True)
+   tdi.tna_exact_match.pipe.SwitchIngress.forward.dump()
+   blob = tdi.tna_exact_match.pipe.SwitchIngress.forward.dump(json=True)
+   for x in tdi.tna_exact_match.pipe.SwitchIngress.forward.get(regex=True, print_ents=False):
+       x.remove()
+   tdi.tna_exact_match.pipe.SwitchIngress.forward.add_from_json(blob)
+   ent = tdi.tna_exact_match.pipe.SwitchIngress.forward.entry_with_miss(dst_addr=2)
+   ent.push()
+~ End p4example
+
+By placing this code in a file named **example.py** and placing that file in the above directory, you can call the defined function as follows:
+
+~ Begin p4example
+In [1]: import example
+In [1]: example.example_demo(tdi)
+~ End p4example
