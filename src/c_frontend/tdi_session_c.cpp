@@ -20,19 +20,20 @@
 #include <tdi/common/tdi_utils.hpp>
 
 #include "tdi_state_c.hpp"
-tdi_status_t tdi_session_create(const tdi_device_hdl *device_hdl, tdi_session_hdl **session) {
-  auto sess = reinterpret_cast <std::shared_ptr<tdi::Session> *>(session);
-  auto device = reinterpret_cast <const tdi::Device *> (device_hdl);
+tdi_status_t tdi_session_create(const tdi_device_hdl *device_hdl,
+                                tdi_session_hdl **session) {
+  auto device = reinterpret_cast<const tdi::Device *>(device_hdl);
   if (device == nullptr) {
     LOG_ERROR("%s:%d Unable to create session", __func__, __LINE__);
     return TDI_UNEXPECTED;
   }
-  device->createSession(sess);
-  if (*sess == nullptr) {
+  std::shared_ptr<tdi::Session> sess;
+  device->createSession(&sess);
+  if (sess == nullptr) {
     LOG_ERROR("%s:%d Unable to create session", __func__, __LINE__);
     return TDI_UNEXPECTED;
   }
-
+  *session = reinterpret_cast<tdi_session_hdl *>(sess.get());
   // insert the shared_ptr in the state map
   auto &c_state = tdi::tdi_c::TdiCFrontEndSessionState::getInstance();
   c_state.insertShared(*sess);
@@ -58,7 +59,8 @@ tdi_status_t tdi_session_destroy(tdi_session_hdl *const session) {
   return TDI_SUCCESS;
 }
 
-tdi_id_t tdi_sess_handle_get(const tdi_session_hdl *const session, tdi_mgr_type_e& mgr_type) {
+tdi_id_t tdi_sess_handle_get(const tdi_session_hdl *const session,
+                             tdi_mgr_type_e &mgr_type) {
   if (session == nullptr) {
     LOG_ERROR("%s:%d Session Handle passed is null", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -103,8 +105,7 @@ tdi_status_t tdi_flush_batch(tdi_session_hdl *const session) {
   return sess->flushBatch();
 }
 
-tdi_status_t tdi_end_batch(tdi_session_hdl *const session,
-                            bool hwSynchronous) {
+tdi_status_t tdi_end_batch(tdi_session_hdl *const session, bool hwSynchronous) {
   if (session == nullptr) {
     LOG_ERROR("%s:%d Session Handle passed is null", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -114,7 +115,7 @@ tdi_status_t tdi_end_batch(tdi_session_hdl *const session,
 }
 
 tdi_status_t tdi_begin_transaction(tdi_session_hdl *const session,
-                                    bool isAtomic) {
+                                   bool isAtomic) {
   if (session == nullptr) {
     LOG_ERROR("%s:%d Session Handle passed is null", __func__, __LINE__);
     return TDI_INVALID_ARG;
@@ -133,7 +134,7 @@ tdi_status_t tdi_verify_transaction(tdi_session_hdl *const session) {
 }
 
 tdi_status_t tdi_commit_transaction(tdi_session_hdl *const session,
-                                     bool hwSynchronous) {
+                                    bool hwSynchronous) {
   if (session == nullptr) {
     LOG_ERROR("%s:%d Session Handle passed is null", __func__, __LINE__);
     return TDI_INVALID_ARG;
