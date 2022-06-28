@@ -949,7 +949,17 @@ class TDILeaf(TDIContext):
                     for k, v in skey.items():
                         key[k.encode('ascii')] = v
                     for k, v in sdata.items():
-                        data[k.encode('ascii')] = v
+                        ''' In dump output, the Register datafield is in the form of list of 4 elements, one per pipe.
+                            But the Register datafield is BYTE_STREAM
+                            so picking the first element of the list as input for Register datafield.
+                        '''
+                        if type(v) is list:
+                            data_field = self._c_tbl.actions[action]["data_fields"][k.encode('ascii')]
+                            data_type = self._c_tbl.data_type_map(data_field.data_type)
+                            if data_type in ["UINT64", "BYTE_STREAM", "BOOL"] and ('$bfrt_field_class', 'register_data') in data_field.annotations:
+                                data[k.encode('ascii')] = v[0]
+                        else:
+                            data[k.encode('ascii')] = v
                     parsed_keys, parsed_data = self._c_tbl.parse_str_input("add_from_json", key, data, action)
                     if parsed_keys == -1:
                         return
