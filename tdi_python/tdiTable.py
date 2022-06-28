@@ -174,11 +174,9 @@ class TdiTable:
             # Annotations are not supported.
             if self.category == "data" and self.is_cont_field == False:
                 if self.action_id is None:
-                    logging.debug("This is None for table "+self.name)
                     nannotations_func = self.table._cintf.get_driver().tdi_data_field_num_annotations_get
                     get_annotations_func = self.table._cintf.get_driver().tdi_data_field_annotations_get
                 else:
-                    logging.debug("This is action id "+str(self.action_id)+" for table "+str(self.name))
                     nannotations_func = self.table._cintf.get_driver().tdi_data_field_num_annotations_with_action_get
                     get_annotations_func = self.table._cintf.get_driver().tdi_data_field_annotations_with_action_get
             else:
@@ -1180,7 +1178,7 @@ class TdiTable:
             if content[name] is None:
                 continue
             sts = -1
-            print("data_type="+self.data_type_map(info.data_type))
+            #print("data_type="+self.data_type_map(info.data_type))
             if self.data_type_map(info.data_type) == "BYTE_STREAM":
                 value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                 sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
@@ -1856,7 +1854,6 @@ class TdiTable:
         table_type = c_int(-1)
         sts = self._cintf.get_driver().tdi_table_type_get(self._info_handle, byref(table_type))
         #print("table name= "+str(self.name)+" table_type="+str(table_type))
-        logging.debug("table_type=0x%x" % table_type.value)
         if not sts == 0:
             raise TdiTableError("Error: get table_type failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         return table_type.value
