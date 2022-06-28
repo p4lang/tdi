@@ -36,7 +36,7 @@ tdi_status_t tdi_session_create(const tdi_device_hdl *device_hdl,
   *session = reinterpret_cast<tdi_session_hdl *>(sess.get());
   // insert the shared_ptr in the state map
   auto &c_state = tdi::tdi_c::TdiCFrontEndSessionState::getInstance();
-  c_state.insertShared(*sess);
+  c_state.insertShared(sess);
   return TDI_SUCCESS;
 }
 
