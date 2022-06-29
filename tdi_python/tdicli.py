@@ -1468,7 +1468,7 @@ def {}(self, {} pipe=None, gress_dir=None, prsr_id=None):
 
     def _create_set_default(self, data_fields):
         method_name = "set_default"
-        if method_name not in self._c_tbl.supported_commands:
+        if method_name not in self._c_tbl.supported_commands or self._c_tbl.has_const_default_action:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, data_fields=data_fields)
