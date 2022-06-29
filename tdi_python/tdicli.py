@@ -590,10 +590,10 @@ class TDINode(TDIContext):
         # This call will stay the same (call old c_frontend libdriver.so) not call libtdi.so
         self._cintf.get_driver().bf_rt_enable_pipeline(self._cintf.get_dev_id())
 
-    def dump(self, table=False, json=False, from_hw=False, return_ents=False, print_zero=True):
+    def dump(self, table=False, from_hw=False, return_ents=False, print_zero=True):
         for child in self._children:
             if ((isinstance(child, TDILeaf) and "dump" in child._c_tbl.supported_commands) or (isinstance(child, TDINode))):
-                child.dump(table=table, json=json, from_hw=from_hw, return_ents=return_ents, print_zero=print_zero)
+                child.dump(table=table, json=False, from_hw=from_hw, return_ents=return_ents, print_zero=print_zero)
 
     def clear(self, batch=True):
         for child in self._children:
