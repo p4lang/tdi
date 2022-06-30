@@ -478,7 +478,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   // getting operations //
   ////////////////////////
   std::vector<std::string> operations_v =
-      table_tdi["operations"].getCjsonChildStringVec();
+      table_tdi["supported_operations"].getCjsonChildStringVec();
   for (auto const &item : operations_v) {
     operations_type_set.insert(operationsTypeStrToEnum(item));
   }
