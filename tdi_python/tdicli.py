@@ -2160,8 +2160,9 @@ def set_parent_context():
     if _tdi_context['parent'] is None:
         for name in _tdi_context['cur_context']:
             delattr(sys.modules['__main__'], name)
+        _tdi_context['cur_context'] = []
         set_prompt()
-        setup_context()
+        _tdi_context['cur_node'] = None
         return
     _tdi_context['parent']()
 
