@@ -2262,7 +2262,7 @@ def load_ipython_extension(ipython, skip_input_reg=False):
     sys.modules['__main__']._tdi_context = _tdi_context
     sys.modules['__main__'].set_parent_context = set_parent_context
     sys.modules['__main__'].tdi = tdi
-    if skip_input_reg:
+    if not skip_input_reg:
         ipython.input_transformers_cleanup.append(input_transform)
     IPython.core.usage.interactive_usage = """
 TDI-PYTHON Usage:
@@ -2357,7 +2357,7 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
         for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
             subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
         ipython_app.initialize()
-        load_ipython_extension(ipython_appshell, True)
+        load_ipython_extension(ipython_appshell, False)
 
     else:
 
@@ -2367,7 +2367,7 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
         IPython.terminal.interactiveshell.TerminalInteractiveShell._instance = ipython_appshell
         for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
             subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
-        load_ipython_extension(ipython_appshell, False)
+        load_ipython_extension(ipython_appshell, True)
         if udf is not None:
             ipython_app.exec_files = exec_files_list
             ipython_app._run_exec_files()
