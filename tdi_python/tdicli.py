@@ -592,7 +592,9 @@ class TDINode(TDIContext):
 
     def dump(self, table=False, from_hw=False, return_ents=False, print_zero=True):
         for child in self._children:
-            if ((isinstance(child, TDILeaf) and "dump" in child._c_tbl.supported_commands) or (isinstance(child, TDINode))):
+            if isinstance(child, TDINode):
+                child.dump(table=table, from_hw=from_hw, return_ents=return_ents, print_zero=print_zero)
+            elif ((isinstance(child, TDILeaf) and "dump" in child._c_tbl.supported_commands)):
                 child.dump(table=table, json=False, from_hw=from_hw, return_ents=return_ents, print_zero=print_zero)
 
     def clear(self, batch=True):
