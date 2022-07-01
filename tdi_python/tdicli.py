@@ -43,6 +43,7 @@ import logging
 
 # Fixed Tables created at child Nodes of the root 'tdi' Node.
 _tdi_fixed_nodes = ["port", "mirror"]
+_tdi_context = {}
 
 class CIntfTdi:
 
@@ -166,7 +167,7 @@ class CIntfTdi:
         sts = self._driver.tdi_device_id_list_get(byref(devices))
         for dev in devices:
           logging.debug("device_id_list="+str(dev))
-      
+
         num_names = c_int(-1)
         self._driver.tdi_num_p4_names_get(self._dev_id, byref(num_names))
         print("We've found {} p4 programs for device {}:".format(num_names.value, self._dev_id))
@@ -202,7 +203,6 @@ class CIntfTdi:
         self._session = self.sess_type()
         self._flags = self.flags_type()
         sts = self._driver.tdi_session_create(self._device, byref(self._session))
-        atexit.register(self._cleanup_session)
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             return -1
@@ -275,7 +275,7 @@ class CIntfTdi:
         return estr.value.decode('ascii')
     class TdiHandle(Structure):
         _fields_ = [("unused", c_int)]
-    
+
     class TdiDevTgt(Structure):
         _fields_ = [("dev_id", c_int), ("pipe_id", c_uint), ("direction", c_uint), ("prsr_id", c_ubyte)]
         def __str__(self):
@@ -2213,6 +2213,7 @@ def ipython_reinitialize_io():
         ipython_appshell.pt_app.app.renderer.output = ipython_app.output
 
 def input_transform(lines):
+    global _tdi_context
     new_lines = []
     for line in lines:
         if line == "?\n" or line == ".\n":
@@ -2256,11 +2257,12 @@ def use_simple_prompt():
   We use this namesapce to maniuplate what user can type on cli directly
   During setup_context, command like dump, info will be callable without tdi prefix
 """
-def load_ipython_extension(ipython):
+def load_ipython_extension(ipython, skip_input_reg=False):
     sys.modules['__main__']._tdi_context = _tdi_context
     sys.modules['__main__'].set_parent_context = set_parent_context
     sys.modules['__main__'].tdi = tdi
-    ipython.input_transformers_cleanup.append(input_transform)
+    if not skip_input_reg:
+        ipython.input_transformers_cleanup.append(input_transform)
     IPython.core.usage.interactive_usage = """
 TDI-PYTHON Usage:
 
@@ -2300,7 +2302,6 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
 
     # set level to DEBUG to see the debug infomration
     logging.basicConfig(level=logging.ERROR)
-    print("Devices found : ", dev_id_list)
     sts = load_tdi(dev_id_list)
     if not sts == 0:
         return sts
@@ -2355,21 +2356,21 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
         for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
             subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
         ipython_app.initialize()
+        load_ipython_extension(ipython_appshell, False)
 
     else:
-        IPython.terminal.interactiveshell.TerminalInteractiveShell._instance = ipython_appshell
 
         # use saved instances of TerminalIPythonApp, but we need reinitialize input output streams
         # for ability use new shell from another terminal
         ipython_reinitialize_io()
+        IPython.terminal.interactiveshell.TerminalInteractiveShell._instance = ipython_appshell
         for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
             subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
+        load_ipython_extension(ipython_appshell, True)
         if udf is not None:
             ipython_app.exec_files = exec_files_list
             ipython_app._run_exec_files()
-        load_ipython_extension(ipython_appshell)
         set_parent_context()
-        tdi()
 
     if udf is not None:
         if interactive:
@@ -2377,8 +2378,6 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
     else:
         ipython_app.start()
 
-    if tdi._cintf is not None:
-        tdi._cintf._cleanup_session()
     sys.stdin = sys.__stdin__
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
