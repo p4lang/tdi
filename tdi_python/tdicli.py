@@ -40,7 +40,6 @@ from tdiTableEntry import TableEntry, target_check_and_set
 from ipaddress import ip_address as ip
 from netaddr import EUI as mac
 import logging
-import traceback
 
 # Fixed Tables created at child Nodes of the root 'tdi' Node.
 _tdi_fixed_nodes = ["port", "mirror"]
