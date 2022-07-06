@@ -958,7 +958,10 @@ class TDILeaf(TDIContext):
                         # so picking the first element of the list as input for Register datafield.
                         if type(v) is list:
                             try:
-                                data_field = self._c_tbl.actions[action]["data_fields"][k.encode('ascii')]
+                                if action is None:
+                                    data_field = self._c_tbl.data_fields[k.encode('ascii')]
+                                else:
+                                    data_field = self._c_tbl.actions[action]["data_fields"][k.encode('ascii')]
                                 data_type = self._c_tbl.data_type_map(data_field.data_type)
                                 if data_type in ["UINT64", "BYTE_STREAM", "BOOL"] and ('$bfrt_field_class', 'register_data') in data_field.annotations:
                                     data[k.encode('ascii')] = v[0]
