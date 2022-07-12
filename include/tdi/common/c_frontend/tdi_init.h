@@ -47,7 +47,7 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
  * @return Status of the API call
  */
 tdi_status_t tdi_flags_create(const uint64_t flag_value,
-                              const tdi_flags_hdl **flags_hdl);
+                              tdi_flags_hdl **flags_hdl);
 
 /**
  * @brief delete the Flags corresponding to the device obj and flag
