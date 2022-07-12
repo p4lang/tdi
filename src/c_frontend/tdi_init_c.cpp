@@ -33,13 +33,13 @@ tdi_status_t tdi_device_get(const tdi_dev_id_t dev_id,
 }
 
 tdi_status_t tdi_flags_create(const uint64_t flag_value,
-                              const tdi_flags_hdl **flags) {
+                              tdi_flags_hdl **flags) {
   if (flags == nullptr) {
     LOG_ERROR("%s:%d null param passed", __func__, __LINE__);
     return TDI_INVALID_ARG;
   }
   tdi::Flags *flgs = new tdi::Flags(flag_value);
-  *flags = reinterpret_cast<const tdi_flags_hdl *>(flgs);
+  *flags = reinterpret_cast<tdi_flags_hdl *>(flgs);
   return TDI_SUCCESS;
 }
 
