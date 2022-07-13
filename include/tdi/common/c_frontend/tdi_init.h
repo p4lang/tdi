@@ -125,7 +125,7 @@ tdi_status_t tdi_target_delete(tdi_target_hdl *target_hdl);
  * @return Status of the API call
  */
 tdi_status_t tdi_target_set_value(tdi_target_hdl *target_hdl,
-                                  enum tdi_target_e target_field,
+                                  tdi_target_e target_field,
                                   uint64_t value);
 
 /**
@@ -139,7 +139,7 @@ tdi_status_t tdi_target_set_value(tdi_target_hdl *target_hdl,
  * @return Status of the API call
  */
 tdi_status_t tdi_target_get_value(const tdi_target_hdl *target_hdl,
-                                  enum tdi_target_e target_field,
+                                  tdi_target_e target_field,
                                   uint64_t *value);
 
 /**
