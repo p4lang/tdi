@@ -92,6 +92,9 @@ enum tdi_table_api_type_e {
   /** Invalid not supported API. */
   TDI_TABLE_API_TYPE_INVALID_API = 17
 };
+// The same name can be used with or without enum keyword. Advantage of being
+// compatible with C++
+typedef enum tdi_table_api_type_e tdi_table_api_type_e;
 
 /**
  * @brief Enum of Data Types each Data field can take. This is NOT
@@ -109,6 +112,7 @@ enum tdi_field_data_type_e {
   TDI_FIELD_DATA_TYPE_STRING_ARR = 8,
   TDI_FIELD_DATA_TYPE_UNKNOWN = 9,
 };
+typedef enum tdi_field_data_type_e tdi_field_data_type_e;
 
 /**
  * @brief P4 Arch types. If any new p4 arch needs to be
@@ -121,6 +125,7 @@ enum tdi_arch_type_e {
   TDI_ARCH_TYPE_TNA,
   TDI_ARCH_TYPE_UNKNOWN,
 };
+typedef enum tdi_arch_type_e tdi_arch_type_e;
 
 /**
  * @brief Mgr type. Devices need to
@@ -138,6 +143,7 @@ enum tdi_target_e {
   TDI_TARGET_ARCH = 0x08,
   TDI_TARGET_DEVICE = 0x80,
 };
+typedef enum tdi_target_e tdi_target_e;
 
 /**
 * @brief Target core top level enum and reservation
@@ -145,6 +151,7 @@ enum tdi_target_e {
 enum tdi_target_core_enum_e {
   TDI_TARGET_DEV_ID = TDI_TARGET_CORE,
 };
+typedef enum tdi_target_core_enum_e tdi_target_core_enum_e;
 
 /**
  * @brief Flags top level enum and reservation
@@ -158,6 +165,7 @@ enum tdi_flags_e {
   TDI_FLAGS_DEVICE = 0x10,
   TDI_FLAGS_END = 0x40,
 };
+typedef enum tdi_flags_e tdi_flags_e;
 
 /**
  * @brief Table type top level enum and reservation.
@@ -169,6 +177,7 @@ enum tdi_table_type_e {
   TDI_TABLE_TYPE_ARCH = 0x0080,
   TDI_TABLE_TYPE_DEVICE = 0x0800,
 };
+typedef enum tdi_table_type_e tdi_table_type_e;
 
 /**
  * @brief Match type top level enum and reservation
@@ -178,6 +187,7 @@ enum tdi_match_type_e {
   TDI_MATCH_TYPE_ARCH = 0x08,
   TDI_MATCH_TYPE_DEVICE = 0x80,
 };
+typedef enum tdi_match_type_e tdi_match_type_e;
 
 /**
  * @brief Key Field Match Type. A key can have multiple fields,
@@ -190,6 +200,7 @@ enum tdi_match_type_core_e {
   TDI_MATCH_TYPE_LPM,
   TDI_MATCH_TYPE_RANGE,
 };
+typedef enum tdi_match_type_core_e tdi_match_type_core_e;
 
 /**
  * @brief Attributes top level enum and reservation
@@ -199,6 +210,7 @@ enum tdi_attributes_type_e {
   TDI_ATTRIBUTES_TYPE_ARCH = 0x08,
   TDI_ATTRIBUTES_TYPE_DEVICE = 0x80,
 };
+typedef enum tdi_attributes_type_e tdi_attributes_type_e;
 
 /**
  * @brief Attribute field enums. Either of
@@ -209,6 +221,7 @@ enum tdi_attributes_type_e {
 enum tdi_attributes_field_type_e {
   TDI_ATTRIBUTES_FIELD_BEGIN = 0,
 };
+typedef enum tdi_attributes_field_type_e tdi_attributes_field_type_e;
 
 /**
  * @brief Operations top level enum and reservation
@@ -218,6 +231,7 @@ enum tdi_operations_type_e {
   TDI_OPERATIONS_TYPE_ARCH = 0x08,
   TDI_OPERATIONS_TYPE_DEVICE = 0x80,
 };
+typedef enum tdi_operations_type_e tdi_operations_type_e;
 
 /**
  * @brief Operations field enums. Either of
@@ -228,6 +242,7 @@ enum tdi_operations_type_e {
 enum tdi_operations_field_type_e {
   TDI_OPERATIONS_FIELD_BEGIN = 0,
 };
+typedef enum tdi_operations_field_type_e tdi_operations_field_type_e;
 
 /** Identifies an error code. */
 typedef int tdi_status_t;
@@ -268,6 +283,8 @@ enum tdi_status_enum {
   TDI_STS_MAX
 #undef TDI_STATUS_
 };
+typedef enum tdi_status_enum tdi_status_enum;
+
 static const char *tdi_err_strings[TDI_STS_MAX + 1] = {
 #define TDI_STATUS_(x, y) y
     TDI_STATUS_VALUES, "Unknown error"
