@@ -1289,10 +1289,10 @@ class TdiTable:
             sts = -1
             is_active = c_bool(False)
             self._cintf.get_driver().tdi_data_field_is_active(data_handle, info.id, byref(is_active))
-            '''
+
             if not is_active and not force:
                 continue
-            '''
+
             if self.data_type_map(info.data_type) == "BYTE_STREAM":
                 if ('$bfrt_field_class', 'register_data') in info.annotations:
                     size = c_uint(0)
@@ -1376,10 +1376,10 @@ class TdiTable:
 
     def _get_data_fields(self, data_handle, action):
         data_fields = self.data_fields
-        
+
         if action != None:
             data_fields = self.actions[action]["data_fields"]
-        
+
         return self._process_data_fields(data_fields, data_handle)
 
     """
