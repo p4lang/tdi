@@ -44,6 +44,11 @@ import logging
 # Fixed Tables created at child Nodes of the root 'tdi' Node.
 _tdi_fixed_nodes = ["port", "mirror"]
 _tdi_context = {}
+promp_node = None
+tdi = None
+install_directory = None
+ipython_app = None
+ipython_appshell = None
 
 class CIntfTdi:
 
@@ -496,7 +501,6 @@ class TableEntryDumper:
         if res is not None:
             return True
         return False
-
 
 class TDIContext:
     """
@@ -2134,7 +2138,6 @@ command tree is still available from any context.
 """
 def setup_context():
     global _tdi_context
-    _tdi_context = {}
     _tdi_context['cur_context'] = []
     _tdi_context['parent'] = None
     _tdi_context['cur_node'] = None
@@ -2160,8 +2163,7 @@ If the currently loaded context's node has a parent, the parent's commands
 replace the current ones in the global scope. Otherwise, the currently loaded
 commands, if any, are removed and we reset to the "root" scope.
 """
-def set_parent_context():
-    global _tdi_context
+def set_tdi_parent_context():
     if _tdi_context['parent'] is None:
         for name in _tdi_context['cur_context']:
             delattr(sys.modules['__main__'], name)
@@ -2177,7 +2179,6 @@ def load_tdi(dev_id_list):
         print("TDI Runtime CLI init failed.", file = sys.stderr)
         return -1
     setup_context()
-    global tdi
     tdi.reload = load_tdi
     return 0
 
@@ -2213,13 +2214,12 @@ def ipython_reinitialize_io():
     session = get_app_session()
     session._input = ipython_app.input
     session._output = ipython_app.output
-    if not ipython_appshell.pt_app is None:
-        ipython_appshell.pt_app.app.output = ipython_app.output
-        ipython_appshell.pt_app.app.input = ipython_app.input
-        ipython_appshell.pt_app.app.renderer.output = ipython_app.output
+    if not ipython_app.shell.pt_app is None:
+        ipython_app.shell.pt_app.app.output = ipython_app.output
+        ipython_app.shell.pt_app.app.input = ipython_app.input
+        ipython_app.shell.pt_app.app.renderer.output = ipython_app.output
 
-def input_transform(lines):
-    global _tdi_context
+def tdi_input_transform(lines):
     new_lines = []
     for line in lines:
         if line == "?\n" or line == ".\n":
@@ -2228,7 +2228,7 @@ def input_transform(lines):
             else:
                 new_lines.append(f"print(_tdi_context['cur_node'].__doc__)\n")
         elif line == "..\n":
-            new_lines.append("set_parent_context()\n")
+            new_lines.append("set_tdi_parent_context()\n")
         elif line == ".?\n":
             if(_tdi_context['cur_node'] == None):
                 new_lines.append(f"?\n")
@@ -2263,12 +2263,12 @@ def use_simple_prompt():
   We use this namesapce to maniuplate what user can type on cli directly
   During setup_context, command like dump, info will be callable without tdi prefix
 """
-def load_ipython_extension(ipython, skip_input_reg=False):
-    sys.modules['__main__']._tdi_context = _tdi_context
-    sys.modules['__main__'].set_parent_context = set_parent_context
-    sys.modules['__main__'].tdi = tdi
-    if not skip_input_reg:
-        ipython.input_transformers_cleanup.append(input_transform)
+def load_ipython_extension(ipython):
+    setattr(sys.modules['__main__'], "_tdi_context", _tdi_context)
+    setattr(sys.modules['__main__'], "set_tdi_parent_context", set_tdi_parent_context)
+    setattr(sys.modules['__main__'], "tdi", tdi)
+    if not tdi_input_transform in ipython.input_transformers_cleanup:
+        ipython.input_transformers_cleanup.append(tdi_input_transform)
     IPython.core.usage.interactive_usage = """
 TDI-PYTHON Usage:
 
@@ -2292,10 +2292,23 @@ Tips:
 """
 
 def unload_ipython_extension(ipython):
+    if tdi_input_transform in ipython.input_transformers_cleanup:
+        ipython.input_transformers_cleanup.remove(tdi_input_transform)
     pass
 
-ipython_app = None
-ipython_appshell = None
+def tdi_exit_handler():
+    unload_ipython_extension(ipython_app.shell)
+    for name in _tdi_context['cur_context']:
+        delattr(sys.modules['__main__'],name)
+    delattr(sys.modules['__main__'], "_tdi_context")
+    delattr(sys.modules['__main__'], "set_tdi_parent_context")
+    delattr(sys.modules['__main__'], "tdi")
+    if tdi._cintf is not None:
+        tdi._cintf._cleanup_session()
+    sys.stdin = sys.__stdin__
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+
 
 """
 Initialize TDI Runtime CLI, create IPython's configuration, start TDI Runtime
@@ -2317,7 +2330,6 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
     threading.current_thread().__class__.__name__ = "tdi"
 
     global ipython_app
-    global ipython_appshell
 
     # save udf in storage, this part of code can be executed by two ways:
     # - using ipython_app.initialize by ipython internally
@@ -2328,6 +2340,8 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
     if udf is not None:
         exec_files_list.append(udf)
 
+    if hasattr(sys.modules['__main__'], "ipython_app"):
+        ipython_app = getattr(sys.modules['__main__'], "ipython_app")
     if ipython_app is None:
         print("Devices found : ", dev_id_list)
         c = Config()
@@ -2351,32 +2365,23 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
 
         # save TerminalIPythonApp and TerminalInteractiveShell for reusing it in next iteration
         ipython_app = IPython.terminal.ipapp.TerminalIPythonApp(config=c)
-        ipython_appshell = IPython.terminal.interactiveshell.TerminalInteractiveShell(parent=ipython_app,
-                        profile_dir=ipython_app.profile_dir,
-                        ipython_dir=ipython_app.ipython_dir, user_ns=ipython_app.user_ns)
+        ipython_app.init_shell()
 
         # reinitialize input output streams in case switching api
         ipython_reinitialize_io()
-
-        IPython.terminal.interactiveshell.TerminalInteractiveShell._instance = ipython_appshell
-        for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
-            subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
         ipython_app.initialize()
-        load_ipython_extension(ipython_appshell, False)
+        setattr(sys.modules['__main__'], "ipython_app", ipython_app)
 
     else:
 
         # use saved instances of TerminalIPythonApp, but we need reinitialize input output streams
         # for ability use new shell from another terminal
         ipython_reinitialize_io()
-        IPython.terminal.interactiveshell.TerminalInteractiveShell._instance = ipython_appshell
-        for subclass in IPython.terminal.interactiveshell.TerminalInteractiveShell._walk_mro():
-            subclass._instance = IPython.terminal.interactiveshell.TerminalInteractiveShell._instance
-        load_ipython_extension(ipython_appshell, True)
+        load_ipython_extension(ipython_app.shell)
         if udf is not None:
             ipython_app.exec_files = exec_files_list
             ipython_app._run_exec_files()
-        set_parent_context()
+        set_tdi_parent_context()
 
     if udf is not None:
         if interactive:
@@ -2384,9 +2389,7 @@ def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=Fal
     else:
         ipython_app.start()
 
-    sys.stdin = sys.__stdin__
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
+    tdi_exit_handler()
     inf.close()
     outf.close()
     return 0
