@@ -145,14 +145,14 @@ TdiInfo::TdiInfo(const std::string &p4_name,
     } else {
       auto table = factory->makeTable(this, kv.second.get());
       if (!table) {
-        LOG_ERROR("%s:%d Error creating Table:%s",
+        LOG_WARN("%s:%d Error creating Table:%s",
                   __func__,
                   __LINE__,
                   kv.first.c_str());
         continue;
       }
       if (tableIdMap.find(table->tableInfoGet()->idGet()) != tableIdMap.end()) {
-        LOG_ERROR("%s:%d Table:%s ID %d Already exists",
+        LOG_WARN("%s:%d Table:%s ID %d Already exists. Not adding again",
                   __func__,
                   __LINE__,
                   kv.first.c_str(),
@@ -175,7 +175,7 @@ TdiInfo::TdiInfo(const std::string &p4_name,
     } else {
       auto learn = std::unique_ptr<Learn>(new Learn(kv.second.get()));
       if (!learn) {
-        LOG_ERROR("%s:%d Error creating Learn Table:%s",
+        LOG_WARN("%s:%d Error creating Learn Table:%s",
                   __func__,
                   __LINE__,
                   kv.first.c_str());
@@ -183,7 +183,7 @@ TdiInfo::TdiInfo(const std::string &p4_name,
       }
 
       if (learnIdMap.find(learn->learnInfoGet()->idGet()) != learnIdMap.end()) {
-        LOG_ERROR("%s:%d Learn Table:%s ID %d Already exists",
+        LOG_WARN("%s:%d Learn Table:%s ID %d Already exists. Not adding again",
                   __func__,
                   __LINE__,
                   kv.first.c_str(),
