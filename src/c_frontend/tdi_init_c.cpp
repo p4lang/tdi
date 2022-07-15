@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <algorithm>
 #include <iterator>
 #include <vector>
-#include <algorithm>
 // tdi includes
 #include <tdi/common/tdi_init.hpp>
 #include <tdi/common/tdi_target.hpp>
@@ -51,6 +51,22 @@ tdi_status_t tdi_flags_delete(tdi_flags_hdl *flags_hdl) {
   }
   delete flags;
   return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_flags_set_value(tdi_flags_hdl *flags_hdl,
+                                  enum tdi_flags_e flags_field,
+                                  bool value) {
+  auto flags = reinterpret_cast<tdi::Flags *>(flags_hdl);
+  auto sts = flags->setValue(flags_field, value);
+  return sts;
+}
+
+tdi_status_t tdi_flags_get_value(const tdi_flags_hdl *flags_hdl,
+                                  enum tdi_flags_e flags_field,
+                                  bool *value) {
+  auto flags = reinterpret_cast<const tdi::Flags *>(flags_hdl);
+  auto sts = flags->getValue(flags_field, value);
+  return sts;
 }
 
 tdi_status_t tdi_info_get(const tdi_dev_id_t dev_id,
