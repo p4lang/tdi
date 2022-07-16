@@ -48,7 +48,6 @@ promp_node = None
 tdi = None
 install_directory = None
 ipython_app = None
-ipython_appshell = None
 
 class CIntfTdi:
 

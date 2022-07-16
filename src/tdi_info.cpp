@@ -138,14 +138,14 @@ TdiInfo::TdiInfo(const std::string &p4_name,
   // create Table and Learn objects for them
   for (const auto &kv : tdi_info_parser_->tableInfoMapGet()) {
     if (tableMap.find(kv.first) != tableMap.end()) {
-      LOG_ERROR("%s:%d Table:%s Already exists",
+      LOG_WARN("%s:%d Table:%s Already exists. Not adding another",
                 __func__,
                 __LINE__,
                 kv.first.c_str());
     } else {
       auto table = factory->makeTable(this, kv.second.get());
       if (!table) {
-        LOG_WARN("%s:%d Error creating Table:%s",
+        LOG_WARN("%s:%d Unable to create Table:%s",
                   __func__,
                   __LINE__,
                   kv.first.c_str());
@@ -175,7 +175,7 @@ TdiInfo::TdiInfo(const std::string &p4_name,
     } else {
       auto learn = std::unique_ptr<Learn>(new Learn(kv.second.get()));
       if (!learn) {
-        LOG_WARN("%s:%d Error creating Learn Table:%s",
+        LOG_WARN("%s:%d Unable to create Learn:%s",
                   __func__,
                   __LINE__,
                   kv.first.c_str());
@@ -183,7 +183,7 @@ TdiInfo::TdiInfo(const std::string &p4_name,
       }
 
       if (learnIdMap.find(learn->learnInfoGet()->idGet()) != learnIdMap.end()) {
-        LOG_WARN("%s:%d Learn Table:%s ID %d Already exists. Not adding again",
+        LOG_WARN("%s:%d Learn :%s ID %d Already exists. Not adding again",
                   __func__,
                   __LINE__,
                   kv.first.c_str(),
