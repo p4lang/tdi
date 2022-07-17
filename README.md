@@ -175,6 +175,7 @@ C --> E(libtdi_dpdk)
 
 ```
 mkdir -p build && cd build
+git submodule update --init --recursive
 cmake -DSTANDALONE=ON -DCMAKE_INSTALL_PREFIX=../install .. && make install -j8
 ```
 
