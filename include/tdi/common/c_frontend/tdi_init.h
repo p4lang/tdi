@@ -21,6 +21,7 @@
 #define _TDI_INIT_H_
 
 // tdi includes
+#include <stdbool.h>
 #include <tdi/common/tdi_defs.h>
 
 #ifdef __cplusplus
@@ -58,6 +59,14 @@ tdi_status_t tdi_flags_create(const uint64_t flag_value,
  * @return Status of the API call
  */
 tdi_status_t tdi_flags_delete(tdi_flags_hdl *flags_hdl);
+
+tdi_status_t tdi_flags_set_value(tdi_flags_hdl *flags_hdl,
+                                  enum tdi_flags_e flags_field,
+                                  bool value);
+
+tdi_status_t tdi_flags_get_value(const tdi_flags_hdl *flags_hdl,
+                                  enum tdi_flags_e flags_field,
+                                  bool *value);
 
 /**
  * @brief Get the TdiInfo object corresponding to the (device_id,

@@ -783,6 +783,23 @@ class TdiTable:
             return "INVALID_MODE"
         return "ERR: Table Mode %d not implemented" . format(mode)
 
+    @staticmethod
+    def flag_map(flag_enum=None, flag_enum_str=None):
+        TDI_FLAGS_CORE = 0
+        TDI_FLAGS_ARCH = 0x08
+        TDI_FLAGS_DEVICE = 0x10
+        TDI_FLAGS_END = 0x40
+        flag_dict = {
+                TDI_FLAGS_DEVICE+0:"from_hw"
+        }
+        flag_rev_dict = {
+                "from_hw":  TDI_FLAGS_DEVICE+0
+        }
+        if flag_enum is not None:
+            return flag_dict[flag_enum]
+        if flag_enum_str is not None:
+            return flag_rev_dict[flag_enum_str]
+
     """
     A convenience method for transforming a python integer to a
     network-order byte array.
@@ -1539,15 +1556,21 @@ class TdiTable:
         if not sts == 0:
             raise TdiTableError("Error: tdi_table_data_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         flag = 0
+        flags_handle = self._cintf.handle_type()
+        sts = self._cintf.get_driver().tdi_flags_create(flag,  byref(flags_handle))
+        if not sts == 0:
+            return -1
         if from_hw:
             flag = 1
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
         sts = self._cintf.tdi_table_default_entry_get(self._handle,
                                                         self._cintf.get_session(),
                                                         self._cintf.get_dev_tgt(),
                                                         data_handle,
-                                                        flag)
+                                                        flags_handle)
         if not sts == 0:
             self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
+            self._cintf.get_driver().tdi_flags_delete(flags_handle)
             raise TdiTableError("Error: get_default_entry failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         action = None
 
@@ -1567,6 +1590,7 @@ class TdiTable:
             
             stream_printer(None, [data_handle], action)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
+        self._cintf.get_driver().tdi_flags_delete(flags_handle)
         return entry
 
     def del_entry(self, key_content, entry_handle=None):
@@ -1618,12 +1642,13 @@ class TdiTable:
         if not sts == 0:
             return -1
         flag = 0
-        if from_hw:
-            flag = 1
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(flag,  byref(flags_handle))
         if not sts == 0:
             return -1
+        if from_hw:
+            flag = 1
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag)
         if entry_handle != None:
             key_handle = self._cintf.handle_type()
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
@@ -1636,7 +1661,7 @@ class TdiTable:
                     self._cintf.get_dev_tgt(),
                     entry_handle,
                     key_handle, data_handle,
-                    flag)
+                    flags_handle)
         else:
             if key_handle is None:
                 key_handle = self._make_call_keys(key_content)
@@ -1762,10 +1787,11 @@ class TdiTable:
         if key_handle == -1:
             return -1
         flag = c_int(0)
-        if from_hw:
-            flag = c_int(1)
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
+        if from_hw:
+            flag = c_int(1)
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
         sts = self._cintf.tdi_table_entry_get_first(self._handle,
                                                     self._cintf.get_session(),
                                                     self._cintf.get_dev_tgt(),
@@ -1792,10 +1818,13 @@ class TdiTable:
             key_hdls[i] = new_key
             data_hdls[i] = new_data
         flag = c_int(0)
-        if from_hw:
-            flag = c_int(1)
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
+        if not sts == 0:
+            return -1
+        if from_hw:
+            flag = c_int(1)
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
         num_returned = c_uint(0)
         sts = self._cintf.tdi_table_entry_get_next_n(self._handle,
                                                      self._cintf.get_session(),
@@ -1820,10 +1849,14 @@ class TdiTable:
 
     def get_usage(self, from_hw=False):
         flag = 0
-        if from_hw:
-            flag = 1
         flags_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
+        if not sts == 0:
+            return -1
+        if from_hw:
+            flag = 1
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+
         table_type = self.table_type_map(self.get_type())
         if table_type == -1:
             return -1
