@@ -1396,6 +1396,8 @@ class TdiTable:
 
         if action != None:
             data_fields = self.actions[action]["data_fields"]
+        if action == b'NoAction':
+            data_fields = {}
 
         return self._process_data_fields(data_fields, data_handle)
 

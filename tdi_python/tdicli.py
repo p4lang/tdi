@@ -1449,6 +1449,8 @@ def {}(self, {} pipe=None, gress_dir=None, prsr_id=None):
         full_strname = action_name.decode('ascii')
         strname = full_strname[full_strname.rfind('.') + 1:].replace("$","")
         method_name = "set_default_with_{}".format(strname)
+        if (strname == "NoAction"):
+            data_fields = {}
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, data_fields=data_fields)
 
