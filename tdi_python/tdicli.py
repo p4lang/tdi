@@ -581,7 +581,8 @@ class TDINode(TDIContext):
         # mask the clear method here to avoid the current missing implementation of clear method
         # self._commands["clear"] = getattr(self, "clear")
         self._commands["info"] = getattr(self, "info")
-        self._commands["enable"] = getattr(self, "enable")
+        if self._parent_node is None:
+            self._commands["enable"] = getattr(self, "enable")
         #self._commands["tdi_info"] = getattr(self, "tdi_info")
     def enable(self):
         # This call will stay the same (call old c_frontend libdriver.so) not call libtdi.so
@@ -665,7 +666,10 @@ class TDINode(TDIContext):
                 type_ = "Learn-digest"
             child_names.append((child._get_name(), type_))
         for name, command in self._commands.items():
-            child_names.append((name, "Command"))
+            if name == "enable":
+                child_names.append((name, "Command (Enables pipeline on supported targets)"))
+            else:
+                child_names.append((name, "Command"))
         for name, description in sorted(child_names):
             docstr += "{:<20} - {}\n".format(name, description)
         self.__doc__ = docstr
