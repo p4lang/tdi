@@ -1908,8 +1908,6 @@ class TdiTable:
         attributes_dic = {
                   0: ["symmetric_mode_set", "symmetric_mode_get"],
                   2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
-                  # dynamic hash set is not supported on any of target now
-                  #3: ["dynamic_hash_set", "dynamic_hash_get"],
                   3: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
                   4: ["port_status_notif_cb_set"],
                   5: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
