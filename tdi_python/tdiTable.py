@@ -1907,6 +1907,7 @@ class TdiTable:
         # based on tdi_rt_attributes_type_e
         attributes_dic = {
                   0: ["symmetric_mode_set", "symmetric_mode_get"],
+                  1: ["dyn_key_mask_get", "dyn_key_mask_set"],
                   2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
                   3: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
                   4: ["port_status_notif_cb_set"],
