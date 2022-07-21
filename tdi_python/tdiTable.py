@@ -1907,12 +1907,12 @@ class TdiTable:
         # based on tdi_rt_attributes_type_e
         attributes_dic = {
                   0: ["symmetric_mode_set", "symmetric_mode_get"],
+                  1: ["dyn_key_mask_get", "dyn_key_mask_set"],
                   2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
-                  3: ["dynamic_hash_set", "dynamic_hash_get"],
-                  4: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
-                  5: ["port_status_notif_cb_set"],
-                  6: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
-                  8: ["selector_table_update_cb_set"]}
+                  3: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
+                  4: ["port_status_notif_cb_set"],
+                  5: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
+                  7: ["selector_table_update_cb_set"]}
         keys_list = attributes_dic.keys()
         for i in range(len(attributes_arr)):
             if attributes_arr[i] in keys_list:
