@@ -741,7 +741,8 @@ class TdiTable:
             TDI_TABLE_TYPE_DEVICE+73: "TM_PORT_SCHED_SHAPING",
             TDI_TABLE_TYPE_DEVICE+74: "TM_PIPE_CFG",
             TDI_TABLE_TYPE_DEVICE+75: "TM_PIPE_SCHED_CFG",
-            TDI_TABLE_TYPE_DEVICE+76: "INVLD" }
+            TDI_TABLE_TYPE_DEVICE+76: "VALUE_LOOKUP",
+            TDI_TABLE_TYPE_DEVICE+77: "INVLD" }
         if table_type in table_type_dic.keys():
             return(table_type_dic[table_type])
         else:
