@@ -71,7 +71,7 @@ class TdiInfo:
             if tbl_obj == -1:
                 print("CLI Error: bad table object init")
                 return -1
-            elif tbl_obj.table_type_map(tbl_obj.get_type()) == "INVLD":
+            elif tbl_obj.table_type_cls.table_type_str(tbl_obj.get_type()) == "INVLD":
                 print("CLI Error: bad table type init")
                 return -1
             else:
