@@ -715,7 +715,7 @@ tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
  *
  * @return Status of API call
  */
-tdi_status_t tdi_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl);
+tdi_status_t tdi_table_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl);
 
 /**
  * @brief Apply an Attribute from an Attribute Object on the

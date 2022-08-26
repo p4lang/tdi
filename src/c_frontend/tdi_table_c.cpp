@@ -513,33 +513,31 @@ tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
   return TDI_SUCCESS;
 }
 
-#ifdef __TDI_FROM_BFRT
 tdi_status_t tdi_table_attributes_set(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
                                       const tdi_target_hdl *target,
-                                      const uint64_t flags,
+                                      const tdi_flags_hdl *flags,
                                       const tdi_attributes_hdl *tbl_attr) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->tableAttributesSet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
-      flags,
+      *reinterpret_cast<const tdi::Flags *>(flags),
       *reinterpret_cast<const tdi::TableAttributes *>(tbl_attr));
 }
 
 tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
                                       const tdi_session_hdl *session,
                                       const tdi_target_hdl *target,
-                                      const uint64_t flags,
+                                      const tdi_flags_hdl *flags,
                                       tdi_attributes_hdl *tbl_attr) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->tableAttributesGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
-      flags,
+      *reinterpret_cast<const tdi::Flags *>(flags),
       reinterpret_cast<tdi::TableAttributes *>(tbl_attr));
 }
-#endif
 
 #ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_table_operations_execute(const tdi_table_hdl *table_hdl,
