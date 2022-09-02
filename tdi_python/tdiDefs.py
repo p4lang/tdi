@@ -27,6 +27,23 @@ class TargetType:
         if target_type_str is not None:
             return cls.target_type_rev_dict[target_type_str]
 
+class FlagsEnum(Enum):
+    TDI_FLAGS_CORE = 0
+    TDI_FLAGS_ARCH = 0x08
+    TDI_FLAGS_DEVICE = 0x10
+    TDI_FLAGS_END = 0x40
+
+class FlagsType:
+    # No generic flags for now
+    flags_dict = {}
+    flags_rev_dict = {}
+
+    @classmethod
+    def flag_map(cls, flag_enum=None, flag_enum_str=None):
+        if flag_enum is not None:
+            return cls.flags_dict[flag_enum]
+        if flag_enum_str is not None:
+            return cls.flags_rev_dict[flag_enum_str]
 
 # tdi_attributes_type_e
 class AttributesEnum(Enum):
@@ -93,14 +110,14 @@ class DataType:
 
     data_type_dict = {
             DataTypeEnum.TDI_FIELD_DATA_TYPE_INT_ARR.value: "INT_ARR",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_BOOL_ARR: "BOOL_ARR",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_UINT64: "UINT64",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_BYTE_STREAM: "BYTE_STREAM",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_FLOAT: "FLOAT",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_CONTAINER: "CONTAINER",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING: "STRING",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_BOOL: "BOOL",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING: "STR_ARR"
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_BOOL_ARR.value: "BOOL_ARR",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_UINT64.value: "UINT64",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_BYTE_STREAM.value: "BYTE_STREAM",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_FLOAT.value: "FLOAT",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_CONTAINER.value: "CONTAINER",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING.value: "STRING",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_BOOL.value: "BOOL",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING.value: "STR_ARR"
     }
 
     @classmethod

@@ -220,15 +220,6 @@ class CIntfTdi:
     def _devcall(self):
         pdb.set_trace()
 
-    def _set_pipe(self, pipe=0xFFFF):
-        self._dev_tgt = self.TdiDevTgt(self._dev_tgt.dev_id, pipe, self._dev_tgt.direction, self._dev_tgt.prsr_id)
-
-    def _set_direction(self, direction=0xFFFF):
-        self._dev_tgt = self.TdiDevTgt(self._dev_tgt.dev_id, self._dev_tgt.pipe_id, direction, self._dev_tgt.prsr_id)
-
-    def _set_parser(self, parser=0xFF):
-        self._dev_tgt = self.TdiDevTgt(self._dev_tgt.dev_id, self._dev_tgt.pipe_id, self._dev_tgt.direction, parser)
-
     def _complete_operations(self):
         sts = self._driver.tdi_session_complete_operations(self._session)
         if sts != 0:
@@ -2082,56 +2073,6 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
     return 0
 
 """
-This function initializes the TDI Runtime CLI objects, generating a tree of
-objects that serve as CLI command nodes.
-"""
-def populate_tdi(dev_id_list, cIntf_cls):
-    global tdi
-    # tdi node shouldn't have a cintf since cintf is dev dependent
-    tdi = TDINode("tdi", None)
-    tdi.device_list =  dev_id_list
-    # For each device_id, create a cintf and a dev node
-    # If only one device is present, then skip creating the
-    # device node for now for backward compatibility.
-    # TODO take care of it later especially when device level
-    # APIs are introduced.
-    single_device = True
-    if len(dev_id_list) > 1:
-        single_device = False
-    for dev_id in dev_id_list:
-        cintf = cIntf_cls(dev_id, TdiTable, TdiInfo)
-        if cintf == -1:
-            return -1
-        if single_device:
-            tdi = TDINode("tdi", cintf, parent_node=None)
-            tdi.device_list =  dev_id_list
-            dev_node = tdi
-        else:
-            dev_node = TDINode("dev_"+str(dev_id), cintf, parent_node=tdi)
-
-        dev_node.devcall = cintf._devcall
-        #dev_node.set_pipe = cintf._set_pipe
-        #dev_node.set_direction = cintf._set_direction
-        #dev_node.set_parser = cintf._set_parser
-        dev_node.complete_operations = cintf._complete_operations
-        dev_node.batch_begin = cintf._begin_batch
-        dev_node.batch_flush = cintf._flush_batch
-        dev_node.batch_end = cintf._end_batch
-        dev_node.transaction_begin = cintf._begin_transaction
-        dev_node.transaction_verify = cintf._verify_transaction
-        dev_node.transaction_commit = cintf._commit_transaction
-        dev_node.transaction_abort = cintf._abort_transaction
-        dev_node.p4_programs_list = []
-        for p4_name, tdi_info in cintf.infos.items():
-            print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
-            if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
-              print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
-              return -1
-        #
-    set_node_docstrs(tdi)
-    return 0
-
-"""
 This function creates the global state required to manage context switching
 between CLI nodes. Note that it never unloads the tdi node, so the full
 command tree is still available from any context.
@@ -2172,15 +2113,6 @@ def set_tdi_parent_context():
         _tdi_context['cur_node'] = None
         return
     _tdi_context['parent']()
-
-def load_tdi(dev_id_list, cIntf_cls=None):
-    sts = populate_tdi(dev_id_list, cIntf_cls)
-    if sts == -1:
-        print("TDI Runtime CLI init failed.", file = sys.stderr)
-        return -1
-    setup_context()
-    tdi.reload = load_tdi
-    return 0
 
 """
 By default, python uses the C default values for stdin, stdout, stderr.
@@ -2396,12 +2328,11 @@ class TdiCli:
 
     def load_tdi(self, dev_id_list):
         sts = self.populate_tdi(dev_id_list)
-        #sts = populate_tdi(dev_id_list, self.cIntf_cls)
         if sts == -1:
             print("TDI Runtime CLI init failed.", file = sys.stderr)
             return -1
         setup_context()
-        tdi.reload = load_tdi
+        tdi.reload = self.load_tdi
         return 0
 
     """

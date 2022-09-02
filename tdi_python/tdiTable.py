@@ -40,6 +40,7 @@ class TdiTable:
     table_type_cls = TableType
     attributes_type_cls = AttributesType
     operations_type_cls = OperationsType
+    flags_type_cls = FlagsType
 
     """
     This class manages the exchange of information between
@@ -672,23 +673,6 @@ class TdiTable:
         if mode == 2:
             return "INVALID_MODE"
         return "ERR: Table Mode %d not implemented" . format(mode)
-
-    @staticmethod
-    def flag_map(flag_enum=None, flag_enum_str=None):
-        TDI_FLAGS_CORE = 0
-        TDI_FLAGS_ARCH = 0x08
-        TDI_FLAGS_DEVICE = 0x10
-        TDI_FLAGS_END = 0x40
-        flag_dict = {
-                TDI_FLAGS_DEVICE+0:"from_hw"
-        }
-        flag_rev_dict = {
-                "from_hw":  TDI_FLAGS_DEVICE+0
-        }
-        if flag_enum is not None:
-            return flag_dict[flag_enum]
-        if flag_enum_str is not None:
-            return flag_rev_dict[flag_enum_str]
 
     """
     A convenience method for transforming a python integer to a
@@ -1454,7 +1438,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
         sts = self._cintf.tdi_table_default_entry_get(self._handle,
                                                         self._cintf.get_session(),
                                                         self._cintf.get_dev_tgt(),
@@ -1540,7 +1524,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag)
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag)
         if entry_handle != None:
             key_handle = self._cintf.handle_type()
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
@@ -1683,7 +1667,7 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
         if from_hw:
             flag = c_int(1)
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
         sts = self._cintf.tdi_table_entry_get_first(self._handle,
                                                     self._cintf.get_session(),
                                                     self._cintf.get_dev_tgt(),
@@ -1716,7 +1700,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = c_int(1)
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
         num_returned = c_uint(0)
         sts = self._cintf.tdi_table_entry_get_next_n(self._handle,
                                                      self._cintf.get_session(),
@@ -1747,7 +1731,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
 
         table_type = self.table_type_cls.table_type_str(self.get_type())
         if table_type == -1:
