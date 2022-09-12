@@ -19,6 +19,9 @@ class TargetType:
     target_type_dict = {
         TargetEnumCore.TDI_TARGET_DEV_ID.value: "dev_id"
     }
+    target_type_rev_dict = {
+        "dev_id": TargetEnumCore.TDI_TARGET_DEV_ID.value
+    }
 
     @classmethod
     def target_type_map(cls, target_type_enum=None, target_type_str=None):
@@ -117,7 +120,7 @@ class DataType:
             DataTypeEnum.TDI_FIELD_DATA_TYPE_CONTAINER.value: "CONTAINER",
             DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING.value: "STRING",
             DataTypeEnum.TDI_FIELD_DATA_TYPE_BOOL.value: "BOOL",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING.value: "STR_ARR"
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING_ARR.value: "STR_ARR"
     }
 
     @classmethod

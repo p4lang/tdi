@@ -1460,10 +1460,10 @@ class TdiTable:
         if print_entry:
             stream_printer = self.make_entry_stream_printer()
             action = []
-            
+
             if len(self.actions) > 0:
                 action = [self._action_from_data(data_handle)]
-            
+
             stream_printer(None, [data_handle], action)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
         self._cintf.get_driver().tdi_flags_delete(flags_handle)
@@ -1779,9 +1779,13 @@ class TdiTable:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         logging.debug("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
         keys_list = self.attributes_type_cls.attributes_dict.keys()
+
+        # TODO: Enable this when attributes are supported
+        '''
         for i in range(len(attributes_arr)):
             if attributes_arr[i] in keys_list:
                 self.supported_commands += self.attributes_type_cls.attributes_dict[attributes_arr[i]]
+        '''
 
     def set_supported_operations_to_supported_commands(self):
         num_opers = c_uint(0)
@@ -1795,9 +1799,13 @@ class TdiTable:
             raise TdiTableError("Error: operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         logging.debug("For Table={} operations_arr ==={}".format(self.name, str(operations_arr[0:])));
         keys_list = self.operations_type_cls.operations_dict.keys()
+
+        # TODO: Enable this when operations are supported
+        '''
         for i in range(len(operations_arr)):
             if operations_arr[i] in keys_list:
                 self.supported_commands.append(self.operations_type_cls.operations_dict[operations_arr[i]])
+        '''
 
     def set_supported_apis_to_supported_commands(self):
         num_api = c_uint(0)
