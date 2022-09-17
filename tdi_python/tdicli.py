@@ -174,6 +174,8 @@ class CIntfTdi:
         # why don't need to annotation for self._dev_id to c_int(self._dev_id)
         self._driver.tdi_p4_names_get(self._dev_id, p4_names)
         self.handle_type = POINTER(self.TdiHandle)
+        self.handle_key_type = POINTER(self.TdiHandle)
+        self.handle_target_type = POINTER(self.TdiHandle)
         self.sess_type = POINTER(c_uint)
         self.annotation_type = self.TdiAnnotation
 
@@ -189,7 +191,7 @@ class CIntfTdi:
         self.tdi_tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
 
         self.learn_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.sess_type, POINTER(self.handle_type), c_uint, self.handle_type, c_void_p)
-        self.port_status_notif_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_bool, c_void_p)
+        self.port_status_notif_cb_type = CFUNCTYPE(c_int, self.handle_target_type, self.handle_key_type, c_bool, c_void_p)
         self.selector_table_update_cb_type = CFUNCTYPE(None, self.sess_type, POINTER(self.TdiDevTgt), c_void_p, c_uint, c_uint, c_int, c_bool)
         self.infos = {}
         for name in p4_names:
