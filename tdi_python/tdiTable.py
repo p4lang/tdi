@@ -2015,11 +2015,13 @@ class TdiTable:
         self._attr_deallocate(attr_hdl)
 
     def _wrap_port_status_notif_cb(self, callback):
-        def callback_wrapper(target, handle, up, cookie):
-            dev_id = target.contents.dev_id
-            entry = self.get_entry(key_content=None, print_entry=False, key_handle=handle)
+        def callback_wrapper(target_hdl, key_hdl, up, cookie):
+            print(self._cintf.print_target(target_hdl))
+            dev_id = c_uint64(0);
+            sts = self._cintf.get_driver().tdi_target_get_value(target_hdl, self._cintf.target_type_map(target_type_str="dev_id"), byref(dev_id));
+            entry = self.get_entry(key_content=None, print_entry=True, key_handle=key_hdl)
             dev_port = list(entry.key.values())[0]
-            callback(dev_id, dev_port, up)
+            callback(dev_id.value, dev_port, up)
             return 0
         return self._cintf.port_status_notif_cb_type(callback_wrapper)
 
