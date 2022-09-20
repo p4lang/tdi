@@ -100,6 +100,24 @@ class Device {
   std::map<std::string, std::unique_ptr<const TdiInfo>> tdi_info_map_;
 };
 
+class WarmInitOptions {
+  public:
+   virtual ~WarmInitOptions() = default;
+};
+
+class WarmInitImpl {
+  public:
+   virtual ~WarmInitImpl() = default;
+   virtual tdi_status_t deviceWarmInitBegin(const tdi_dev_id_t & /*device_id*/,
+                             const WarmInitOptions & /*warm_init_options*/) {
+     return TDI_NOT_SUPPORTED;
+   }
+   virtual tdi_status_t deviceWarmInitEnd(const tdi_dev_id_t & /*device_id*/) {
+     return TDI_NOT_SUPPORTED;
+   }
+};
+
+
 /**
  * @brief Class to manage Device per dev_id.<br>
  * <B>Creation: </B> Singleton....
@@ -112,6 +130,11 @@ class DevMgr {
    * @return Ref to Singleton DevMgr object
    */
   static DevMgr &getInstance();
+
+  /**
+     * @brief initialize warmInitImpl object
+  */
+  static void init(std::unique_ptr<WarmInitImpl> impl);
 
   /**
    * @brief Get the TdiInfo object corresponding to the (device_id,
@@ -165,6 +188,11 @@ class DevMgr {
 
   tdi_status_t deviceRemove(const tdi_dev_id_t &device_id);
 
+  tdi_status_t deviceWarmInitBegin(const tdi_dev_id_t &device_id,
+                                   const WarmInitOptions &warm_init_options);
+
+  tdi_status_t deviceWarmInitEnd(const tdi_dev_id_t &device_id);
+
   DevMgr(DevMgr const &) = delete;
   DevMgr(DevMgr &&) = delete;
   DevMgr &operator=(const DevMgr &) = delete;
@@ -178,6 +206,16 @@ class DevMgr {
 
   static std::mutex dev_mgr_instance_mutex;
   static DevMgr *dev_mgr_instance;
+
+  static std::unique_ptr<WarmInitImpl> warm_init_impl;
+
+  const WarmInitImpl *warmInitImpl() const {
+    return warm_init_impl.get();
+  }
+
+  WarmInitImpl *warmInitImpl() {
+    return warm_init_impl.get();
+  }
 };  // DevMgr
 
 /**

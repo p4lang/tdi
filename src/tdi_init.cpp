@@ -25,6 +25,8 @@ namespace tdi {
 DevMgr *DevMgr::dev_mgr_instance = nullptr;
 std::mutex DevMgr::dev_mgr_instance_mutex;
 
+std::unique_ptr<WarmInitImpl> DevMgr::warm_init_impl(nullptr);
+
 tdi_status_t Device::tdiInfoGet(const std::string &prog_name,
                                 const TdiInfo **tdi_info) const {
   if (this->tdi_info_map_.find(prog_name) == this->tdi_info_map_.end()) {
@@ -117,6 +119,27 @@ tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t &dev_id) {
   LOG_DBG(
       "%s:%d  Device Remove called for dev : %d", __func__, __LINE__, dev_id);
   return TDI_SUCCESS;
+}
+
+void DevMgr::init(std::unique_ptr<WarmInitImpl> impl) {
+  warm_init_impl = std::move(impl);
+}
+
+tdi_status_t DevMgr::deviceWarmInitBegin(const tdi_dev_id_t &device_id,
+                              const WarmInitOptions &warm_init_options) {
+  if (warmInitImpl() == nullptr) {
+    LOG_ERROR("%s:%d warmInitImpl not initialized", __func__, __LINE__);
+    return TDI_INTERNAL_ERROR;
+  }
+  return warmInitImpl()->deviceWarmInitBegin(device_id, warm_init_options);
+}
+
+tdi_status_t DevMgr::deviceWarmInitEnd(const tdi_dev_id_t &device_id) {
+  if (warmInitImpl() == nullptr) {
+    LOG_ERROR("%s:%d warmInitImpl not initialized", __func__, __LINE__);
+    return TDI_INTERNAL_ERROR;
+  }
+  return warmInitImpl()->deviceWarmInitEnd(device_id);
 }
 
 tdi_status_t Init::tdiModuleInit(
