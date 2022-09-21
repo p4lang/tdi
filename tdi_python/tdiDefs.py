@@ -1,9 +1,23 @@
+# Copyright(c) 2021 Intel Corporation.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 from enum import Enum, auto
 
-'''
+"""
     These maps are based on the enums defined in tdi_defs.h If the
     enums there are changed, these maps must also be changed.
-'''
+"""
 
 # tdi_target_e
 class TargetEnum(Enum):
@@ -11,6 +25,9 @@ class TargetEnum(Enum):
   TDI_TARGET_ARCH = 0x08
   TDI_TARGET_DEVICE = 0x80
 
+"""
+    Targets can derived these classes to support custom types
+"""
 # tdi_target_core_enum_e
 class TargetType:
     class TargetEnumCore(Enum):

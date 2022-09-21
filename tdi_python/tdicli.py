@@ -53,13 +53,9 @@ ipython_app = None
 class CIntfTdi:
     target_type_cls = TargetType
 
-    def __init__(self, dev_id, table_cls, info_cls, driver_path, utils_path):
-    #def __init__(self, dev_id, table_cls, info_cls):
+    def __init__(self, dev_id, table_cls, info_cls, driver_path):
         self._dev_id = dev_id
-        self._utils = CDLL(utils_path, mode=RTLD_GLOBAL)
         self._driver = CDLL(driver_path)
-        # self._utils = CDLL(install_directory+'/lib/libtarget_utils.so', mode=RTLD_GLOBAL)
-        # self._driver = CDLL(install_directory+'/lib/libdriver.so')
 
         self.TdiTable = table_cls
         self.TdiInfo = info_cls
@@ -302,46 +298,12 @@ class CIntfTdi:
     def get_target(self):
         return self._target
 
-    # def print_target(self, target):
-    #     dev_id = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="dev_id"), byref(dev_id));
-    #     pipe_id = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="pipe_id"), byref(pipe_id));
-    #     direction = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="direction"), byref(direction));
-    #     prsr_id = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="prsr_id"), byref(prsr_id));
-    #     return "dev_id={} pipe={} direction={} prsr_id={}".format(dev_id.value, pipe_id.value, direction.value, prsr_id.value)
-
     def get_dev_tgt(self):
         #return byref(self._dev_tgt)
         return self._target
 
     def get_flags(self):
         return byref(self._flags)
-
-    # @staticmethod
-    # def target_type_map(target_type_enum=None, target_type_str=None):
-    #     TDI_TARGET_CORE=0
-    #     TDI_TARGET_ARCH=0x08
-    #     TDI_TARGET_DEVICE=0x80
-    #     target_type_dict = {
-    #             TDI_TARGET_CORE+0:"dev_id",
-    #             TDI_TARGET_ARCH+0:"pipe_id",
-    #             TDI_TARGET_ARCH+1:"direction",
-    #             TDI_TARGET_DEVICE+1:"prsr_id",
-    #     }
-    #     target_type_rev_dict = {
-    #             "dev_id":    TDI_TARGET_CORE+0,
-    #             "pipe_id":   TDI_TARGET_ARCH+0,
-    #             "direction": TDI_TARGET_ARCH+1,
-    #             "prsr_id":   TDI_TARGET_DEVICE+1,
-    #     }
-    #     if target_type_enum is not None:
-    #         return target_type_dict[target_type_enum]
-    #     if target_type_str is not None:
-    #         return target_type_rev_dict[target_type_str]
-
 
 
 class TableEntryDumper:
@@ -2363,6 +2325,11 @@ class TdiCli:
             else:
                 dev_node = TDINode("dev_"+str(dev_id), cintf, parent_node=tdi)
 
+            #
+            # This function fills dev_node with options from cintf
+            # To be overriden by targets as needed
+            # TODO: Need to find a better way of doing this
+            #
             self.fill_dev_node(cintf, dev_node)
             for p4_name, tdi_info in cintf.infos.items():
                 print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
@@ -2373,15 +2340,8 @@ class TdiCli:
         set_node_docstrs(tdi)
         return 0
 
+    """
+        To be overriden by the targets on need basis
+    """
     def fill_dev_node(self, cintf, dev_node):
-        print("To be defined by target")
         pass
-
-'''
-def main():
-    start_tdi(0, 1, os.getcwd(), [0])
-
-if __name__ == "__main__":
-    main()
-
-'''

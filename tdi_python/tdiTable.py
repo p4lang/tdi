@@ -22,8 +22,6 @@ import pdb
 import json
 import time
 import logging
-#import enum
-#from enum import Enum, auto
 from tdiDefs import *
 
 class TdiTableError(Exception):
@@ -90,20 +88,11 @@ class TdiTable:
             print("CLI Error: get table name failed. [{}]".format(self._cintf.err_str(sts)))
             raise TdiTableError("Table init name failed.", None, -1)
 
+        #
+        # this function to be overriden by targets on need basis
+        # TODO: Need to find a better way of doing this
+        #
         self.modify_table_names(table_name)
-        # self.name = table_name.value.decode('ascii')
-        # print("In TdiTable constructor: ", self.name)
-        # #Unify the table name for TDINode (command nodes)
-        # name_lowercase_without_dollar=self.name.lower().replace("$","")
-        # if self.table_type in ["PORT_CFG", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
-        #     self.name = "port.{}".format(name_lowercase_without_dollar)
-        # if self.table_type in ["PRE_MGID", "PRE_NODE", "PRE_ECMP", "PRE_LAG", "PRE_PRUNE", "PRE_PORT", "MIRROR_CFG"]:
-        #     self.name = name_lowercase_without_dollar
-        # if self.table_type in ["TM_PORT_GROUP_CFG", "TM_PORT_GROUP"]:
-        #     self.name = name_lowercase_without_dollar
-        # if self.table_type in ["SNAPSHOT", "SNAPSHOT_LIVENESS"]:
-        #     self.name = "{}".format(name_lowercase_without_dollar)
-        # print("{:40s} | {:30s} | {:10s}".format(self.name, self.table_type, "Ready" if self.table_ready else "TBD"))
         self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
         self.set_supported_attributes_to_supported_commands()
         self.set_supported_operations_to_supported_commands()
@@ -2420,3 +2409,9 @@ class TdiTable:
                 parsed_data[name] = parsed
 
         return parsed_keys, parsed_data
+
+    """
+        To be overriden by the targets on need basis
+    """
+    def modify_table_names(self, table_name):
+        pass
