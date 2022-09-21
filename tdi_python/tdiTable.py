@@ -22,6 +22,7 @@ import pdb
 import json
 import time
 import logging
+from tdiDefs import *
 
 class TdiTableError(Exception):
     def __init__(self, str_rep, table_obj, sts, *args,**kwargs):
@@ -30,8 +31,14 @@ class TdiTableError(Exception):
         self.str_rep = str_rep
         Exception.__init__(self, str_rep, *args,**kwargs)
 
-
 class TdiTable:
+
+    key_match_type_cls = KeyMatchType
+    data_type_cls = DataType
+    table_type_cls = TableType
+    attributes_type_cls = AttributesType
+    operations_type_cls = OperationsType
+    flags_type_cls = FlagsType
 
     """
     This class manages the exchange of information between
@@ -65,12 +72,12 @@ class TdiTable:
         self.annotations = {}
         self.has_const_default_action = False
         self.unimplemented_tables = ["TODO"]
-        self.table_type = self.table_type_map((self.get_type()))
+        self.table_type = self.table_type_cls.table_type_str((self.get_type()))
         self.table_ready = False if self.table_type in self.unimplemented_tables else True
         #
         # Ignore INVALID Table Type from Driver
         #
-        if self.table_type_map(self.get_type()) == "INVLD":
+        if self.table_type_cls.table_type_str(self.get_type()) == "INVLD":
             return
         #
         # Determine the **Table Name** from Driver
@@ -80,18 +87,12 @@ class TdiTable:
         if not sts == 0:
             print("CLI Error: get table name failed. [{}]".format(self._cintf.err_str(sts)))
             raise TdiTableError("Table init name failed.", None, -1)
-        self.name = table_name.value.decode('ascii')
-        #Unify the table name for TDINode (command nodes)
-        name_lowercase_without_dollar=self.name.lower().replace("$","")
-        if self.table_type in ["PORT_CFG", "PORT_STAT", "PORT_HDL_INFO", "PORT_FRONT_PANEL_IDX_INFO", "PORT_STR_INFO"]:
-            self.name = "port.{}".format(name_lowercase_without_dollar)
-        if self.table_type in ["PRE_MGID", "PRE_NODE", "PRE_ECMP", "PRE_LAG", "PRE_PRUNE", "PRE_PORT", "MIRROR_CFG"]:
-            self.name = name_lowercase_without_dollar
-        if self.table_type in ["TM_PORT_GROUP_CFG", "TM_PORT_GROUP"]:
-            self.name = name_lowercase_without_dollar
-        if self.table_type in ["SNAPSHOT", "SNAPSHOT_LIVENESS"]:
-            self.name = "{}".format(name_lowercase_without_dollar)
-        # print("{:40s} | {:30s} | {:10s}".format(self.name, self.table_type, "Ready" if self.table_ready else "TBD"))
+
+        #
+        # this function to be overriden by targets on need basis
+        # TODO: Need to find a better way of doing this
+        #
+        self.modify_table_names(table_name)
         self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
         self.set_supported_attributes_to_supported_commands()
         self.set_supported_operations_to_supported_commands()
@@ -105,12 +106,12 @@ class TdiTable:
         if not sts == 0:
             print("CLI Error: Init key fields for table {} failed.".format(self.name))
             raise TdiTableError("Table init field failed.", None, -1)
-        
+
         sts = self._init_actions()
         if not sts == 0:
             print("CLI Error: Init actions for table {} failed.".format(self.name))
             raise TdiTableError("Table init field failed.", None, -1)
-        
+
         sts = self._init_data()
         if not sts == 0:
             print("CLI Error: Init data fields for table {} failed.".format(self.name))
@@ -209,12 +210,12 @@ class TdiTable:
             nchoices_func = None
             get_choices_func = None
             if self.category == "key":
-                if self.table.data_type_map(self.data_type) != "STRING":
+                if self.table.data_type_cls.data_type_str(self.data_type) != "STRING":
                     return
                 nchoices_func = self.table._cintf.get_driver().tdi_key_field_num_allowed_choices_get
                 get_choices_func = self.table._cintf.get_driver().tdi_key_field_allowed_choices_get
             else:
-                if self.table.data_type_map(self.data_type) != "STRING" and self.table.data_type_map(self.data_type) != "STR_ARR":
+                if self.table.data_type_cls.data_type_str(self.data_type) != "STRING" and self.table.data_type_cls.data_type_str(self.data_type) != "STR_ARR":
                     return
                 if self.action_id is None:
                     nchoices_func = self.table._cintf.get_driver().tdi_data_field_num_allowed_choices_get
@@ -251,7 +252,7 @@ class TdiTable:
                 if self.read_only:
                     return True, None
                 if not self.required or (
-                           self.table.table_type_map(self.table.get_type()) == "MATCH_INDIRECT_SELECTOR" and
+                           self.table.table_type_cls.table_type_str(self.table.get_type()) == "MATCH_INDIRECT_SELECTOR" and
                            self.name.decode('ascii') in ["$ACTION_MEMBER_ID", "$SELECTOR_GROUP_ID"]):
                     return True, None
                 value = 0
@@ -431,8 +432,8 @@ class TdiTable:
         def parse_input(self, method_name, value):
             arg_name = self.name
             arg_size = self.size
-            arg_key_type = self.table.key_match_type_map(self.type)
-            arg_data_type = self.table.data_type_map(self.data_type)
+            arg_key_type = self.table.key_match_type_cls.key_match_type_str(self.type)
+            arg_data_type = self.table.data_type_cls.data_type_str(self.data_type)
             #TODO cleanup fields that should not have a default to be mandatory
             #TODO cleanup fields that have default value to not be mandatory
             #TODO check for mandatory key/data field in the future
@@ -509,30 +510,30 @@ class TdiTable:
             return [value[i] for i in range(len(value))]
 
         def deparse_output(self, value):
-            if self.category == "data" and (self.table.data_type_map(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
-                                           (self.table.data_type_map(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
+            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
+                                           (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
                 return self._deparse_int_arr(value)
-            elif ((self.category == "key" and self.table.key_match_type_map(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_map(self.data_type) in ["UINT64", "BYTE_STREAM"])):
+            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM"])):
                 return self._deparse_int(value)
-            elif self.category == "key" and self.table.key_match_type_map(self.type) in ["TERNARY", "RANGE", "LPM"]:
+            elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["TERNARY", "RANGE", "LPM"]:
                 p0 = self._deparse_int(value[0])
                 p1 = self._deparse_int(value[1])
                 return p0, p1
-            elif self.category == "key" and self.table.key_match_type_map(self.type) in ["OPTIONAL"]:
+            elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["OPTIONAL"]:
                 p0 = self._deparse_int(value[0])
                 p1 = self._deparse_bool(value[1])
                 return p0, p1
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "FLOAT":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "FLOAT":
                 return self._deparse_float(value)
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "BOOL":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "BOOL":
                 return self._deparse_bool(value)
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "STRING":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "STRING":
                 return self._deparse_string(value)
             else: # don't raise errors in case user is working with multiple entries
                 if self.category == "data":
-                    print("Error: type {} for data field {} not yet supported in the CLI.".format(self.table.data_type_map(self.data_type), self.name))
+                    print("Error: type {} for data field {} not yet supported in the CLI.".format(self.table.data_type_cls.data_type_str(self.data_type), self.name))
                 elif self.category == "key":
-                    print("Error: type {} for key field {} not yet supported in the CLI.".format(self.table.key_match_type_map(self.type), self.name))
+                    print("Error: type {} for key field {} not yet supported in the CLI.".format(self.table.key_match_type_cls.key_match_type_str(self.type), self.name))
                 else:
                     print("Error: unknown field type - category={}".format(self.category))
                 return "Error"
@@ -586,72 +587,37 @@ class TdiTable:
         def stringify_output(self, value):
             if isinstance(value, str):
                 return value
-            if self.category == "data" and (self.table.data_type_map(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
-                                           (self.table.data_type_map(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
+            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
+                                           (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
                 return self._stringify_int_arr(value)
-            elif ((self.category == "key" and self.table.key_match_type_map(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_map(self.data_type) in ["UINT64", "BYTE_STREAM"])):
+            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM"])):
                 return self._stringify_int(value)
-            elif self.category == "key" and self.table.key_match_type_map(self.type) in ["TERNARY", "RANGE", "LPM"]:
+            elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["TERNARY", "RANGE", "LPM"]:
                 p0 = self._stringify_int(value[0])
                 p1 = self._stringify_int(value[1])
                 return p0, p1
-            elif self.category == "key" and self.table.key_match_type_map(self.type) in ["OPTIONAL"]:
+            elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["OPTIONAL"]:
                 p0 = self._stringify_int(value[0])
                 p1 = self._stringify_bool(value[1])
                 return p0, p1
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "FLOAT":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "FLOAT":
                 return self._stringify_float(value)
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "BOOL":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "BOOL":
                 return self._stringify_bool(value)
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "STRING":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "STRING":
                 return str(value)
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "STR_ARR":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "STR_ARR":
                 return self._stringify_str_arr(value)
-            elif self.category == "data" and self.table.data_type_map(self.data_type) == "CONTAINER":
+            elif self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) == "CONTAINER":
                 return self._stringify_cont(value, self.name)
             else: # don't raise errors in case user is working with multiple entries
                 if self.category == "data":
-                    print("Error: type {} for data field {} not yet supported in the CLI.".format(self.table.data_type_map(self.data_type), self.name))
+                    print("Error: type {} for data field {} not yet supported in the CLI.".format(self.table.data_type_cls.data_type_str(self.data_type), self.name))
                 elif self.category == "key":
-                    print("Error: type {} for key field {} not yet supported in the CLI.".format(self.table.key_match_type_map(self.type), self.name))
+                    print("Error: type {} for key field {} not yet supported in the CLI.".format(self.table.key_match_type_cls.key_match_type_str(self.type), self.name))
                 else:
                     print("Error: unknown field type - category={}".format(self.category))
                 return "Error"
-
-
-    """
-    These maps are based on the enums defined in tdi_defs.h If the
-    enums there are changed, these maps must also be changed.
-    """
-    @staticmethod
-    def key_match_type_map(key_type):
-        key_match_type_dic = {
-            0: "EXACT",
-            1: "TERNARY",
-            2: "LPM",
-            3: "RANGE",
-            4: "OPTIONAL"}
-        if key_type in key_match_type_dic.keys():
-            return key_match_type_dic[key_type]
-        else:
-            return "TDI_CLI_KEY_TYPE_NOT_IMPLEMENTED"
-
-    @staticmethod
-    def data_type_map(data_type):
-        key_data_type_dic = {
-            0: "INT_ARR",
-            1: "BOOL_ARR",
-            2: "UINT64",
-            3: "BYTE_STREAM",
-            4: "FLOAT",
-            5: "CONTAINER",
-            6: "STRING",
-            7: "BOOL",
-            8: "STR_ARR" }
-        if data_type in key_data_type_dic.keys():
-            return key_data_type_dic[data_type];
-        else:
-            return "TDI_CLI_DATA_TYPE_NOT_IMPLEMENTED"
 
     @staticmethod
     def mod_inc_type_map(mod_inc_type):
@@ -660,93 +626,6 @@ class TdiTable:
             1: "MOD_INC_DELETE" }
         if mod_inc_type in mod_inc_type_dic.keys():
             return mod_inc_type_dic[mod_inc_type]
-
-    @staticmethod
-    def table_type_map(table_type):
-        TDI_TABLE_TYPE_DEVICE=0x0800
-        table_type_dic = {
-            TDI_TABLE_TYPE_DEVICE+0: "MATCH_DIRECT",
-            TDI_TABLE_TYPE_DEVICE+1: "MATCH_INDIRECT",
-            TDI_TABLE_TYPE_DEVICE+2: "MATCH_INDIRECT_SELECTOR",
-            TDI_TABLE_TYPE_DEVICE+3: "ACTION_PROFILE",
-            TDI_TABLE_TYPE_DEVICE+4: "SELECTOR",
-            TDI_TABLE_TYPE_DEVICE+5: "COUNTER",
-            TDI_TABLE_TYPE_DEVICE+6: "METER",
-            TDI_TABLE_TYPE_DEVICE+7: "REGISTER",
-            TDI_TABLE_TYPE_DEVICE+8: "LPF",
-            TDI_TABLE_TYPE_DEVICE+9: "WRED",
-            TDI_TABLE_TYPE_DEVICE+10: "PVS",
-            TDI_TABLE_TYPE_DEVICE+11: "PORT_METADATA",
-            TDI_TABLE_TYPE_DEVICE+12: "DYN_HASH_CFG",
-            TDI_TABLE_TYPE_DEVICE+13: "SNAPSHOT_CFG",          # /** Snapshot. */
-            TDI_TABLE_TYPE_DEVICE+14: "SNAPSHOT_LIVENESS",          # /** Snapshot. */
-            TDI_TABLE_TYPE_DEVICE+15: "PORT_CFG",
-            TDI_TABLE_TYPE_DEVICE+16: "PORT_STAT",
-            TDI_TABLE_TYPE_DEVICE+17: "PORT_HDL_INFO",
-            TDI_TABLE_TYPE_DEVICE+18: "PORT_FRONT_PANEL_IDX_INFO",
-            TDI_TABLE_TYPE_DEVICE+19: "PORT_STR_INFO",
-            TDI_TABLE_TYPE_DEVICE+20: "PKTGEN_PORT_CFG",     # /** Pktgen Port Configuration table */
-            TDI_TABLE_TYPE_DEVICE+21: "PKTGEN_APP_CFG",      # /** Pktgen Application Configuration table */
-            TDI_TABLE_TYPE_DEVICE+22: "PKTGEN_PKT_BUFF_CFG", # /** Pktgen Packet Buffer Configuration table */
-            TDI_TABLE_TYPE_DEVICE+23: "PKTGEN_PORT_MASK_CFG", # /** Pktgen Port Mask Configuration table */
-            TDI_TABLE_TYPE_DEVICE+24: "PKTGEN_PORT_DOWN_REPLAY_CFG", # /** Pktgen Port Down Replay Configuration table*/
-            TDI_TABLE_TYPE_DEVICE+25: "PRE_MGID",
-            TDI_TABLE_TYPE_DEVICE+26: "PRE_NODE",
-            TDI_TABLE_TYPE_DEVICE+27: "PRE_ECMP",
-            TDI_TABLE_TYPE_DEVICE+28: "PRE_LAG",
-            TDI_TABLE_TYPE_DEVICE+29: "PRE_PRUNE",
-            TDI_TABLE_TYPE_DEVICE+30: "MIRROR_CFG",
-            TDI_TABLE_TYPE_DEVICE+31: "TM_PPG_OBSOLETE", # retired
-            TDI_TABLE_TYPE_DEVICE+32: "PRE_PORT",
-            TDI_TABLE_TYPE_DEVICE+33: "DYN_HASH_ALGO",
-            TDI_TABLE_TYPE_DEVICE+34: "TM_POOL_CFG",
-            TDI_TABLE_TYPE_DEVICE+35: "TM_POOL_SKID",
-            TDI_TABLE_TYPE_DEVICE+36: "DEV_CFG",
-            TDI_TABLE_TYPE_DEVICE+37: "TM_POOL_APP",
-            TDI_TABLE_TYPE_DEVICE+38: "TM_QUEUE_CFG",
-            TDI_TABLE_TYPE_DEVICE+39: "TM_QUEUE_MAP",
-            TDI_TABLE_TYPE_DEVICE+40: "TM_QUEUE_COLOR",
-            TDI_TABLE_TYPE_DEVICE+41: "TM_QUEUE_BUFFER",
-            TDI_TABLE_TYPE_DEVICE+42: "TM_PORT_GROUP_CFG",
-            TDI_TABLE_TYPE_DEVICE+43: "TM_PORT_GROUP",
-            TDI_TABLE_TYPE_DEVICE+44: "TM_POOL_COLOR",
-            TDI_TABLE_TYPE_DEVICE+45: "SNAPSHOT_PHV",
-            TDI_TABLE_TYPE_DEVICE+46: "SNAPSHOT_TRIG",
-            TDI_TABLE_TYPE_DEVICE+47: "SNAPSHOT_DATA",
-            TDI_TABLE_TYPE_DEVICE+48: "TM_POOL_APP_PFC",
-            TDI_TABLE_TYPE_DEVICE+49: "TM_COUNTER_IG_PORT",
-            TDI_TABLE_TYPE_DEVICE+50: "TM_COUNTER_EG_PORT",
-            TDI_TABLE_TYPE_DEVICE+51: "TM_COUNTER_QUEUE",
-            TDI_TABLE_TYPE_DEVICE+52: "TM_COUNTER_POOL",
-            TDI_TABLE_TYPE_DEVICE+53: "TM_PORT_CFG",
-            TDI_TABLE_TYPE_DEVICE+54: "TM_PORT_BUFFER",
-            TDI_TABLE_TYPE_DEVICE+55: "TM_PORT_FLOWCONTROL",
-            TDI_TABLE_TYPE_DEVICE+56: "TM_COUNTER_PIPE",
-            TDI_TABLE_TYPE_DEVICE+57: "DBG_CNT",
-            TDI_TABLE_TYPE_DEVICE+58: "LOG_DBG_CNT",
-            TDI_TABLE_TYPE_DEVICE+59: "TM_CFG",
-            TDI_TABLE_TYPE_DEVICE+60: "TM_PIPE_MULTICAST_FIFO",
-            TDI_TABLE_TYPE_DEVICE+61: "TM_MIRROR_DPG",
-            TDI_TABLE_TYPE_DEVICE+62: "TM_PORT_DPG",
-            TDI_TABLE_TYPE_DEVICE+63: "TM_PPG_CFG",
-            TDI_TABLE_TYPE_DEVICE+64: "REG_PARAM",
-            TDI_TABLE_TYPE_DEVICE+65: "TM_COUNTER_PORT_DPG",
-            TDI_TABLE_TYPE_DEVICE+66: "TM_COUNTER_MIRROR_PORT_DPG",
-            TDI_TABLE_TYPE_DEVICE+67: "TM_COUNTER_PPG",
-            TDI_TABLE_TYPE_DEVICE+68: "DYN_HASH_COMPUTE",
-            TDI_TABLE_TYPE_DEVICE+69: "SELECTOR_GET_MEMBER",
-            TDI_TABLE_TYPE_DEVICE+70: "TM_QUEUE_SCHED_CFG",
-            TDI_TABLE_TYPE_DEVICE+71: "TM_QUEUE_SCHED_SHAPING",
-            TDI_TABLE_TYPE_DEVICE+72: "TM_PORT_SCHED_CFG",
-            TDI_TABLE_TYPE_DEVICE+73: "TM_PORT_SCHED_SHAPING",
-            TDI_TABLE_TYPE_DEVICE+74: "TM_PIPE_CFG",
-            TDI_TABLE_TYPE_DEVICE+75: "TM_PIPE_SCHED_CFG",
-            TDI_TABLE_TYPE_DEVICE+76: "VALUE_LOOKUP",
-            TDI_TABLE_TYPE_DEVICE+77: "INVLD" }
-        if table_type in table_type_dic.keys():
-            return(table_type_dic[table_type])
-        else:
-            return "TODO"
 
     @staticmethod
     def no_usage_tables():
@@ -783,23 +662,6 @@ class TdiTable:
         if mode == 2:
             return "INVALID_MODE"
         return "ERR: Table Mode %d not implemented" . format(mode)
-
-    @staticmethod
-    def flag_map(flag_enum=None, flag_enum_str=None):
-        TDI_FLAGS_CORE = 0
-        TDI_FLAGS_ARCH = 0x08
-        TDI_FLAGS_DEVICE = 0x10
-        TDI_FLAGS_END = 0x40
-        flag_dict = {
-                TDI_FLAGS_DEVICE+0:"from_hw"
-        }
-        flag_rev_dict = {
-                "from_hw":  TDI_FLAGS_DEVICE+0
-        }
-        if flag_enum is not None:
-            return flag_dict[flag_enum]
-        if flag_enum_str is not None:
-            return flag_rev_dict[flag_enum_str]
 
     """
     A convenience method for transforming a python integer to a
@@ -868,7 +730,7 @@ class TdiTable:
             if not sts == 0:
                 print("CLI Error: get key field is_ptr for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
                 return sts
-            readable = "{!s:30} type={!s:10} size={:^2}".format(field_name.value.decode('ascii'), self.key_match_type_map(field_type.value), field_size.value)
+            readable = "{!s:30} type={!s:10} size={:^2}".format(field_name.value.decode('ascii'), self.key_match_type_cls.key_match_type_str(field_type.value), field_size.value)
             self.key_field_readables.append(readable.strip())
             self.key_fields[field_name.value] = self.TdiTableField(field_name.value, field_id, field_size.value, field_is_ptr.value, False, True, "key", self, data_type_=field_data_type.value, type_=field_type.value)
         return 0
@@ -906,12 +768,12 @@ class TdiTable:
         if not sts == 0:
             print("CLI Error: get data field is_mandatory for action {} failed. [{}]".format(name.decode('ascii'), self._cintf.err_str(sts)))
             return sts
-        readable = "{!s:30} type={!s:10} size={:^2}".format(field_name.value.decode('ascii'), self.data_type_map(field_type.value), field_size.value)
+        readable = "{!s:30} type={!s:10} size={:^2}".format(field_name.value.decode('ascii'), self.data_type_cls.data_type_str(field_type.value), field_size.value)
         data_field_readables.append("\t"*depth + readable.strip())
         input_dict[field_name.value] = self.TdiTableField(field_name.value, field_id, field_size.value, field_is_ptr.value, read_only.value, mandatory.value, "data", self, action_name=action_name, action_id=action_id, data_type_=field_type.value)
         # If field is a container field, then we need to get list of container fields and process them
         # recursively
-        if self.data_type_map(field_type.value) == "CONTAINER":
+        if self.data_type_cls.data_type_str(field_type.value) == "CONTAINER":
             # Get container field ids.
             arr_t = c_uint * field_size.value
             c_fields = arr_t()
@@ -1062,8 +924,8 @@ class TdiTable:
             sts = -1
             if name not in content.keys():
                 continue
-            if self.key_match_type_map(info.type) == "EXACT":
-                if self.data_type_map(info.data_type) == "STRING":
+            if self.key_match_type_cls.key_match_type_str(info.type) == "EXACT":
+                if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                     value = c_char_p(content[name].encode('ascii'))
                     sts = self._cintf.get_driver().tdi_key_field_set_value_string(key_handle, info.id, value)
                 elif not info.is_ptr:
@@ -1072,7 +934,7 @@ class TdiTable:
                 else:
                     value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                     sts = self._cintf.get_driver().tdi_key_field_set_value_ptr(key_handle, info.id, value, bytes_)
-            elif self.key_match_type_map(info.type) == "TERNARY":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "TERNARY":
                 if not info.is_ptr:
                     value = c_ulonglong(content[name][0])
                     mask = c_ulonglong(content[name][1])
@@ -1081,7 +943,7 @@ class TdiTable:
                     v0, b0 = self.fill_c_byte_arr(content[name][0], info.size)
                     v1, b1 = self.fill_c_byte_arr(content[name][1], info.size)
                     sts = self._cintf.get_driver().tdi_key_field_set_value_and_mask_ptr(key_handle, info.id, v0, v1, b0)
-            elif self.key_match_type_map(info.type) == "RANGE":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "RANGE":
                 if not info.is_ptr:
                     start = c_ulonglong(content[name][0])
                     end = c_ulonglong(content[name][1])
@@ -1090,7 +952,7 @@ class TdiTable:
                     s, b0 = self.fill_c_byte_arr(content[name][0], info.size)
                     e, b1 = self.fill_c_byte_arr(content[name][1], info.size)
                     sts = self._cintf.get_driver().tdi_key_field_set_value_range_ptr(key_handle, info.id, s, e, b0)
-            elif self.key_match_type_map(info.type) == "LPM":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "LPM":
                 if not info.is_ptr:
                     value = c_ulonglong(content[name][0])
                     p_len = c_ushort(content[name][1])
@@ -1099,7 +961,7 @@ class TdiTable:
                     v, b = self.fill_c_byte_arr(content[name][0], info.size)
                     p_len = c_ushort(content[name][1])
                     sts = self._cintf.get_driver().tdi_key_field_set_value_lpm_ptr(key_handle, info.id, v, p_len, b)
-            elif self.key_match_type_map(info.type) == "OPTIONAL":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "OPTIONAL":
                 if not info.is_ptr:
                     value = c_ulonglong(content[name][0])
                     is_valid = c_bool(content[name][1])
@@ -1117,8 +979,8 @@ class TdiTable:
         content = {}
         for name, info in self.key_fields.items():
             sts = -1
-            if self.key_match_type_map(info.type) == "EXACT":
-                if self.data_type_map(info.data_type) == "STRING":
+            if self.key_match_type_cls.key_match_type_str(info.type) == "EXACT":
+                if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                     size = c_uint(0)
                     sts = self._cintf.get_driver().tdi_key_field_get_value_string_size(key_handle, info.id, byref(size))
                     if sts == 0:
@@ -1133,7 +995,7 @@ class TdiTable:
                     value, bytes_ = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_key_field_get_value_ptr(key_handle, info.id, bytes_, value)
                     content[name] = self.from_c_byte_arr(value, info.size)
-            elif self.key_match_type_map(info.type) == "TERNARY":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "TERNARY":
                 if not info.is_ptr:
                     value = c_ulonglong(0)
                     mask = c_ulonglong(0)
@@ -1144,7 +1006,7 @@ class TdiTable:
                     v1, b1 = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_key_field_get_value_and_mask_ptr(key_handle, info.id, b0, v0, v1)
                     content[name] = (self.from_c_byte_arr(v0, info.size), self.from_c_byte_arr(v1, info.size))
-            elif self.key_match_type_map(info.type) == "RANGE":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "RANGE":
                 if not info.is_ptr:
                     start = c_ulonglong(0)
                     end = c_ulonglong(0)
@@ -1155,7 +1017,7 @@ class TdiTable:
                     e, b1 = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_key_field_get_value_range_ptr(key_handle, info.id, b0, s, e)
                     content[name] = (self.from_c_byte_arr(s, info.size), self.from_c_byte_arr(e, info.size))
-            elif self.key_match_type_map(info.type) == "LPM":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "LPM":
                 if not info.is_ptr:
                     value = c_ulonglong(0)
                     p_len = c_ushort(0)
@@ -1166,7 +1028,7 @@ class TdiTable:
                     p_len = c_ushort(0)
                     sts = self._cintf.get_driver().tdi_key_field_get_value_lpm_ptr(key_handle, info.id, b, v, byref(p_len))
                     content[name] = (self.from_c_byte_arr(v, info.size), p_len.value)
-            elif self.key_match_type_map(info.type) == "OPTIONAL":
+            elif self.key_match_type_cls.key_match_type_str(info.type) == "OPTIONAL":
                 if not info.is_ptr:
                     value = c_ulonglong(0)
                     is_valid = c_bool(False)
@@ -1196,46 +1058,46 @@ class TdiTable:
             if content[name] is None:
                 continue
             sts = -1
-            #print("data_type="+self.data_type_map(info.data_type))
-            if self.data_type_map(info.data_type) == "BYTE_STREAM":
+            #print("data_type="+self.data_type_cls.data_type_str(info.data_type))
+            if self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
                 value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                 sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
-            if self.data_type_map(info.data_type) == "UINT64":
+            if self.data_type_cls.data_type_str(info.data_type) == "UINT64":
                 if not info.is_ptr:
                     value = c_ulonglong(content[name])
                     sts = self._cintf.get_driver().tdi_data_field_set_value(data_handle, info.id, value)
                 else:
                     value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                     sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
-            if self.data_type_map(info.data_type) == "INT_ARR":
+            if self.data_type_cls.data_type_str(info.data_type) == "INT_ARR":
                 arrlen = len(content[name])
                 arrtype = c_uint * arrlen
                 value = arrtype()
                 for idx, v in enumerate(content[name]):
                     value[idx] = v
                 sts = self._cintf.get_driver().tdi_data_field_set_value_array(data_handle, info.id, value, arrlen)
-            if self.data_type_map(info.data_type) == "BOOL_ARR":
+            if self.data_type_cls.data_type_str(info.data_type) == "BOOL_ARR":
                 arrlen = len(content[name])
                 arrtype = c_bool * arrlen
                 value = arrtype()
                 for idx, v in enumerate(content[name]):
                     value[idx] = v
                 sts = self._cintf.get_driver().tdi_data_field_set_value_bool_array(data_handle, info.id, value, arrlen)
-            if self.data_type_map(info.data_type) == "STR_ARR":
+            if self.data_type_cls.data_type_str(info.data_type) == "STR_ARR":
                 value_str = ' '.join([str(i) for i in content[name]])
                 value = c_char_p(value_str.encode('ascii'))
                 sts = self._cintf.get_driver().tdi_data_field_set_value_str_array(data_handle, info.id, value)
-            if self.data_type_map(info.data_type) == "FLOAT":
+            if self.data_type_cls.data_type_str(info.data_type) == "FLOAT":
                 value = c_float(content[name])
                 sts = self._cintf.get_driver().tdi_data_field_set_float(data_handle, info.id, value)
-            if self.data_type_map(info.data_type) == "BOOL":
+            if self.data_type_cls.data_type_str(info.data_type) == "BOOL":
                 value = c_bool(content[name])
                 sts = self._cintf.get_driver().tdi_data_field_set_bool(data_handle, info.id, value)
-            if self.data_type_map(info.data_type) == "STRING":
+            if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                 value = c_char_p(content[name].encode('ascii'))
                 sts = self._cintf.get_driver().tdi_data_field_set_string(data_handle, info.id, value)
             """
-            if self.data_type_map(info.data_type) == "CONTAINER":
+            if self.data_type_cls.data_type_str(info.data_type) == "CONTAINER":
                 cont_list_len = len(content[name])
                 if (cont_list_len == 0):
                     sts = 0
@@ -1311,7 +1173,7 @@ class TdiTable:
             if not is_active and not force:
                 continue
 
-            if self.data_type_map(info.data_type) == "BYTE_STREAM":
+            if self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
                 if ('$bfrt_field_class', 'register_data') in info.annotations:
                     size = c_uint(0)
                     sts = self._cintf.get_driver().tdi_data_field_get_value_u64_array_size(data_handle, info.id, byref(size))
@@ -1326,7 +1188,7 @@ class TdiTable:
                     value, bytes_ = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
                     content[name] = self.from_c_byte_arr(value, info.size)
-            if self.data_type_map(info.data_type) == "UINT64":
+            if self.data_type_cls.data_type_str(info.data_type) == "UINT64":
                 if not info.is_ptr:
                     value = c_ulonglong(0)
                     sts = self._cintf.get_driver().tdi_data_field_get_value(data_handle, info.id, byref(value))
@@ -1335,12 +1197,12 @@ class TdiTable:
                     value, bytes_ = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
                     content[name] = self.from_c_byte_arr(value, info.size)
-            if self.data_type_map(info.data_type) == "FLOAT":
+            if self.data_type_cls.data_type_str(info.data_type) == "FLOAT":
                 if not info.is_ptr:
                     value = c_float(0)
                     sts = self._cintf.get_driver().tdi_data_field_get_float(data_handle, info.id, byref(value))
                     content[name] = value.value
-            if self.data_type_map(info.data_type) == "BOOL_ARR":
+            if self.data_type_cls.data_type_str(info.data_type) == "BOOL_ARR":
                 size = c_uint(0)
                 sts = self._cintf.get_driver().tdi_data_field_get_value_bool_array_size(data_handle, info.id, byref(size))
                 if sts == 0:
@@ -1350,7 +1212,7 @@ class TdiTable:
                     content[name] = []
                     for i in range(0, size.value):
                         content[name].append(value[i])
-            if self.data_type_map(info.data_type) == "INT_ARR":
+            if self.data_type_cls.data_type_str(info.data_type) == "INT_ARR":
                 size = c_uint(0)
                 sts = self._cintf.get_driver().tdi_data_field_get_value_array_size(data_handle, info.id, byref(size))
                 if sts == 0:
@@ -1360,7 +1222,7 @@ class TdiTable:
                     content[name] = []
                     for i in range(0, size.value):
                         content[name].append(value[i])
-            if self.data_type_map(info.data_type) == "STR_ARR":
+            if self.data_type_cls.data_type_str(info.data_type) == "STR_ARR":
                 size = c_uint(0)
                 # Size returns string length
                 sts = self._cintf.get_driver().tdi_data_field_get_value_str_array_size(data_handle, info.id, byref(size))
@@ -1371,12 +1233,12 @@ class TdiTable:
                     val_str = value.value.decode('ascii')
                     content[name] = val_str.split()
 
-            if self.data_type_map(info.data_type) == "BOOL":
+            if self.data_type_cls.data_type_str(info.data_type) == "BOOL":
                 value = c_bool(0)
                 sts = self._cintf.get_driver().tdi_data_field_get_bool(data_handle, info.id, byref(value))
                 content[name] = value.value
 
-            if self.data_type_map(info.data_type) == "STRING":
+            if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                 size = c_uint(0)
                 sts = self._cintf.get_driver().tdi_data_field_get_string_size(data_handle, info.id, byref(size))
                 if sts == 0:
@@ -1384,7 +1246,7 @@ class TdiTable:
                     sts = self._cintf.get_driver().tdi_data_field_get_string(data_handle, info.id, value)
                     content[name] = value.value.decode('ascii')
 
-            if self.data_type_map(info.data_type) == "CONTAINER":
+            if self.data_type_cls.data_type_str(info.data_type) == "CONTAINER":
                 content[name] = self._get_cont_data_fields(info, data_handle)
                 sts = 0
             if not sts == 0:
@@ -1526,7 +1388,7 @@ class TdiTable:
     '''
 
     def set_default_entry(self, data_content, action=None):
-        table_type = self.table_type_map(self.get_type())
+        table_type = self.table_type_cls.table_type_str(self.get_type())
         if table_type == -1:
             return -1
         data_handle = self._make_call_data(data_content, action)
@@ -1541,7 +1403,7 @@ class TdiTable:
             raise TdiTableError("Error: set_default_entry failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
     def reset_default_entry(self):
-        table_type = self.table_type_map(self.get_type())
+        table_type = self.table_type_cls.table_type_str(self.get_type())
         if table_type == -1:
             return -1
         sts = self._cintf.tdi_table_default_entry_reset(self._handle,
@@ -1551,7 +1413,7 @@ class TdiTable:
             raise TdiTableError("Error: reset_default_entry failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
     def get_default_entry(self, print_entry=True, from_hw=False):
-        table_type = self.table_type_map(self.get_type())
+        table_type = self.table_type_cls.table_type_str(self.get_type())
         if table_type == -1:
             return -1
         data_handle = self._cintf.handle_type()
@@ -1565,7 +1427,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
         sts = self._cintf.tdi_table_default_entry_get(self._handle,
                                                         self._cintf.get_session(),
                                                         self._cintf.get_dev_tgt(),
@@ -1587,10 +1449,10 @@ class TdiTable:
         if print_entry:
             stream_printer = self.make_entry_stream_printer()
             action = []
-            
+
             if len(self.actions) > 0:
                 action = [self._action_from_data(data_handle)]
-            
+
             stream_printer(None, [data_handle], action)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
         self._cintf.get_driver().tdi_flags_delete(flags_handle)
@@ -1651,7 +1513,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag)
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag)
         if entry_handle != None:
             key_handle = self._cintf.handle_type()
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
@@ -1794,7 +1656,7 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_flags_create(flag, byref(flags_handle))
         if from_hw:
             flag = c_int(1)
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
         sts = self._cintf.tdi_table_entry_get_first(self._handle,
                                                     self._cintf.get_session(),
                                                     self._cintf.get_dev_tgt(),
@@ -1827,7 +1689,7 @@ class TdiTable:
             return -1
         if from_hw:
             flag = c_int(1)
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
         num_returned = c_uint(0)
         sts = self._cintf.tdi_table_entry_get_next_n(self._handle,
                                                      self._cintf.get_session(),
@@ -1858,9 +1720,9 @@ class TdiTable:
             return -1
         if from_hw:
             flag = 1
-        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flag_map(flag_enum_str="from_hw"), flag);
+        sts = self._cintf.get_driver().tdi_flags_set_value(flags_handle, self.flags_type_cls.flag_map(flag_enum_str="from_hw"), flag);
 
-        table_type = self.table_type_map(self.get_type())
+        table_type = self.table_type_cls.table_type_str(self.get_type())
         if table_type == -1:
             return -1
         if "usage_get" not in self.supported_commands:
@@ -1905,19 +1767,14 @@ class TdiTable:
         if sts != 0:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         logging.debug("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
-        # based on tdi_rt_attributes_type_e
-        attributes_dic = {
-                  0: ["symmetric_mode_set", "symmetric_mode_get"],
-                  1: ["dyn_key_mask_get", "dyn_key_mask_set"],
-                  2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
-                  3: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
-                  4: ["port_status_notif_cb_set"],
-                  5: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
-                  7: ["selector_table_update_cb_set"]}
-        keys_list = attributes_dic.keys()
+        keys_list = self.attributes_type_cls.attributes_dict.keys()
+
+        # TODO: Enable this when attributes are supported
+        '''
         for i in range(len(attributes_arr)):
             if attributes_arr[i] in keys_list:
-                self.supported_commands += attributes_dic[attributes_arr[i]]
+                self.supported_commands += self.attributes_type_cls.attributes_dict[attributes_arr[i]]
+        '''
 
     def set_supported_operations_to_supported_commands(self):
         num_opers = c_uint(0)
@@ -1930,14 +1787,14 @@ class TdiTable:
         if sts != 0:
             raise TdiTableError("Error: operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         logging.debug("For Table={} operations_arr ==={}".format(self.name, str(operations_arr[0:])));
-        operations_dic = {
-            0: "operation_counter_sync",
-            1: "operation_register_sync",
-            2: "operation_hit_state_update"}
-        keys_list = operations_dic.keys()
+        keys_list = self.operations_type_cls.operations_dict.keys()
+
+        # TODO: Enable this when operations are supported
+        '''
         for i in range(len(operations_arr)):
             if operations_arr[i] in keys_list:
-                self.supported_commands.append(operations_dic[operations_arr[i]])
+                self.supported_commands.append(self.operations_type_cls.operations_dict[operations_arr[i]])
+        '''
 
     def set_supported_apis_to_supported_commands(self):
         num_api = c_uint(0)
@@ -2554,3 +2411,9 @@ class TdiTable:
                 parsed_data[name] = parsed
 
         return parsed_keys, parsed_data
+
+    """
+        To be overriden by the targets on need basis
+    """
+    def modify_table_names(self, table_name):
+        pass
