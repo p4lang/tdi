@@ -100,11 +100,18 @@ class Device {
   std::map<std::string, std::unique_ptr<const TdiInfo>> tdi_info_map_;
 };
 
+/**
+ * @brief Class to store warmInit options
+ */
 class WarmInitOptions {
  public:
   virtual ~WarmInitOptions() = default;
 };
 
+/**
+ * @brief Class to encapsulate warmInit operations
+ * Driver to derive and implement the APIs
+ */
 class WarmInitImpl {
  public:
   virtual ~WarmInitImpl() = default;
@@ -115,6 +122,8 @@ class WarmInitImpl {
   virtual tdi_status_t deviceWarmInitEnd(const tdi_dev_id_t & /*device_id*/) {
     return TDI_NOT_SUPPORTED;
   }
+ protected:
+  WarmInitImpl() = default;
 };
 
 
@@ -127,8 +136,10 @@ class DevMgr {
 
   /**
    * @brief initialize warmInitImpl object
+   * This function sets warm_init_impl objects which is needed by
+   * deviceWarmInitBegin and deviceWarmInitEnd APIs
    */
-  static void init(std::unique_ptr<WarmInitImpl> impl);
+  static void warmInitImplSet(std::unique_ptr<WarmInitImpl> impl);
 
   /**
    * @brief Get the singleton ojbect
@@ -207,9 +218,6 @@ class DevMgr {
   static DevMgr *dev_mgr_instance;
 
   static std::unique_ptr<WarmInitImpl> warm_init_impl;
-  const WarmInitImpl *warmInitImpl() const { return warm_init_impl.get(); }
-  WarmInitImpl *warmInitImpl() { return warm_init_impl.get(); }
-
 };  // DevMgr
 
 /**

@@ -120,25 +120,25 @@ tdi_status_t DevMgr::deviceRemove(const tdi_dev_id_t &dev_id) {
   return TDI_SUCCESS;
 }
 
-void DevMgr::init(std::unique_ptr<WarmInitImpl> impl) {
+void DevMgr::warmInitImplSet(std::unique_ptr<WarmInitImpl> impl) {
   warm_init_impl = std::move(impl);
 }
 
 tdi_status_t DevMgr::deviceWarmInitBegin(const tdi_dev_id_t &device_id,
                               const WarmInitOptions &warm_init_options) {
-  if(warmInitImpl() == nullptr) {
+  if(warm_init_impl == nullptr) {
     LOG_ERROR("%s:%d warmInitImpl not initialized", __func__, __LINE__);
     return TDI_INTERNAL_ERROR;
   }
-  return warmInitImpl()->deviceWarmInitBegin(device_id, warm_init_options);
+  return warm_init_impl->deviceWarmInitBegin(device_id, warm_init_options);
 }
 
 tdi_status_t DevMgr::deviceWarmInitEnd(const tdi_dev_id_t &device_id) {
-  if(warmInitImpl() == nullptr) {
+  if(warm_init_impl == nullptr) {
     LOG_ERROR("%s:%d warmInitImpl not initialized", __func__, __LINE__);
     return TDI_INTERNAL_ERROR;
   }
-  return warmInitImpl()->deviceWarmInitEnd(device_id);
+  return warm_init_impl->deviceWarmInitEnd(device_id);
 }
 
 tdi_status_t Init::tdiModuleInit(
