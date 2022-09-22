@@ -36,7 +36,6 @@ from tdiTable import TdiTable
 from tdiTable import TdiTableError
 from tdiInfo import TdiInfo
 from tdiTableEntry import TableEntry, target_check_and_set
-from tdiDefs import *
 
 from ipaddress import ip_address as ip
 from netaddr import EUI as mac
@@ -51,15 +50,11 @@ install_directory = None
 ipython_app = None
 
 class CIntfTdi:
-    target_type_cls = TargetType
 
-    def __init__(self, dev_id, table_cls, info_cls, driver_path, utils_path):
-    #def __init__(self, dev_id, table_cls, info_cls):
+    def __init__(self, dev_id, table_cls, info_cls):
         self._dev_id = dev_id
-        self._utils = CDLL(utils_path, mode=RTLD_GLOBAL)
-        self._driver = CDLL(driver_path)
-        # self._utils = CDLL(install_directory+'/lib/libtarget_utils.so', mode=RTLD_GLOBAL)
-        # self._driver = CDLL(install_directory+'/lib/libdriver.so')
+        self._utils = CDLL(install_directory+'/lib/libtarget_utils.so', mode=RTLD_GLOBAL)
+        self._driver = CDLL(install_directory+'/lib/libdriver.so')
 
         self.TdiTable = table_cls
         self.TdiInfo = info_cls
@@ -220,6 +215,15 @@ class CIntfTdi:
     def _devcall(self):
         pdb.set_trace()
 
+    def _set_pipe(self, pipe=0xFFFF):
+        self._dev_tgt = self.TdiDevTgt(self._dev_tgt.dev_id, pipe, self._dev_tgt.direction, self._dev_tgt.prsr_id)
+
+    def _set_direction(self, direction=0xFFFF):
+        self._dev_tgt = self.TdiDevTgt(self._dev_tgt.dev_id, self._dev_tgt.pipe_id, direction, self._dev_tgt.prsr_id)
+
+    def _set_parser(self, parser=0xFF):
+        self._dev_tgt = self.TdiDevTgt(self._dev_tgt.dev_id, self._dev_tgt.pipe_id, self._dev_tgt.direction, parser)
+
     def _complete_operations(self):
         sts = self._driver.tdi_session_complete_operations(self._session)
         if sts != 0:
@@ -270,13 +274,13 @@ class CIntfTdi:
     class TdiHandle(Structure):
         _fields_ = [("unused", c_int)]
 
-    # class TdiDevTgt(Structure):
-    #     _fields_ = [("dev_id", c_int), ("pipe_id", c_uint), ("direction", c_uint), ("prsr_id", c_ubyte)]
-    #     def __str__(self):
-    #         ret_val = ""
-    #         for name, type_ in self._fields_:
-    #             ret_val += name + ": " + str(getattr(self, name)) + "\n"
-    #         return ret_val
+    class TdiDevTgt(Structure):
+        _fields_ = [("dev_id", c_int), ("pipe_id", c_uint), ("direction", c_uint), ("prsr_id", c_ubyte)]
+        def __str__(self):
+            ret_val = ""
+            for name, type_ in self._fields_:
+                ret_val += name + ": " + str(getattr(self, name)) + "\n"
+            return ret_val
 
     class TdiTargetHandle(Structure):
         _fields_ = [("unused", c_int)]
@@ -302,16 +306,16 @@ class CIntfTdi:
     def get_target(self):
         return self._target
 
-    # def print_target(self, target):
-    #     dev_id = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="dev_id"), byref(dev_id));
-    #     pipe_id = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="pipe_id"), byref(pipe_id));
-    #     direction = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="direction"), byref(direction));
-    #     prsr_id = c_uint64(0);
-    #     sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="prsr_id"), byref(prsr_id));
-    #     return "dev_id={} pipe={} direction={} prsr_id={}".format(dev_id.value, pipe_id.value, direction.value, prsr_id.value)
+    def print_target(self, target):
+        dev_id = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="dev_id"), byref(dev_id));
+        pipe_id = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="pipe_id"), byref(pipe_id));
+        direction = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="direction"), byref(direction));
+        prsr_id = c_uint64(0);
+        sts = self.get_driver().tdi_target_get_value(target, self.target_type_map(target_type_str="prsr_id"), byref(prsr_id));
+        return "dev_id={} pipe={} direction={} prsr_id={}".format(dev_id.value, pipe_id.value, direction.value, prsr_id.value)
 
     def get_dev_tgt(self):
         #return byref(self._dev_tgt)
@@ -320,27 +324,27 @@ class CIntfTdi:
     def get_flags(self):
         return byref(self._flags)
 
-    # @staticmethod
-    # def target_type_map(target_type_enum=None, target_type_str=None):
-    #     TDI_TARGET_CORE=0
-    #     TDI_TARGET_ARCH=0x08
-    #     TDI_TARGET_DEVICE=0x80
-    #     target_type_dict = {
-    #             TDI_TARGET_CORE+0:"dev_id",
-    #             TDI_TARGET_ARCH+0:"pipe_id",
-    #             TDI_TARGET_ARCH+1:"direction",
-    #             TDI_TARGET_DEVICE+1:"prsr_id",
-    #     }
-    #     target_type_rev_dict = {
-    #             "dev_id":    TDI_TARGET_CORE+0,
-    #             "pipe_id":   TDI_TARGET_ARCH+0,
-    #             "direction": TDI_TARGET_ARCH+1,
-    #             "prsr_id":   TDI_TARGET_DEVICE+1,
-    #     }
-    #     if target_type_enum is not None:
-    #         return target_type_dict[target_type_enum]
-    #     if target_type_str is not None:
-    #         return target_type_rev_dict[target_type_str]
+    @staticmethod
+    def target_type_map(target_type_enum=None, target_type_str=None):
+        TDI_TARGET_CORE=0
+        TDI_TARGET_ARCH=0x08
+        TDI_TARGET_DEVICE=0x80
+        target_type_dict = {
+                TDI_TARGET_CORE+0:"dev_id",
+                TDI_TARGET_ARCH+0:"pipe_id",
+                TDI_TARGET_ARCH+1:"direction",
+                TDI_TARGET_DEVICE+1:"prsr_id",
+        }
+        target_type_rev_dict = {
+                "dev_id":    TDI_TARGET_CORE+0,
+                "pipe_id":   TDI_TARGET_ARCH+0,
+                "direction": TDI_TARGET_ARCH+1,
+                "prsr_id":   TDI_TARGET_DEVICE+1,
+        }
+        if target_type_enum is not None:
+            return target_type_dict[target_type_enum]
+        if target_type_str is not None:
+            return target_type_rev_dict[target_type_str]
 
 
 
@@ -678,7 +682,7 @@ class TDINode(TDIContext):
                 return sts
             if not leaf.has_keys:
                 return sts
-            if leaf._c_tbl.table_type_cls.table_type_str(leaf._c_tbl.get_type()) in leaf._c_tbl.no_usage_tables():
+            if leaf._c_tbl.table_type_map(leaf._c_tbl.get_type()) in leaf._c_tbl.no_usage_tables():
                 return sts
             if leaf._c_tbl.get_id() in leaf._c_tbl._tdi_info.tbl_dep_map:
                 for dep_id in leaf._c_tbl._tdi_info.tbl_dep_map[leaf._c_tbl.get_id()]:
@@ -800,7 +804,7 @@ class TDILeaf(TDIContext):
                 pass
                 # print("CLI log: Command {} is not ready or available".format(cmd))
         self._set_docstring()
-        # if self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type()) in self._c_tbl.unimplemented_tables:
+        # if self._c_tbl.table_type_map(self._c_tbl.get_type()) in self._c_tbl.unimplemented_tables:
         #     print("CLI Err: Unimplemented Command Object {}".format(self._name))
         #     return
         # else:
@@ -818,7 +822,7 @@ class TDILeaf(TDIContext):
         res = {
             "table_name": self._name,
             "full_name": self._c_tbl.name,
-            "type": self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type()),
+            "type": self._c_tbl.table_type_map(self._c_tbl.get_type()),
             "usage": self._c_tbl.get_usage(),
             "capacity": self._c_tbl.get_capacity(),
             "key_fields": [],
@@ -834,7 +838,7 @@ class TDILeaf(TDIContext):
         key_rows = []
         headers = ["Name", "Type", "Size", "Required", "Read Only"]
         for info in sorted(self._c_tbl.key_fields.values(), key=lambda x: x.id):
-            field = [info.name.decode('ascii'), self._c_tbl.key_match_type_cls.key_match_type_str(info.type), info.size, info.required, info.read_only]
+            field = [info.name.decode('ascii'), self._c_tbl.key_match_type_map(info.type), info.size, info.required, info.read_only]
             key_rows += [field]
             res["key_fields"] += [{"name": field[0],
                                    "type": field[1],
@@ -847,7 +851,7 @@ class TDILeaf(TDIContext):
         if len(self._c_tbl.actions) == 0:
             data_rows = []
             for info in sorted(self._c_tbl.data_fields.values(), key=lambda x: x.id):
-                field = [info.name.decode('ascii'), self._c_tbl.data_type_cls.data_type_str(info.data_type), info.size, info.required, info.read_only]
+                field = [info.name.decode('ascii'), self._c_tbl.data_type_map(info.data_type), info.size, info.required, info.read_only]
                 data_rows += [field]
                 res["data_fields"] += [{"name": field[0],
                                         "type": field[1],
@@ -864,7 +868,7 @@ class TDILeaf(TDIContext):
             data_rows = []
             res["data_fields"][name.decode('ascii')] = []
             for info in sorted(act_info['data_fields'].values(), key=lambda x: x.id):
-                field = [info.name.decode('ascii'), self._c_tbl.data_type_cls.data_type_str(info.data_type), info.size, info.required, info.read_only]
+                field = [info.name.decode('ascii'), self._c_tbl.data_type_map(info.data_type), info.size, info.required, info.read_only]
                 data_rows += [field]
                 res["data_fields"][name.decode('ascii')] += [{"name": field[0],
                                                               "type": field[1],
@@ -885,7 +889,7 @@ class TDILeaf(TDIContext):
     def dump(self, table=False, pipe=None, gress_dir=None, prsr_id=None, json=False, from_hw=False, return_ents=False, print_zero=True):
         """Dump all entries of table including default entry if applicable
         """
-        table_type = self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type())
+        table_type = self._c_tbl.table_type_map(self._c_tbl.get_type())
 
         print("----- {} Dump Start -----".format(self._name))
         if "get_default" in self._c_tbl.supported_commands and (not (return_ents or json)):
@@ -955,7 +959,7 @@ class TDILeaf(TDIContext):
                                     data_field = self._c_tbl.data_fields[k.encode('ascii')]
                                 else:
                                     data_field = self._c_tbl.actions[action]["data_fields"][k.encode('ascii')]
-                                data_type = self._c_tbl.data_type_cls.data_type_str(data_field.data_type)
+                                data_type = self._c_tbl.data_type_map(data_field.data_type)
                                 if data_type in ["UINT64", "BYTE_STREAM", "BOOL"] and ('$bfrt_field_class', 'register_data') in data_field.annotations:
                                     data[k.encode('ascii')] = v[0]
                             except:
@@ -1067,7 +1071,7 @@ class TDILeaf(TDIContext):
 
     def _get_full_leaf_info(self):
         return [[self._c_tbl.name,
-                 self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type()),
+                 self._c_tbl.table_type_map(self._c_tbl.get_type()),
                  self._c_tbl.get_usage(),
                  self._c_tbl.get_capacity(),
                  self]]
@@ -1312,16 +1316,16 @@ Available Commands:
 
         for name, info in sorted(key_fields.items(), key=lambda x: x[1].id):
             key_idx += [name.decode('ascii')]
-            key_types += [info.table.key_match_type_cls.key_match_type_str(info.type)]
+            key_types += [info.table.key_match_type_map(info.type)]
             key_sizes += [info.size]
             p_name = key_pnames[name]
-            if info.table.key_match_type_cls.key_match_type_str(info.type) == "TERNARY":
+            if info.table.key_match_type_map(info.type) == "TERNARY":
                 key_params += [[p_name, p_name + "_mask"]]
-            elif info.table.key_match_type_cls.key_match_type_str(info.type) == "RANGE":
+            elif info.table.key_match_type_map(info.type) == "RANGE":
                 key_params += [[p_name + "_start", p_name + "_end"]]
-            elif info.table.key_match_type_cls.key_match_type_str(info.type) == "LPM":
+            elif info.table.key_match_type_map(info.type) == "LPM":
                 key_params += [[p_name, p_name + "_p_length"]]
-            elif info.table.key_match_type_cls.key_match_type_str(info.type) == "OPTIONAL":
+            elif info.table.key_match_type_map(info.type) == "OPTIONAL":
                 key_params += [[p_name, p_name + "_is_valid"]]
             else:
                 key_params += [p_name]
@@ -1330,7 +1334,7 @@ Available Commands:
             data_idx += [name.decode('ascii')]
             p_name = data_pnames[name]
             data_params += [p_name]
-            data_types += [info.table.data_type_cls.data_type_str(info.data_type)]
+            data_types += [info.table.data_type_map(info.data_type)]
             data_sizes += [info.size]
 
         param_str = ""
@@ -2073,6 +2077,56 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
     return 0
 
 """
+This function initializes the TDI Runtime CLI objects, generating a tree of
+objects that serve as CLI command nodes.
+"""
+def populate_tdi(dev_id_list):
+    global tdi
+    # tdi node shouldn't have a cintf since cintf is dev dependent
+    tdi = TDINode("tdi", None)
+    tdi.device_list =  dev_id_list
+    # For each device_id, create a cintf and a dev node
+    # If only one device is present, then skip creating the
+    # device node for now for backward compatibility.
+    # TODO take care of it later especially when device level
+    # APIs are introduced.
+    single_device = True
+    if len(dev_id_list) > 1:
+        single_device = False
+    for dev_id in dev_id_list:
+        cintf = CIntfTdi(dev_id, TdiTable, TdiInfo)
+        if cintf == -1:
+            return -1
+        if single_device:
+            tdi = TDINode("tdi", cintf, parent_node=None)
+            tdi.device_list =  dev_id_list
+            dev_node = tdi
+        else:
+            dev_node = TDINode("dev_"+str(dev_id), cintf, parent_node=tdi)
+
+        dev_node.devcall = cintf._devcall
+        dev_node.set_pipe = cintf._set_pipe
+        dev_node.set_direction = cintf._set_direction
+        dev_node.set_parser = cintf._set_parser
+        dev_node.complete_operations = cintf._complete_operations
+        dev_node.batch_begin = cintf._begin_batch
+        dev_node.batch_flush = cintf._flush_batch
+        dev_node.batch_end = cintf._end_batch
+        dev_node.transaction_begin = cintf._begin_transaction
+        dev_node.transaction_verify = cintf._verify_transaction
+        dev_node.transaction_commit = cintf._commit_transaction
+        dev_node.transaction_abort = cintf._abort_transaction
+        dev_node.p4_programs_list = []
+        for p4_name, tdi_info in cintf.infos.items():
+            print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
+            if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
+              print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
+              return -1
+        #
+    set_node_docstrs(tdi)
+    return 0
+
+"""
 This function creates the global state required to manage context switching
 between CLI nodes. Note that it never unloads the tdi node, so the full
 command tree is still available from any context.
@@ -2113,6 +2167,15 @@ def set_tdi_parent_context():
         _tdi_context['cur_node'] = None
         return
     _tdi_context['parent']()
+
+def load_tdi(dev_id_list):
+    sts = populate_tdi(dev_id_list)
+    if sts == -1:
+        print("TDI Runtime CLI init failed.", file = sys.stderr)
+        return -1
+    setup_context()
+    tdi.reload = load_tdi
+    return 0
 
 """
 By default, python uses the C default values for stdin, stdout, stderr.
@@ -2241,147 +2304,94 @@ def tdi_exit_handler():
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
 
-class TdiCli:
-    """
-    Initialize TDI Runtime CLI, create IPython's configuration, start TDI Runtime
-    CLI, and reset python's IO streams before teardown.
-    """
-    def start_tdi(self, in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=False, cIntf_cls=None):
-        global install_directory
-        install_directory = install_dir
-        inf, outf = set_io(in_fd, out_fd)
 
-        # set level to DEBUG to see the debug infomration
-        logging.basicConfig(level=logging.ERROR)
-        sts = self.load_tdi(dev_id_list)
-        if not sts == 0:
-            return sts
+"""
+Initialize TDI Runtime CLI, create IPython's configuration, start TDI Runtime
+CLI, and reset python's IO streams before teardown.
+"""
+def start_tdi(in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=False):
+    global install_directory
+    install_directory = install_dir
+    inf, outf = set_io(in_fd, out_fd)
 
-        # Workaround to prevent Python from installing its SIGWINCH signal handler
-        import threading
-        threading.current_thread().__class__.__name__ = "tdi"
+    # set level to DEBUG to see the debug infomration
+    logging.basicConfig(level=logging.ERROR)
+    sts = load_tdi(dev_id_list)
+    if not sts == 0:
+        return sts
 
-        global ipython_app
+    # Workaround to prevent Python from installing its SIGWINCH signal handler
+    import threading
+    threading.current_thread().__class__.__name__ = "tdi"
 
-        # save udf in storage, this part of code can be executed by two ways:
-        # - using ipython_app.initialize by ipython internally
-        # - using ipython_app._run_exec_files to run it manually
-        # we run ipython_app.initialize once time to prevent memory leakage,
-        #  next runs will be manually using _run_exec_files command
-        exec_files_list = []
+    global ipython_app
+
+    # save udf in storage, this part of code can be executed by two ways:
+    # - using ipython_app.initialize by ipython internally
+    # - using ipython_app._run_exec_files to run it manually
+    # we run ipython_app.initialize once time to prevent memory leakage,
+    #  next runs will be manually using _run_exec_files command
+    exec_files_list = []
+    if udf is not None:
+        exec_files_list.append(udf)
+
+    if hasattr(sys.modules['__main__'], "ipython_app"):
+        ipython_app = getattr(sys.modules['__main__'], "ipython_app")
+    if ipython_app is None:
+        print("Devices found : ", dev_id_list)
+        c = Config()
+        c.Completer.use_jedi = False
+        c.IPCompleter.use_jedi = False
+        c.InteractiveShell.autocall = 2
+        c.TerminalInteractiveShell.autocall = 2
+        c.ZMQInteractiveShell.autocall = 2
+        c.InteractiveShell.automagic = False
+        c.TerminalInteractiveShell.automagic = False
+        c.ZMQInteractiveShell.automagic = False
+        c.TerminalInteractiveShell.display_page = False
+        c.TerminalInteractiveShell.simple_prompt = use_simple_prompt()
+        c.ZMQInteractiveShell.display_page = True
+        # save udf in exec_files, that will be executed by ipython internally
+        # on ipython_app initialize step
+        c.InteractiveShellApp.exec_files = exec_files_list
+        c.InteractiveShellApp.extensions = [
+            'tdicli'
+        ]
+
+        # save TerminalIPythonApp and TerminalInteractiveShell for reusing it in next iteration
+        ipython_app = IPython.terminal.ipapp.TerminalIPythonApp(config=c)
+        ipython_app.init_shell()
+
+        # reinitialize input output streams in case switching api
+        ipython_reinitialize_io()
+        ipython_app.initialize()
+        setattr(sys.modules['__main__'], "ipython_app", ipython_app)
+
+    else:
+
+        # use saved instances of TerminalIPythonApp, but we need reinitialize input output streams
+        # for ability use new shell from another terminal
+        ipython_reinitialize_io()
+        load_ipython_extension(ipython_app.shell)
         if udf is not None:
-            exec_files_list.append(udf)
+            ipython_app.exec_files = exec_files_list
+            ipython_app._run_exec_files()
+        set_tdi_parent_context()
 
-        if hasattr(sys.modules['__main__'], "ipython_app"):
-            ipython_app = getattr(sys.modules['__main__'], "ipython_app")
-        if ipython_app is None:
-            print("Devices found : ", dev_id_list)
-            c = Config()
-            c.Completer.use_jedi = False
-            c.IPCompleter.use_jedi = False
-            c.InteractiveShell.autocall = 2
-            c.TerminalInteractiveShell.autocall = 2
-            c.ZMQInteractiveShell.autocall = 2
-            c.InteractiveShell.automagic = False
-            c.TerminalInteractiveShell.automagic = False
-            c.ZMQInteractiveShell.automagic = False
-            c.TerminalInteractiveShell.display_page = False
-            c.TerminalInteractiveShell.simple_prompt = use_simple_prompt()
-            c.ZMQInteractiveShell.display_page = True
-            # save udf in exec_files, that will be executed by ipython internally
-            # on ipython_app initialize step
-            c.InteractiveShellApp.exec_files = exec_files_list
-            c.InteractiveShellApp.extensions = [
-                'tdicli'
-            ]
-
-            # save TerminalIPythonApp and TerminalInteractiveShell for reusing it in next iteration
-            ipython_app = IPython.terminal.ipapp.TerminalIPythonApp(config=c)
-            ipython_app.init_shell()
-
-            # reinitialize input output streams in case switching api
-            ipython_reinitialize_io()
-            ipython_app.initialize()
-            setattr(sys.modules['__main__'], "ipython_app", ipython_app)
-
-        else:
-
-            # use saved instances of TerminalIPythonApp, but we need reinitialize input output streams
-            # for ability use new shell from another terminal
-            ipython_reinitialize_io()
-            load_ipython_extension(ipython_app.shell)
-            if udf is not None:
-                ipython_app.exec_files = exec_files_list
-                ipython_app._run_exec_files()
-            set_tdi_parent_context()
-
-        if udf is not None:
-            if interactive:
-                ipython_app.start()
-        else:
+    if udf is not None:
+        if interactive:
             ipython_app.start()
+    else:
+        ipython_app.start()
 
-        tdi_exit_handler()
-        inf.close()
-        outf.close()
-        return 0
+    tdi_exit_handler()
+    inf.close()
+    outf.close()
+    return 0
 
-    def load_tdi(self, dev_id_list):
-        sts = self.populate_tdi(dev_id_list)
-        if sts == -1:
-            print("TDI Runtime CLI init failed.", file = sys.stderr)
-            return -1
-        setup_context()
-        tdi.reload = self.load_tdi
-        return 0
-
-    """
-    This function initializes the TDI Runtime CLI objects, generating a tree of
-    objects that serve as CLI command nodes.
-    """
-    def populate_tdi(self, dev_id_list):
-        global tdi
-        # tdi node shouldn't have a cintf since cintf is dev dependent
-        tdi = TDINode("tdi", None)
-        tdi.device_list =  dev_id_list
-        # For each device_id, create a cintf and a dev node
-        # If only one device is present, then skip creating the
-        # device node for now for backward compatibility.
-        # TODO take care of it later especially when device level
-        # APIs are introduced.
-        single_device = True
-        if len(dev_id_list) > 1:
-            single_device = False
-        for dev_id in dev_id_list:
-            cintf = self.cIntf_cls(dev_id, TdiTable, TdiInfo)
-            if cintf == -1:
-                return -1
-            if single_device:
-                tdi = TDINode("tdi", cintf, parent_node=None)
-                tdi.device_list =  dev_id_list
-                dev_node = tdi
-            else:
-                dev_node = TDINode("dev_"+str(dev_id), cintf, parent_node=tdi)
-
-            self.fill_dev_node(cintf, dev_node)
-            for p4_name, tdi_info in cintf.infos.items():
-                print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
-                if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
-                    print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
-                    return -1
-
-        set_node_docstrs(tdi)
-        return 0
-
-    def fill_dev_node(self, cintf, dev_node):
-        print("To be defined by target")
-        pass
-
-'''
 def main():
     start_tdi(0, 1, os.getcwd(), [0])
 
 if __name__ == "__main__":
     main()
 
-'''
