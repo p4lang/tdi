@@ -35,7 +35,7 @@ import copy
 from tdiTable import TdiTable
 from tdiTable import TdiTableError
 from tdiInfo import TdiInfo
-from tdiTableEntry import TableEntry
+from tdiTableEntry import TableEntry, target_check_and_set
 from tdiDefs import *
 
 from ipaddress import ip_address as ip
@@ -47,6 +47,7 @@ _tdi_fixed_nodes = ["port", "mirror"]
 _tdi_context = {}
 promp_node = None
 tdi = None
+install_directory = None
 ipython_app = None
 
 class CIntfTdi:
@@ -206,7 +207,7 @@ class CIntfTdi:
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             return -1
-        self._dev_tgt = self.create_devTgt(self._dev_id)
+        self._dev_tgt = self.TdiDevTgt(self._dev_id, 0, 0xff, 0xff)
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
@@ -267,13 +268,13 @@ class CIntfTdi:
     class TdiHandle(Structure):
         _fields_ = [("unused", c_int)]
 
-    class TdiDevTgt(Structure):
-        _fields_ = [("dev_id", c_int)]
-        def __str__(self):
-            ret_val = ""
-            for name, type_ in self._fields_:
-                ret_val += name + ": " + str(getattr(self, name)) + "\n"
-            return ret_val
+    # class TdiDevTgt(Structure):
+    #     _fields_ = [("dev_id", c_int), ("pipe_id", c_uint), ("direction", c_uint), ("prsr_id", c_ubyte)]
+    #     def __str__(self):
+    #         ret_val = ""
+    #         for name, type_ in self._fields_:
+    #             ret_val += name + ": " + str(getattr(self, name)) + "\n"
+    #         return ret_val
 
     class TdiTargetHandle(Structure):
         _fields_ = [("unused", c_int)]
@@ -776,7 +777,8 @@ class TDILeaf(TDIContext):
         child._parent_node = self
         exec("self.{} = child".format(child._get_name()))
 
-    def info(self, return_info=False, print_info=True):
+    @target_check_and_set
+    def info(self, pipe=None, return_info=False, print_info=True):
         res = {
             "table_name": self._name,
             "full_name": self._c_tbl.name,
@@ -839,10 +841,12 @@ class TDILeaf(TDIContext):
         if return_info:
             return res
 
-    def clear(self, batch=True):
+    @target_check_and_set
+    def clear(self, pipe=None, gress_dir=None, prsr_id=None, batch=True):
         self._c_tbl.clear(batch)
 
-    def dump(self, table=False, json=False, from_hw=False, return_ents=False, print_zero=True):
+    @target_check_and_set
+    def dump(self, table=False, pipe=None, gress_dir=None, prsr_id=None, json=False, from_hw=False, return_ents=False, print_zero=True):
         """Dump all entries of table including default entry if applicable
         """
         table_type = self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type())
@@ -1344,8 +1348,7 @@ Available Commands:
 
         return param_str, param_docstring, parse_key_call, parse_data_call, param_list
 
-    # Generating add_with_<action> APIs dynamically
-    def _create_add_with_action(self, key_fields, data_fields, action_name, code_str=None):
+    def _create_add_with_action(self, key_fields, data_fields, action_name):
         if "add" not in self._c_tbl.supported_commands:
             return
 
@@ -1355,9 +1358,9 @@ Available Commands:
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {}):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None):
     """Add entry to {} table with action: {}
 
     Parameters:
@@ -1370,23 +1373,20 @@ def {}(self, {}):
         return
 
     self._c_tbl.add_entry(parsed_keys, parsed_data, b'{}')
-        '''
-
-        code = code_str.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
+        '''.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
         add_method = self._set_dynamic_method(code, method_name)
         self._adds[full_strname] = (add_method, param_list)
 
-    # Generating add APIs dynamically
-    def _create_add(self, key_fields, data_fields, code_str=None):
+    def _create_add(self, key_fields, data_fields):
         method_name = "add"
         if method_name not in self._c_tbl.supported_commands:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {}):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None):
     """Add entry to {} table.
 
     Parameters:
@@ -1398,14 +1398,11 @@ def {}(self, {}):
     if parsed_data == -1:
         return
     self._c_tbl.add_entry(parsed_keys, parsed_data)
-        '''
-
-        code = code_str.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
         add_method = self._set_dynamic_method(code, method_name)
         self._adds["addwithnoaction"] = (add_method, param_list)
 
-    # Generating set_default_with_<action> APIs dynamically
-    def _create_set_default_with_action(self, data_fields, action_name, code_str=None):
+    def _create_set_default_with_action(self, data_fields, action_name):
         if "set_default" not in self._c_tbl.supported_commands:
             return
 
@@ -1417,9 +1414,9 @@ def {}(self, {}):
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, data_fields=data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {}):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None):
     """Set default action for {} table with action: {}
 
     Parameters:
@@ -1431,21 +1428,19 @@ def {}(self, {}):
     if parsed_data == -1:
         return
     self._c_tbl.set_default_entry(parsed_data, b'{}')
-        '''
-        code = code_str.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
+        '''.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
         add_method = self._set_dynamic_method(code, method_name)
 
-    # Generating set_default API dynamically
-    def _create_set_default(self, data_fields, code_str=None):
+    def _create_set_default(self, data_fields):
         method_name = "set_default"
         if method_name not in self._c_tbl.supported_commands or self._c_tbl.has_const_default_action:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, data_fields=data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {}):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None):
     """Set default action for {} table.
 
     Parameters:
@@ -1457,28 +1452,24 @@ def {}(self, {}):
     if parsed_data == -1:
         return
     self._c_tbl.set_default_entry(parsed_data)
-        '''
-        code = code_str.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
         self._set_dynamic_method(code, method_name)
 
-    # Generating reset_default API dynamically
-    def _create_reset_default(self, code_str=None):
+    def _create_reset_default(self):
         method_name = "reset_default"
         if method_name not in self._c_tbl.supported_commands:
             return
 
-        if code_str == None:
-            code_str = '''
-def {}(self):
+        code = '''
+@target_check_and_set
+def {}(self, pipe=None, gress_dir=None, prsr_id=None):
     """Set default action for {} table.
     """
     self._c_tbl.reset_default_entry()
-        '''
-        code = code_str.format(method_name, self._name)
+        '''.format(method_name, self._name)
         self._set_dynamic_method(code, method_name)
 
-    # Generating mod_with_<action> APIs dynamically
-    def _create_mod_with_action(self, key_fields, data_fields, action_name, code_str=None):
+    def _create_mod_with_action(self, key_fields, data_fields, action_name):
         if "mod" not in self._c_tbl.supported_commands:
             return
 
@@ -1488,9 +1479,9 @@ def {}(self):
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {} ttl_reset=True):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None, ttl_reset=True):
     """Modify entry in {} table using action: {}
 
     Parameters:
@@ -1504,13 +1495,11 @@ def {}(self, {} ttl_reset=True):
         return
 
     self._c_tbl.mod_entry(parsed_keys, parsed_data, b'{}', ttl_reset=ttl_reset)
-        '''
-        code= code_str.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
+        '''.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
         mod_method = self._set_dynamic_method(code, method_name)
         self._mods[full_strname] = (mod_method, param_list)
 
-    # Generating mod_inc_with_<action> APIs dynamically
-    def _create_mod_inc_with_action(self, key_fields, data_fields, action_name, code_str=None):
+    def _create_mod_inc_with_action(self, key_fields, data_fields, action_name):
         if "mod_inc" not in self._c_tbl.supported_commands:
             return
 
@@ -1520,9 +1509,9 @@ def {}(self, {} ttl_reset=True):
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code.str = '''
-def {}(self, {} mod_flag=0):
+        code = '''
+@target_check_and_set
+def {}(self, {} mod_flag=0, pipe=None, gress_dir=None, prsr_id=None):
     """ Incremental Add/Delete items in the fields that are array for the matched entry in {} table.
 
     Parameters:
@@ -1536,22 +1525,20 @@ def {}(self, {} mod_flag=0):
         return
 
     self._c_tbl.mod_inc_entry(parsed_keys, parsed_data, mod_flag, b'{}')
-        '''
-        code = code_str.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
+        '''.format(method_name, param_str, self._name, full_strname, param_docstring, method_name, parse_key_call, parse_data_call, full_strname, full_strname)
         mod_method = self._set_dynamic_method(code, method_name)
         self._mods_inc[full_strname] = (mod_method, param_list)
 
-    # Generating mod API dynamically
-    def _create_mod(self, key_fields, data_fields, code_str=None):
+    def _create_mod(self, key_fields, data_fields):
         method_name = "mod"
         if method_name not in self._c_tbl.supported_commands:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {} ttl_reset=True):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None, ttl_reset=True):
     """Modify any field in the entry at once in {} table.
 
     Parameters:
@@ -1565,22 +1552,20 @@ def {}(self, {} ttl_reset=True):
         return
 
     self._c_tbl.mod_entry(parsed_keys, parsed_data, ttl_reset=ttl_reset)
-        '''
-        code = code_str.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
         mod_method = self._set_dynamic_method(code, method_name)
         self._mods[""] = (mod_method, param_list)
 
-    # Generating mod_inc API dynamically
-    def _create_mod_inc(self, key_fields, data_fields, code_str=None):
+    def _create_mod_inc(self, key_fields, data_fields):
         method_name = "mod_inc"
         if method_name not in self._c_tbl.supported_commands:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {} mod_flag=0):
+        code = '''
+@target_check_and_set
+def {}(self, {} mod_flag=0, pipe=None, gress_dir=None, prsr_id=None):
     """ Incremental Add/Delete items in the fields that are array for the matched entry in {} table.
 
     Parameters:
@@ -1594,22 +1579,20 @@ def {}(self, {} mod_flag=0):
         return
 
     self._c_tbl.mod_inc_entry(parsed_keys, parsed_data, mod_flag)
-        '''
-        code = code_str.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
         mod_method = self._set_dynamic_method(code, method_name)
         self._mods_inc[""] = (mod_method, param_list)
 
-    # Generating delete API dynamically
-    def _create_del(self, key_fields, code_str=None):
+    def _create_del(self, key_fields):
         method_name = "delete"
         if method_name not in self._c_tbl.supported_commands:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields=key_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {} handle=None):
+        code = '''
+@target_check_and_set
+def {}(self, {} pipe=None, gress_dir=None, prsr_id=None, handle=None):
     """Delete entry from {} table.
 
     Parameters:
@@ -1620,22 +1603,20 @@ def {}(self, {} handle=None):
         return
 
     self._c_tbl.del_entry(parsed_keys, entry_handle=handle)
-        '''
-        code = code_str.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
         del_method = self._set_dynamic_method(code, method_name)
         self._dels.append((del_method, param_list))
 
-    # Generating get API dynamically
-    def _create_get(self, key_fields, code_str=None):
+    def _create_get(self, key_fields):
         method_name = "get"
         if method_name not in self._c_tbl.supported_commands:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields=key_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, from_hw=False, handle=None):
+        code = '''
+@target_check_and_set
+def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, from_hw=False, pipe=None, gress_dir=None, prsr_id=None, handle=None):
     """Get entry from {} table.
     If regex param is set to True, perform regex search on key fields.
     When regex is true, default for each field is to accept all.
@@ -1665,22 +1646,20 @@ def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, fro
     if return_ents:
         return objs
     return
-        '''
-        code = code_str.format(method_name, param_str, self._name, param_docstring, parse_key_call, parse_key_call, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring, parse_key_call, parse_key_call, method_name, parse_key_call, parse_data_call)
         get_method = self._set_dynamic_method(code, method_name)
         self._gets.append((get_method, param_list))
 
-    # Generating get_handle API dynamically
-    def _create_get_handle(self, key_fields, code_str=None):
+    def _create_get_handle(self, key_fields):
         method_name = "get_handle"
         if method_name not in self._c_tbl.supported_commands:
             return
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields=key_fields)
 
-        if code_str == None:
-            code_str = '''
-def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, from_hw=False):
+        code = '''
+@target_check_and_set
+def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, from_hw=False, pipe=None, gress_dir=None, prsr_id=None):
     """Get entry handle for specific key from {} table.
     If regex param is set to True, perform regex search on key fields.
     When regex is true, default for each field is to accept all.
@@ -1711,25 +1690,25 @@ def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, fro
     if return_ents:
         return objs
     return
-        '''
-        code = code_str.format(method_name, param_str, self._name, param_docstring,  parse_key_call, parse_key_call, method_name, parse_key_call, parse_data_call)
+        '''.format(method_name, param_str, self._name, param_docstring,  parse_key_call, parse_key_call, method_name, parse_key_call, parse_data_call)
         get_method = self._set_dynamic_method(code, method_name)
         self._gets.append((get_method, param_list))
 
-    # Generating get_key API dynamically
-    def _create_get_key(self, code_str=None):
+    def _create_get_key(self):
         method_name = "get_key"
         if method_name not in self._c_tbl.supported_commands:
             return
-        if code_str == None:
-            code = '''
-def {}(self, handle, return_ent=True, print_ent=True, from_hw=False):
+
+        code = '''
+@target_check_and_set
+def {}(self, handle, return_ent=True, print_ent=True, from_hw=False, pipe=None, gress_dir=None, prsr_id=None):
     """Get entry key from {} table by entry handle.
 
     Parameters:
     handle: type=UINT64 size=32
     from_hw: default=False
     print_ents: default=True
+    pipe: default=None (use global setting)
     """
     if handle < 0 or handle >= 2**(sizeof(c_uint32)*8):
         return -1
@@ -1737,35 +1716,32 @@ def {}(self, handle, return_ent=True, print_ent=True, from_hw=False):
     if return_ent:
         return objs
     return
-        '''
-        code = code_str.format(method_name, self._name)
+        '''.format(method_name, self._name)
         self._set_dynamic_method(code, method_name)
 
-    # Generating get_default API dynamically
-    def _create_get_default(self, code_str=None):
+    def _create_get_default(self):
         method_name = "get_default"
         if method_name not in self._c_tbl.supported_commands:
             return
 
-        if code_str == None:
-            code_str = '''
-def {}(self, return_ent=True, print_ent=True, from_hw=False):
+        code = '''
+@target_check_and_set
+def {}(self, return_ent=True, print_ent=True, from_hw=False, pipe=None, gress_dir=None, prsr_id=None):
     """Get default entry from {} table.
 
     Parameters:
     from_hw: default=False
     print_ents: default=True
     table: default=False
+    pipe: default=None (use global setting)
     """
     objs = self._c_tbl.get_default_entry(print_entry=print_ent, from_hw=from_hw)
     if return_ent:
         return objs
     return
-        '''
-        code = code_str.format(method_name, self._name)
+        '''.format(method_name, self._name)
         self._set_dynamic_method(code, method_name)
 
-    # Generating entry_with_<action> APIs dynamically
     def _create_entry_with_action(self, key_fields, data_fields, action_name):
         # The purpose of this function is for the user to be able to create an
         # and entry object and then eventually add it to the table or potentially
@@ -2017,7 +1993,7 @@ def is_node(obj):
         return True
     return False
 
-def make_deep_tree(p4_name, tdi_info, dev_node, cintf, leaf_cls):
+def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
     if p4_name != b"$SHARED":
         p4_name_str_ = validate_program_name(p4_name, dev_node)
         if len(p4_name_str_) == 0:
@@ -2046,13 +2022,13 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf, leaf_cls):
 
             # If there is no node add it
             if prefs[-1] not in node_list:
-                leaf_cls(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
+                TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
             # If it is nested table recreate it with proper list of children and
             # update the parent, but don't modify fixed nodes.
             elif prefs[0] not in _tdi_fixed_nodes:
                 for c in parent_node._children:
                     if is_node(c) and c._name == prefs[-1]:
-                        leaf_cls(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
+                        TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
                         parent_node._children.remove(c)
                         break
 
@@ -2230,14 +2206,13 @@ def tdi_exit_handler():
     sys.stderr = sys.__stderr__
 
 class TdiCli:
-    cIntf_cls = CIntfTdi
-    leaf_cls = TDILeaf
-
     """
     Initialize TDI Runtime CLI, create IPython's configuration, start TDI Runtime
     CLI, and reset python's IO streams before teardown.
     """
-    def start_tdi(self, in_fd, out_fd, dev_id_list, udf=None, interactive=False, cIntf_cls=None):
+    def start_tdi(self, in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=False, cIntf_cls=None):
+        global install_directory
+        install_directory = install_dir
         inf, outf = set_io(in_fd, out_fd)
 
         # set level to DEBUG to see the debug infomration
@@ -2360,7 +2335,7 @@ class TdiCli:
             self.fill_dev_node(cintf, dev_node)
             for p4_name, tdi_info in cintf.infos.items():
                 print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
-                if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf, self.leaf_cls):
+                if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
                     print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
                     return -1
 

@@ -14,6 +14,48 @@
 # limitations under the License.
 #
 import json
+import functools
+
+def target_check_and_set(f):
+    @functools.wraps(f)
+    def target_wrapper(*args, **kw):
+        cintf = args[0]._cintf
+        pipe = None
+        gress_dir = None
+        prsr_id = None
+        old_tgt = None
+
+        for k,v in kw.items():
+            if k == "pipe":
+                pipe = v
+            elif k == "gress_dir":
+                gress_dir = v
+            elif k == "prsr_id":
+                prsr_id = v
+
+        if pipe is not None or gress_dir is not None or prsr_id is not None:
+            old_tgt = cintf._dev_tgt
+        if pipe is not None:
+            cintf._set_pipe(pipe=pipe)
+        if gress_dir is not None:
+            cintf._set_direction(gress_dir)
+        if prsr_id is not None:
+            cintf._set_parser(prsr_id)
+        # If there is an exception, then revert back the
+        # target. Store the ret value of the original function
+        # in case it does return something like some entry_get
+        # functions and return it at the end
+        ret_val = None
+        try:
+            ret_val = f(*args, **kw)
+        except Exception as e:
+            if old_tgt:
+                cintf._dev_tgt = old_tgt
+            raise e
+        if old_tgt:
+            cintf._dev_tgt = old_tgt
+        return ret_val
+    return target_wrapper
 
 class TableEntry:
     def __init__(self, table, key, data, action=None):
@@ -34,7 +76,8 @@ class TableEntry:
     def _get_raw_action(self):
         return self.action
 
-    def push(self, verbose=False):
+    @target_check_and_set
+    def push(self, verbose=False, pipe=None, gress_dir=None, prsr_id=None):
         if verbose:
             print("Checking for entry...")
         if self._c_tbl.get_entry(self.key, print_entry=False) != -1:
@@ -52,7 +95,8 @@ class TableEntry:
             else:
                 self._c_tbl.add_entry(self.key, self.data, self.action)
 
-    def update(self):
+    @target_check_and_set
+    def update(self, pipe=None, gress_dir=None, prsr_id=None):
         entry = self._c_tbl.get_entry(self.key, print_entry=False)
         if isinstance(entry, list):
             if len(entry > 1):
@@ -66,7 +110,8 @@ class TableEntry:
         self.data = entry._get_raw_data()
         self.action = entry._get_raw_action()
 
-    def remove(self):
+    @target_check_and_set
+    def remove(self, pipe=None, gress_dir=None, prsr_id=None):
         self._c_tbl.del_entry(self.key)
 
     def json(self):

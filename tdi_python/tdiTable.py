@@ -32,13 +32,13 @@ class TdiTableError(Exception):
         Exception.__init__(self, str_rep, *args,**kwargs)
 
 class TdiTable:
+
     key_match_type_cls = KeyMatchType
     data_type_cls = DataType
     table_type_cls = TableType
     attributes_type_cls = AttributesType
     operations_type_cls = OperationsType
     flags_type_cls = FlagsType
-    table_entry_cls = TableEntry
 
     """
     This class manages the exchange of information between
@@ -1625,7 +1625,7 @@ class TdiTable:
         return key, entry_tgt
 
     def create_entry_obj(self, key_content, data_content, action=None):
-        entry = self.table_entry_cls(self, key_content, data_content, action)
+        entry = TableEntry(self, key_content, data_content, action)
         return entry
 
     def _allocate_keydata_handles(self):
