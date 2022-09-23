@@ -101,11 +101,46 @@ class Device {
 };
 
 /**
+ * @brief Class to store warmInit options
+ */
+class WarmInitOptions {
+ public:
+  virtual ~WarmInitOptions() = default;
+};
+
+/**
+ * @brief Class to encapsulate warmInit operations
+ * Driver to derive and implement the APIs
+ */
+class WarmInitImpl {
+ public:
+  virtual ~WarmInitImpl() = default;
+  virtual tdi_status_t deviceWarmInitBegin(const tdi_dev_id_t & /*device_id*/,
+                            const WarmInitOptions & /*warm_init_options*/) {
+    return TDI_NOT_SUPPORTED;
+  }
+  virtual tdi_status_t deviceWarmInitEnd(const tdi_dev_id_t & /*device_id*/) {
+    return TDI_NOT_SUPPORTED;
+  }
+ protected:
+  WarmInitImpl() = default;
+};
+
+
+/**
  * @brief Class to manage Device per dev_id.<br>
  * <B>Creation: </B> Singleton....
  */
 class DevMgr {
  public:
+
+  /**
+   * @brief initialize warmInitImpl object
+   * This function sets warm_init_impl objects which is needed by
+   * deviceWarmInitBegin and deviceWarmInitEnd APIs
+   */
+  static void warmInitImplSet(std::unique_ptr<WarmInitImpl> impl);
+
   /**
    * @brief Get the singleton ojbect
    *
@@ -165,6 +200,9 @@ class DevMgr {
 
   tdi_status_t deviceRemove(const tdi_dev_id_t &device_id);
 
+  tdi_status_t deviceWarmInitBegin(const tdi_dev_id_t &device_id, const WarmInitOptions &warm_init_options);
+  tdi_status_t deviceWarmInitEnd(const tdi_dev_id_t &device_id);
+
   DevMgr(DevMgr const &) = delete;
   DevMgr(DevMgr &&) = delete;
   DevMgr &operator=(const DevMgr &) = delete;
@@ -178,6 +216,8 @@ class DevMgr {
 
   static std::mutex dev_mgr_instance_mutex;
   static DevMgr *dev_mgr_instance;
+
+  static std::unique_ptr<WarmInitImpl> warm_init_impl;
 };  // DevMgr
 
 /**
