@@ -182,10 +182,8 @@ class CIntfTdi:
         self._flags = self.flags_type()
         self._driver.tdi_flags_create(flag,  byref(self._flags))
 
-        self.idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
         self.tdi_idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
 
-        self.tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
         self.tdi_tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
 
         self.learn_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.sess_type, POINTER(self.handle_type), c_uint, self.handle_type, c_void_p)
@@ -1012,15 +1010,6 @@ class TDILeaf(TDIContext):
             return
         return ret
 
-    def dynamic_hash_set(self, alg_hdl, seed):
-        self._c_tbl.dynamic_hash_set(alg_hdl, seed)
-
-    def dynamic_hash_get(self):
-        ret = self._c_tbl.dynamic_hash_get()
-        if ret == -1:
-            return
-        return ret
-
     def meter_byte_count_adjust_set(self, byte_count):
         self._c_tbl.meter_byte_count_adjust_set(byte_count)
 
@@ -1034,6 +1023,33 @@ class TDILeaf(TDIContext):
         if callback is None:
            callback = _selector_table_update_cb_print
         self._c_tbl.set_selector_table_update_cb(callback)
+
+    def dynamic_key_mask_get(self):
+        ret = self._c_tbl.dyn_key_mask_get()
+        if ret == -1:
+            return
+        return ret
+
+    def _create_attributes(self, key_fields, data_fields={}):
+        method_name = "dynamic_key_mask_set"
+        if method_name not in self._c_tbl.supported_commands:
+            return
+        param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
+
+        code = '''
+def {}(self, {} ):
+    """Add dynamic mask attribute to {} .
+
+    Parameters:
+    {}
+    """
+    parsed_keys, parsed_data = self._c_tbl.parse_str_input("{}", {}, {})
+    if parsed_keys == -1:
+        return
+    self._c_tbl.dyn_key_mask_set(parsed_keys)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        add_method = self._set_dynamic_method(code, method_name)
+        self._children[method_name] = getattr(self, method_name)
 
     def _create_operations(self):
         method_name = "operation_register_sync"

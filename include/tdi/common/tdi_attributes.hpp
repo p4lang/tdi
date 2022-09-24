@@ -31,9 +31,9 @@
 #include <vector>
 
 #include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_target.hpp>
-#include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_session.hpp>
+#include <tdi/common/tdi_table_key.hpp>
+#include <tdi/common/tdi_target.hpp>
 
 namespace tdi {
 
@@ -44,15 +44,16 @@ class TableAttributes {
   virtual ~TableAttributes() = default;
   TableAttributes(const Table *table, const tdi_attributes_type_e &attr_type)
       : table_(table), attr_type_(attr_type){};
-  tdi_status_t setValue(tdi_attributes_field_type_e /*type*/,
+  virtual tdi_status_t setValue(const tdi_attributes_field_type_e &/*type*/,
                         const uint64_t & /*value*/) {
     return TDI_NOT_SUPPORTED;
   };
-  tdi_status_t getValue(tdi_attributes_field_type_e /*type*/,
-                        uint64_t * /*value*/) {
+  virtual tdi_status_t getValue(const tdi_attributes_field_type_e &/*type*/,
+                        uint64_t * /*value*/) const {
     return TDI_NOT_SUPPORTED;
   };
   const tdi_attributes_type_e &attributeTypeGet() const { return attr_type_; };
+  const Table* tableGet() const { return table_; };
 
  private:
   const Table *table_;

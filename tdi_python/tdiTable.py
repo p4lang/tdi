@@ -784,6 +784,34 @@ class TdiTable:
         return "ERR: Table Mode %d not implemented" . format(mode)
 
     @staticmethod
+    def attributes_type_map(attributes_type_enum=None, attributes_type_str=None):
+        TDI_ATTRIBUTES_CORE=0
+        TDI_ATTRIBUTES_ARCH=0x08
+        TDI_ATTRIBUTES_DEVICE=0x80
+        attributes_type_dict = {
+                TDI_ATTRIBUTES_DEVICE+0: ["symmetric_mode_set", "symmetric_mode_get"],
+                TDI_ATTRIBUTES_DEVICE+1: ["dyn_key_mask_get", "dyn_key_mask_set"],
+                TDI_ATTRIBUTES_DEVICE+2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
+                TDI_ATTRIBUTES_DEVICE+3: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
+                TDI_ATTRIBUTES_DEVICE+4: ["port_status_notif_cb_set"],
+                TDI_ATTRIBUTES_DEVICE+5: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
+                TDI_ATTRIBUTES_DEVICE+7: ["selector_table_update_cb_set"]}
+        attributes_type_rev_dict = {
+                "EntryScope": TDI_ATTRIBUTES_DEVICE+0,
+                "DynamicKeyMask": TDI_ATTRIBUTES_DEVICE+1,
+                "IdleTimeout": TDI_ATTRIBUTES_DEVICE+2,
+                "MeterByteCountAdjust": TDI_ATTRIBUTES_DEVICE+3,
+                "port_status_notif_cb": TDI_ATTRIBUTES_DEVICE+4,
+                "poll_intvl_ms": TDI_ATTRIBUTES_DEVICE+5,
+                "SelectorUpdateCb": TDI_ATTRIBUTES_DEVICE+7,
+        }
+        if attributes_type_enum is not None:
+            return attributes_type_dict[attributes_type_enum]
+        if attributes_type_str is not None:
+            return attributes_type_rev_dict[attributes_type_str]
+
+
+    @staticmethod
     def flag_map(flag_enum=None, flag_enum_str=None):
         TDI_FLAGS_CORE = 0
         TDI_FLAGS_ARCH = 0x08
@@ -1904,19 +1932,8 @@ class TdiTable:
         if sts != 0:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         logging.debug("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
-        # based on tdi_rt_attributes_type_e
-        attributes_dic = {
-                  0: ["symmetric_mode_set", "symmetric_mode_get"],
-                  1: ["dyn_key_mask_get", "dyn_key_mask_set"],
-                  2: ["idle_table_set_poll", "idle_table_set_notify", "idle_table_get"],
-                  3: ["meter_byte_count_adjust_set", "meter_byte_count_adjust_get"],
-                  4: ["port_status_notif_cb_set"],
-                  5: ["port_stats_poll_intv_set", "port_stats_poll_intv_get"],
-                  7: ["selector_table_update_cb_set"]}
-        keys_list = attributes_dic.keys()
         for i in range(len(attributes_arr)):
-            if attributes_arr[i] in keys_list:
-                self.supported_commands += attributes_dic[attributes_arr[i]]
+            self.supported_commands += self.attributes_type_map(attributes_arr[i])
 
     def set_supported_operations_to_supported_commands(self):
         num_opers = c_uint(0)
@@ -1980,7 +1997,7 @@ class TdiTable:
                     self.supported_commands.append("dump")
 
     def _attr_deallocate(self, attr_hdl):
-        sts = self._cintf.get_driver().tdi_table_attributes_deallocate(attr_hdl)
+        sts = self._cintf.get_driver().tdi_attributes_deallocate(attr_hdl)
         if not sts == 0:
             raise TdiTableError("Error: attributes_deallocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
@@ -2003,13 +2020,23 @@ class TdiTable:
 
     def set_idle_table_poll_mode(self, enable):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_idle_table_attributes_allocate(self._handle, 0, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, self.attributes_type_map(attributes_type_str="IdleTimeout"), byref(attr_hdl))
         if not sts == 0:
             raise TdiTableError("Error: idle_table_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-        sts = self._cintf.get_driver().tdi_attributes_idle_table_poll_mode_set(attr_hdl, c_bool(bool(enable)))
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                0,          # mode
+                c_uint(0)) # poll mode
         if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             self._attr_deallocate(attr_hdl)
-            raise TdiTableError("Error: idle_table_poll_mode_set failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                1,
+                c_bool(bool(enable)))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
         self._attr_set(attr_hdl)
         self._attr_deallocate(attr_hdl)
 
@@ -2097,15 +2124,16 @@ class TdiTable:
             entry = self.get_entry(key_content=None, print_entry = False, key_handle=handle)
             callback(dev_id, pipe_id, direction, parser_id, entry)
             return 0
-        return self._cintf.idle_timeout_cb_type(callback_wrapper)
+        return self._cintf.tdi_idle_timeout_cb_type(callback_wrapper)
 
     def set_idle_table_notify_mode(self, enable, callback, interval, max_ttl, min_ttl):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_idle_table_attributes_allocate(self._handle, 1, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, self.attributes_type_map(attributes_type_str="IdleTimeout"), byref(attr_hdl))
         if not sts == 0:
             print("idle_table_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             return -1
         self.idle_tmo_callback = self._wrap_idle_timeout_callback(callback)
+        """
         sts = self._cintf.get_driver().tdi_attributes_idle_table_notify_mode_set(attr_hdl,
                                                                                    c_bool(bool(enable)),
                                                                                    self.idle_tmo_callback,
@@ -2113,6 +2141,50 @@ class TdiTable:
                                                                                    c_uint(max_ttl),
                                                                                    c_uint(min_ttl),
                                                                                    c_void_p(0))
+                                                                                   """
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                0,          # mode
+                c_uint(1)) # notify mode
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                1,
+                c_bool(bool(enable)))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                2,
+                self.idle_tmo_callback)
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                4,
+                c_uint(interval))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                5,
+                c_uint(max_ttl))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
+                6,
+                c_uint(min_ttl))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+
         if not sts == 0:
             print("idle_table_notify_mode_set failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             self._attr_deallocate(attr_hdl)
@@ -2122,7 +2194,7 @@ class TdiTable:
 
     def get_idle_table(self):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_idle_table_attributes_allocate(self._handle, 0, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, self.attributes_type_map(attributes_type_str="IdleTimeout"), byref(attr_hdl))
         if not sts == 0:
             print("idle_table_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             return -1
@@ -2135,18 +2207,42 @@ class TdiTable:
         ttl_interval = c_uint()
         max_ttl = c_uint()
         min_ttl = c_uint()
-        sts = self._cintf.get_driver().tdi_attributes_idle_table_get(attr_hdl,
-                                                                       byref(mode),
-                                                                       byref(enable),
-                                                                       c_void_p(0),
-                                                                       byref(ttl_interval),
-                                                                       byref(max_ttl),
-                                                                       byref(min_ttl),
-                                                                       c_void_p(0))
+        sts = self._cintf.get_driver().tdi_attributes_get_value(attr_hdl,
+                0,
+                byref(mode))
         if not sts == 0:
             print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             self._attr_deallocate(attr_hdl)
             return -1
+        sts = self._cintf.get_driver().tdi_attributes_get_value(attr_hdl,
+                1,
+                byref(enable))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_get_value(attr_hdl,
+                4,
+                byref(ttl_interval))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_get_value(attr_hdl,
+                5,
+                byref(max_ttl))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+        sts = self._cintf.get_driver().tdi_attributes_get_value(attr_hdl,
+                6,
+                byref(min_ttl))
+        if not sts == 0:
+            print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
+            self._attr_deallocate(attr_hdl)
+            return -1
+
         self._attr_deallocate(attr_hdl)
         mode = self.idle_table_mode(mode.value)
         if mode == "POLL_MODE":
@@ -2155,10 +2251,10 @@ class TdiTable:
 
     def set_symmetric_mode(self, enable):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_entry_scope_attributes_allocate(self._handle, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, attributes_type_map(attributes_type_str="EntryScope"), byref(attr_hdl))
         if not sts == 0:
             raise TdiTableError("Error: entry_scope_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-        sts = self._cintf.get_driver().tdi_attributes_entry_scope_symmetric_mode_set(attr_hdl, c_bool(bool(enable)))
+        sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl, c_bool(bool(enable)))
         if not sts == 0:
             self._attr_deallocate(attr_hdl)
             raise TdiTableError("Error: entry_scope_symmetric_mode_set failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
@@ -2167,7 +2263,7 @@ class TdiTable:
 
     def get_symmetric_mode(self):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_entry_scope_attributes_allocate(self._handle, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, self.attributes_type_map(attributes_type_str="EntryScope"), byref(attr_hdl))
         if not sts == 0:
             print("entry_scope_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             return -1
@@ -2184,39 +2280,9 @@ class TdiTable:
         self._attr_deallocate(attr_hdl)
         return enable.value
 
-    def dynamic_hash_set(self, alg_hdl, seed):
-        attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_dyn_hashing_attributes_allocate(self._handle, byref(attr_hdl))
-        if not sts == 0:
-            raise TdiTableError("dyn_hashing_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
-        sts = self._cintf.get_driver().tdi_attributes_dyn_hashing_set(attr_hdl, c_uint(alg_hdl), c_uint(seed))
-        if not sts == 0:
-            self._attr_deallocate(attr_hdl)
-            raise TdiTableError("dyn_hashing_set failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-        self._attr_set(attr_hdl)
-        self._attr_deallocate(attr_hdl)
-
-    def dynamic_hash_get(self):
-        attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_dyn_hashing_attributes_allocate(self._handle, byref(attr_hdl))
-        if not sts == 0:
-            raise TdiTableError("dyn_hashing_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
-        sts = self._attr_get(attr_hdl)
-        if not sts == 0:
-            self._attr_deallocate(attr_hdl)
-            return -1
-        alg_hdl = c_uint()
-        seed = c_uint()
-        sts = self._cintf.get_driver().tdi_attributes_dyn_hashing_get(attr_hdl, byref(alg_hdl), byref(seed))
-        if not sts == 0:
-            self._attr_deallocate(attr_hdl)
-            raise TdiTableError("dyn_hashing_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
-        self._attr_deallocate(attr_hdl)
-        return {"alg_hdl":alg_hdl.value, "seed":seed.value}
-
     def meter_byte_count_adjust_set(self, byte_count):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_meter_byte_count_adjust_attributes_allocate(self._handle, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, attributes_type_map(attributes_type_str="MeterByteCountAdjust"), byref(attr_hdl))
         if not sts == 0:
             raise TdiTableError("meter_byte_count_adjust_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
         sts = self._cintf.get_driver().tdi_attributes_meter_byte_count_adjust_set(attr_hdl, c_uint(byte_count))
@@ -2228,7 +2294,7 @@ class TdiTable:
 
     def meter_byte_count_adjust_get(self):
         attr_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_meter_byte_count_adjust_attributes_allocate(self._handle, byref(attr_hdl))
+        sts = self._cintf.get_driver().tdi_attributes_allocate(self._handle, attributes_type_map(attributes_type_str="MeterByteCountAdjust"), byref(attr_hdl))
         if not sts == 0:
             raise TdiTableError("meter_byte_count_adjust_attributes_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
         sts = self._attr_get(attr_hdl)
