@@ -42,8 +42,6 @@ from ipaddress import ip_address as ip
 from netaddr import EUI as mac
 import logging
 
-# Fixed Tables created at child Nodes of the root 'tdi' Node.
-_tdi_fixed_nodes = ["port", "mirror"]
 _tdi_context = {}
 promp_node = None
 tdi = None
@@ -1930,7 +1928,7 @@ in the global name context. This function will try to check and resolve these
 conflicts, if possible, by replacing incorrect symbols with underscores and
 prepending the name by 'p4_' prefix.
 """
-def validate_program_name(p4_name, p_node):
+def validate_program_name(p4_name, p_node, fixed_nodes=None):
     def print_name_warn_(err_txt_, o_name_, n_name_):
         print("WARNING: The P4 program name '%s' is " %(o_name_) + err_txt_ + ". It is changed to '%s'." %(n_name_), file = sys.stderr)
     #
@@ -1962,12 +1960,12 @@ def validate_program_name(p4_name, p_node):
         return ""
 
     if p_node is not None and isinstance(p_node, TDINode):
-        if not p4_pref_ and (p4_name_str_ in dir(p_node) or p4_name_str_ in _tdi_fixed_nodes):
+        if not p4_pref_ and (p4_name_str_ in dir(p_node) or p4_name_str_ in fixed_nodes):
             p4_name_res_ = "p4_" + p4_name_str_
             print_name_warn_("reserved for another item in the object tree", p4_name_str_, p4_name_res_)
             p4_name_str_ = p4_name_res_
             p4_pref_ = True
-        if p4_name_str_ in dir(p_node) or p4_name_str_ in _tdi_fixed_nodes:
+        if p4_name_str_ in dir(p_node) or p4_name_str_ in fixed_nodes:
             print("ERROR: The P4 program name '%s' is reserved for another item in the object tree." %(p4_name_str_), file = sys.stderr)
             return ""
     #
@@ -1993,9 +1991,9 @@ def is_node(obj):
         return True
     return False
 
-def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
+def make_deep_tree(p4_name, tdi_info, dev_node, cintf, fixed_nodes=None):
     if p4_name != b"$SHARED":
-        p4_name_str_ = validate_program_name(p4_name, dev_node)
+        p4_name_str_ = validate_program_name(p4_name, dev_node, fixed_nodes)
         if len(p4_name_str_) == 0:
             return -1
         p4_node = TDINode(p4_name_str_, cintf, parent_node=dev_node)
@@ -2005,7 +2003,7 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
     for table_name, tbl_obj in sorted(tdi_info.tables.items(), reverse=True):
         logging.debug("table_name:"+str(table_name))
         prefs = table_name.split('.')
-        if prefs[0] in _tdi_fixed_nodes:
+        if prefs[0] in fixed_nodes:
             parent_node = update_node_tree(dev_node, prefs, cintf)
         else:
             parent_node = update_node_tree(p4_node, prefs, cintf)
@@ -2025,7 +2023,7 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf):
                 TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
             # If it is nested table recreate it with proper list of children and
             # update the parent, but don't modify fixed nodes.
-            elif prefs[0] not in _tdi_fixed_nodes:
+            elif prefs[0] not in fixed_nodes:
                 for c in parent_node._children:
                     if is_node(c) and c._name == prefs[-1]:
                         TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
@@ -2210,6 +2208,10 @@ class TdiCli:
     Initialize TDI Runtime CLI, create IPython's configuration, start TDI Runtime
     CLI, and reset python's IO streams before teardown.
     """
+    # Fixed Tables created at child Nodes of the root 'tdi' Node.
+    # targets to override this list with their fixed nodes.
+    fixed_nodes = []
+
     def start_tdi(self, in_fd, out_fd, install_dir, dev_id_list, udf=None, interactive=False, cIntf_cls=None):
         global install_directory
         install_directory = install_dir
@@ -2335,7 +2337,7 @@ class TdiCli:
             self.fill_dev_node(cintf, dev_node)
             for p4_name, tdi_info in cintf.infos.items():
                 print("Creating tree for dev %d and program %s\n" %(dev_id, p4_name.decode()))
-                if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf):
+                if 0 != make_deep_tree(p4_name, tdi_info, dev_node, cintf, self.fixed_nodes):
                     print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
                     return -1
 
