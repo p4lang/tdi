@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/** @file tdi_attributes.h
- *
- *  @brief Contains TDI Attribute APIs
- */
-#ifndef _TDI_ATTRIBUTES_H
-#define _TDI_ATTRIBUTES_H
-
-#include <tdi/common/tdi_defs.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <tdi/common/tdi_defs.h>
 
-tdi_status_t tdi_attributes_set_value(tdi_attributes_hdl *attributes,
-                                      tdi_attributes_field_type_e type,
-                                      const uint64_t value);
-
-tdi_status_t tdi_attributes_get_value(const tdi_attributes_hdl *attributes,
-                                      tdi_attributes_field_type_e type,
-                                      uint64_t *value);
+#include <tdi/common/c_frontend/tdi_attributes.h>
 
 #ifdef __cplusplus
 }
 #endif
+#include <tdi/common/tdi_attributes.hpp>
 
-#endif  // _TDI_TABLE_ATTRIBUTES_H
+tdi_status_t tdi_attributes_set_value(tdi_attributes_hdl *attributes_hdl,
+                                      tdi_attributes_field_type_e type,
+                                      const uint64_t value) {
+  auto attributes_field = reinterpret_cast<tdi::TableAttributes *>(attributes_hdl);
+  return attributes_field->setValue(type, value);
+}
+
+tdi_status_t tdi_attributes_get_value(const tdi_attributes_hdl *attributes_hdl,
+                                      tdi_attributes_field_type_e type,
+                                      uint64_t *value) {
+  auto attributes_field = reinterpret_cast<const tdi::TableAttributes *>(attributes_hdl);
+  return attributes_field->getValue(type, value);
+}
+

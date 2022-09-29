@@ -2157,7 +2157,7 @@ class TdiTable:
             self._attr_deallocate(attr_hdl)
             return -1
         sts = self._cintf.get_driver().tdi_attributes_set_value(attr_hdl,
-                2,
+                3,
                 self.idle_tmo_callback)
         if not sts == 0:
             print("idle_table_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
