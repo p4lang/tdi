@@ -141,6 +141,9 @@ void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
     }
   } else if (type_str == "string") {
     width = 0;
+    if (node["type"]["width"].exists()) {
+        width = static_cast<unsigned int>(node["type"]["width"]);
+    }
     for (const auto &choice : node["type"]["choices"].getCjsonChildVec()) {
       choices.push_back(static_cast<std::string>(*choice));
     }

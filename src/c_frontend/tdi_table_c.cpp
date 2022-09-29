@@ -520,7 +520,7 @@ tdi_status_t tdi_table_attributes_set(const tdi_table_hdl *table_hdl,
   return table->tableAttributesSet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
-                              *reinterpret_cast<const tdi::Flags *>(flags),
+      *reinterpret_cast<const tdi::Flags *>(flags),
       *reinterpret_cast<const tdi::TableAttributes *>(tbl_attr));
 }
 
@@ -534,7 +534,7 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
   return table->tableAttributesGet(
       *reinterpret_cast<const tdi::Session *>(session),
       *reinterpret_cast<const tdi::Target *>(target),
-                              *reinterpret_cast<const tdi::Flags *>(flags),
+      *reinterpret_cast<const tdi::Flags *>(flags),
       reinterpret_cast<tdi::TableAttributes *>(tbl_attr));
 }
 
