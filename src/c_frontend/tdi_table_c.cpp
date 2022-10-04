@@ -29,12 +29,6 @@
 #include <tdi/common/tdi_table_data.hpp>
 #include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_target.hpp>
-#ifdef _TDI_FROM_BFRT
-#include <tdi_common/tdi_pipe_mgr_intf.hpp>
-#include <tdi_common/tdi_table_data_impl.hpp>
-#include <tdi_common/tdi_table_impl.hpp>
-#include <tdi_common/tdi_table_key_impl.hpp>
-#endif
 #include <tdi/common/tdi_utils.hpp>
 
 tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
