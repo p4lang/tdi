@@ -20,11 +20,11 @@
 #ifndef _TDI_TABLE_H
 #define _TDI_TABLE_H
 
-#include <tdi/common/tdi_defs.h>
+#include <tdi/common/c_frontend/tdi_attributes.h>
+#include <tdi/common/c_frontend/tdi_operations.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
-#include <tdi/common/c_frontend/tdi_operations.h>
-#include <tdi/common/c_frontend/tdi_attributes.h>
+#include <tdi/common/tdi_defs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -709,13 +709,26 @@ tdi_status_t tdi_action_id_applicable(const tdi_table_hdl *table_hdl,
 /********************** Attribute APIs ***********************/
 
 /**
+ * @brief Allocate attribute object.
+ *
+ * @param[in] tbl_hdl Table handle
+ * @param[in] attribute_type enum value of attribute type
+ * @param[out] tbl_attr_hdl
+ *
+ * @return Status of API call
+ */
+tdi_status_t tdi_attributes_allocate(const tdi_table_hdl *table_hdl,
+                                     const tdi_attributes_type_e type,
+                                     tdi_attributes_hdl **tbl_attr_hdl);
+
+/**
  * @brief Deallocate attribute object
  *
  * @param[in] tbl_attr_hdl
  *
  * @return Status of API call
  */
-tdi_status_t tdi_table_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl);
+tdi_status_t tdi_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl);
 
 /**
  * @brief Apply an Attribute from an Attribute Object on the

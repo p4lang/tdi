@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tdi/common/c_frontend/tdi_table_info.h>
 #include <stdio.h>
+#include <tdi/common/c_frontend/tdi_table_info.h>
 
 #include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_init.hpp>
 #include <tdi/common/tdi_info.hpp>
+#include <tdi/common/tdi_init.hpp>
 //#include <tdi/common/tdi_table.hpp>
-#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
-#include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/c_frontend/tdi_attributes.h>
 #include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/tdi_attributes.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 //#include <tdi/common/tdi_table_data.hpp>
 #//include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_operations.hpp>
@@ -54,7 +54,6 @@ template <typename T>
 tdi_status_t data_field_allowed_choices_get_helper(
     const tdi_table_info_hdl *table_info_hdl,
     const tdi_id_t &field_id,
-    // std::vector<std::reference_wrapper<const std::string>> *cpp_choices,
     const std::vector<std::string> **cpp_choices,
     T out_param,
     const tdi_id_t &action_id = 0) {
@@ -65,18 +64,8 @@ tdi_status_t data_field_allowed_choices_get_helper(
     return TDI_INVALID_ARG;
   }
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
-  const tdi::DataFieldInfo *dataFieldInfo = tableInfo->dataFieldGet(field_id);
-  if (!action_id) {
-    *cpp_choices = &dataFieldInfo->allowedChoicesGet();
-    // sts = tableDataInfo->dataFieldAllowedChoicesGet(field_id, cpp_choices);
-  } else {
-    LOG_ERROR("%s:%d Invalid arg. Please allocate mem for out param",
-              __func__,
-              __LINE__);
-    return TDI_INVALID_ARG;
-    // sts = table->dataFieldAllowedChoicesGet(field_id, action_id,
-    // cpp_choices);
-  }
+  const tdi::DataFieldInfo *dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
+  *cpp_choices = &dataFieldInfo->allowedChoicesGet();
   return TDI_SUCCESS;
 }
 
@@ -944,7 +933,7 @@ tdi_status_t tdi_data_field_num_allowed_choices_get(
     const tdi_table_info_hdl *table_info_hdl,
     const tdi_id_t field_id,
     uint32_t *num_choices) {
-  const std::vector<std::string> *cpp_choices;
+  const std::vector<std::string> *cpp_choices = nullptr;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<uint32_t *>(
       table_info_hdl, field_id, &cpp_choices, num_choices);
   if (sts != TDI_SUCCESS) {
@@ -958,8 +947,7 @@ tdi_status_t tdi_data_field_allowed_choices_get(
     const tdi_table_info_hdl *table_info_hdl,
     const tdi_id_t field_id,
     const char *choices[]) {
-  const std::vector<std::string> *cpp_choices;
-  // std::vector<std::reference_wrapper<const std::string>> cpp_choices;
+  const std::vector<std::string> *cpp_choices = nullptr;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<const char *[]>(
       table_info_hdl, field_id, &cpp_choices, choices);
   if (sts != TDI_SUCCESS) {
@@ -976,8 +964,7 @@ tdi_status_t tdi_data_field_num_allowed_choices_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     uint32_t *num_choices) {
-  const std::vector<std::string> *cpp_choices;
-  // std::vector<std::reference_wrapper<const std::string>> cpp_choices;
+  const std::vector<std::string> *cpp_choices = nullptr;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<uint32_t *>(
       table_info_hdl, field_id, &cpp_choices, num_choices, action_id);
   if (sts != TDI_SUCCESS) {
@@ -992,8 +979,7 @@ tdi_status_t tdi_data_field_allowed_choices_with_action_get(
     const tdi_id_t field_id,
     const tdi_id_t action_id,
     const char *choices[]) {
-  const std::vector<std::string> *cpp_choices;
-  // std::vector<std::reference_wrapper<const std::string>> cpp_choices;
+  const std::vector<std::string> *cpp_choices = nullptr;
   tdi_status_t sts = ::data_field_allowed_choices_get_helper<const char *[]>(
       table_info_hdl, field_id, &cpp_choices, choices, action_id);
   if (sts != TDI_SUCCESS) {

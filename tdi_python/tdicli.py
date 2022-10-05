@@ -183,10 +183,8 @@ class CIntfTdi:
         self._flags = self.flags_type()
         self._driver.tdi_flags_create(flag,  byref(self._flags))
 
-        self.idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
         self.tdi_idle_timeout_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.handle_type, c_void_p)
 
-        self.tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
         self.tdi_tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
 
         self.learn_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.sess_type, POINTER(self.handle_type), c_uint, self.handle_type, c_void_p)
@@ -683,28 +681,6 @@ class TDINode(TDIContext):
 
 
 # default callbacks
-def _port_status_notif_cb_print(dev_id, dev_port, up):
-    print("Device id: {} Dev port : {} Port Status : {}".format(dev_id, dev_port, up))
-
-def _idle_table_notify_print(dev_id, pipe_id, direction, parser_id, entry):
-    print("Device id: {}\n"
-          "Pipe id: {}\n"
-          "Direction: {}\n"
-          "Parser id: {}\n".format(dev_id, pipe_id, direction, parser_id))
-    print(entry)
-
-def _selector_table_update_cb_print(dev_id, pipe_id, direction, parser_id, sel_grp_id, act_mbr_id, logical_table_index, is_add):
-    print("Selector update callback called\n")
-    print("Device id: {}\n"
-          "Pipe id: {}\n"
-          "Direction: {}\n"
-          "Parser id: {}\n"
-          "sel_grp_id: {}\n"
-          "act_mbr_id: {}\n"
-          "logical_table_index: {}\n"
-          "is_add: {}\n"
-          .format(dev_id, pipe_id, direction, parser_id, sel_grp_id, act_mbr_id, logical_table_index, is_add))
-
 def _default_operation_callback(dev_id, pipe_id, direction, parser_id):
     print("operation complete - dev_id: {}, pipe_id: {}, direction: {}, parser_id: {}".format(dev_id, pipe_id, direction, parser_id))
 
@@ -933,65 +909,27 @@ class TDILeaf(TDIContext):
         else:
             print("Input must be string produced by dump command for this table.")
 
-    def port_status_notif_cb_set(self, callback=None):
-        if callback is None:
-           callback = _port_status_notif_cb_print
-        self._c_tbl.set_port_status_notif_cb(callback)
 
-    def port_stats_poll_intv_set(self, poll_intv_ms=2000):
-        self._c_tbl.set_port_stats_poll_intv(poll_intv_ms)
-
-    def port_stats_poll_intv_get(self):
-        return self._c_tbl.get_port_stats_poll_intv()
-
-    def idle_table_set_poll(self, enable):
-        self._c_tbl.set_idle_table_poll_mode(enable)
-
-    def idle_table_set_notify(self, enable, callback=None, interval=1000, max_ttl=0, min_ttl=0):
-        if callback is None:
-            callback = _idle_table_notify_print
-        if not interval:
-            print("{} Error: non-zero interval is required when enabling notify mode.")
+    def _create_attributes(self, key_fields, data_fields={}):
+        method_name = "dynamic_key_mask_set"
+        if method_name not in self._c_tbl.supported_commands:
             return
-        self._c_tbl.set_idle_table_notify_mode(enable, callback, interval, max_ttl, min_ttl)
+        param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-    def idle_table_get(self):
-        ret = self._c_tbl.get_idle_table()
-        if ret == -1:
-            return
-        return ret
+        code = '''
+def {}(self, {} ):
+    """Add dynamic mask attribute to {} .
 
-    def symmetric_mode_set(self, enable):
-        self._c_tbl.set_symmetric_mode(enable)
-
-    def symmetric_mode_get(self):
-        ret = self._c_tbl.get_symmetric_mode()
-        if ret == -1:
-            return
-        return ret
-
-    def dynamic_hash_set(self, alg_hdl, seed):
-        self._c_tbl.dynamic_hash_set(alg_hdl, seed)
-
-    def dynamic_hash_get(self):
-        ret = self._c_tbl.dynamic_hash_get()
-        if ret == -1:
-            return
-        return ret
-
-    def meter_byte_count_adjust_set(self, byte_count):
-        self._c_tbl.meter_byte_count_adjust_set(byte_count)
-
-    def meter_byte_count_adjust_get(self):
-        ret = self._c_tbl.meter_byte_count_adjust_get()
-        if ret == -1:
-            return
-        return ret
-
-    def selector_table_update_cb_set(self, callback=None):
-        if callback is None:
-           callback = _selector_table_update_cb_print
-        self._c_tbl.set_selector_table_update_cb(callback)
+    Parameters:
+    {}
+    """
+    parsed_keys, parsed_data = self._c_tbl.parse_str_input("{}", {}, {})
+    if parsed_keys == -1:
+        return
+    self._c_tbl.dyn_key_mask_set(parsed_keys)
+        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
+        add_method = self._set_dynamic_method(code, method_name)
+        self._children[method_name] = getattr(self, method_name)
 
     def _create_operations(self):
         method_name = "operation_register_sync"
@@ -2020,13 +1958,13 @@ def make_deep_tree(p4_name, tdi_info, dev_node, cintf, fixed_nodes=None):
 
             # If there is no node add it
             if prefs[-1] not in node_list:
-                TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
+                cintf.leaf_type_cls(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node)
             # If it is nested table recreate it with proper list of children and
             # update the parent, but don't modify fixed nodes.
             elif prefs[0] not in fixed_nodes:
                 for c in parent_node._children:
                     if is_node(c) and c._name == prefs[-1]:
-                        TDILeaf(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
+                        cintf.leaf_type_cls(name=prefs[-1], c_tbl=tbl_obj, cintf=cintf, parent_node=parent_node, children=c._children)
                         parent_node._children.remove(c)
                         break
 

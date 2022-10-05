@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <tdi/common/c_frontend/tdi_table.h>
 #include <stdio.h>
+#include <tdi/common/c_frontend/tdi_table.h>
 
-#include <tdi/common/tdi_defs.h>
-#include <tdi/common/tdi_init.hpp>
-#include <tdi/common/tdi_session.hpp>
-#include <tdi/common/tdi_target.hpp>
-#include <tdi/common/tdi_table.hpp>
-#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
-#include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/c_frontend/tdi_attributes.h>
 #include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/c_frontend/tdi_table.h>
+#include <tdi/common/tdi_attributes.hpp>
+#include <tdi/common/tdi_defs.h>
+#include <tdi/common/tdi_init.hpp>
+#include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
+#include <tdi/common/tdi_operations.hpp>
+#include <tdi/common/tdi_session.hpp>
+#include <tdi/common/tdi_table.hpp>
 #include <tdi/common/tdi_table_data.hpp>
 #include <tdi/common/tdi_table_key.hpp>
-#include <tdi/common/tdi_operations.hpp>
-#include <tdi/common/c_frontend/tdi_table.h>
-#ifdef _TDI_FROM_BFRT
-#include <tdi_common/tdi_pipe_mgr_intf.hpp>
-#include <tdi_common/tdi_table_data_impl.hpp>
-#include <tdi_common/tdi_table_impl.hpp>
-#include <tdi_common/tdi_table_key_impl.hpp>
-#endif
+#include <tdi/common/tdi_target.hpp>
 #include <tdi/common/tdi_utils.hpp>
 
 tdi_status_t tdi_table_entry_add(const tdi_table_hdl *table_hdl,
@@ -393,14 +387,13 @@ tdi_status_t tdi_table_action_data_allocate_container_with_fields(
 }
 #endif
 
-#ifdef _TDI_FROM_BFRT
-tdi_status_t tdi_table_entry_scope_attributes_allocate(
-    const tdi_table_hdl *table_hdl, tdi_attributes_hdl **tbl_attr) {
+tdi_status_t tdi_attributes_allocate(const tdi_table_hdl *table_hdl,
+                                     const tdi_attributes_type_e type,
+                                     tdi_attributes_hdl **tbl_attr_hdl) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   std::unique_ptr<tdi::TableAttributes> attr;
-  auto status =
-      table->attributeAllocate(tdi::TableAttributesType::ENTRY_SCOPE, &attr);
-  *tbl_attr = reinterpret_cast<tdi_attributes_hdl *>(attr.release());
+  auto status = table->attributeAllocate(type, &attr);
+  *tbl_attr_hdl = reinterpret_cast<tdi_attributes_hdl *>(attr.release());
   return status;
 }
 
@@ -409,12 +402,11 @@ tdi_status_t tdi_operations_allocate(const tdi_table_hdl *table_hdl,
                                      tdi_operations_hdl **tbl_ops) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   std::unique_ptr<tdi::TableOperations> ops;
-  auto status = table->operationsAllocate(
-      static_cast<tdi::TableOperationsType>(op_type), &ops);
+  auto status = table->operationsAllocate(op_type, &ops);
   *tbl_ops = reinterpret_cast<tdi_operations_hdl *>(ops.release());
   return status;
 }
-#endif
+
 // Reset APIs
 tdi_status_t tdi_table_key_reset(const tdi_table_hdl *table_hdl,
                                  tdi_table_key_hdl **key_hdl_ret) {
@@ -483,7 +475,7 @@ tdi_status_t tdi_table_data_deallocate(tdi_table_data_hdl *data_hdl) {
   return TDI_SUCCESS;
 }
 
-tdi_status_t tdi_table_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl) {
+tdi_status_t tdi_attributes_deallocate(tdi_attributes_hdl *tbl_attr_hdl) {
   auto tbl_attr = reinterpret_cast<tdi::TableAttributes *>(tbl_attr_hdl);
   if (tbl_attr == nullptr) {
     LOG_ERROR("%s:%d null param passed", __func__, __LINE__);
@@ -531,6 +523,7 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
                                       const tdi_target_hdl *target,
                                       const tdi_flags_hdl *flags,
                                       tdi_attributes_hdl *tbl_attr) {
+
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return table->tableAttributesGet(
       *reinterpret_cast<const tdi::Session *>(session),
