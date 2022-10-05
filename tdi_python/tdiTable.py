@@ -663,23 +663,6 @@ class TdiTable:
             return "INVALID_MODE"
         return "ERR: Table Mode %d not implemented" . format(mode)
 
-    @staticmethod
-    def flag_map(flag_enum=None, flag_enum_str=None):
-        TDI_FLAGS_CORE = 0
-        TDI_FLAGS_ARCH = 0x08
-        TDI_FLAGS_DEVICE = 0x10
-        TDI_FLAGS_END = 0x40
-        flag_dict = {
-                TDI_FLAGS_DEVICE+0:"from_hw"
-        }
-        flag_rev_dict = {
-                "from_hw":  TDI_FLAGS_DEVICE+0
-        }
-        if flag_enum is not None:
-            return flag_dict[flag_enum]
-        if flag_enum_str is not None:
-            return flag_rev_dict[flag_enum_str]
-
     """
     A convenience method for transforming a python integer to a
     network-order byte array.
