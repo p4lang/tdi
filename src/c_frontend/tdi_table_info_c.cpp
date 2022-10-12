@@ -631,7 +631,7 @@ tdi_status_t tdi_data_field_num_annotations_get(
     uint32_t *num_annotations) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
-  auto annotations = dataFieldInfo->annotationsGet();
+  const auto &annotations = dataFieldInfo->annotationsGet();
   *num_annotations = annotations.size();
   return TDI_SUCCESS;
 }
@@ -642,7 +642,7 @@ tdi_status_t tdi_data_field_annotations_get(
     tdi_annotation_t *annotations_c) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id);
-  auto annotations = dataFieldInfo->annotationsGet();
+  const auto &annotations = dataFieldInfo->annotationsGet();
   int i = 0;
   for (const auto &annotation : annotations) {
     annotations_c[i++] = convert_annotation(annotation);
@@ -657,7 +657,7 @@ tdi_status_t tdi_data_field_num_annotations_with_action_get(
     uint32_t *num_annotations) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto dataFieldInfo = tableInfo->dataFieldGet(field_id, action_id);
-  auto annotations = dataFieldInfo->annotationsGet();
+  const auto &annotations = dataFieldInfo->annotationsGet();
   *num_annotations = annotations.size();
   return TDI_SUCCESS;
 }
@@ -809,7 +809,7 @@ tdi_status_t tdi_action_num_annotations_get(
     uint32_t *num_annotations) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto actionInfo = tableInfo->actionGet(action_id);
-  auto annotations = actionInfo->annotationsGet();
+  const auto &annotations = actionInfo->annotationsGet();
   *num_annotations = annotations.size();
   return TDI_SUCCESS;
 }
@@ -820,7 +820,7 @@ tdi_status_t tdi_action_annotations_get(
     tdi_annotation_t *annotations_c) {
   auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
   auto actionInfo = tableInfo->actionGet(action_id);
-  auto annotations = actionInfo->annotationsGet();
+  const auto &annotations = actionInfo->annotationsGet();
   int i = 0;
   for (const auto &annotation : annotations) {
     annotations_c[i++] = convert_annotation(annotation);
