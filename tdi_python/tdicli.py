@@ -2279,6 +2279,7 @@ class TdiCli:
                     print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
                     return -1
 
+        self.create_warm_init_node(tdi)
         set_node_docstrs(tdi)
         return 0
 
@@ -2287,3 +2288,23 @@ class TdiCli:
     """
     def fill_dev_node(self, cintf, dev_node):
         pass
+
+    """
+        To be overwritten by targets with custom implementation of warm_init_begin/end functions
+    """
+    def create_warm_init_node(self, tdi):
+        warm_init_node = TDINode("warm_init", None, parent_node=tdi)
+
+        def warm_init_begin(self):
+            print("Not supported")
+
+        def warm_init_end(self):
+            print("Not supported")
+
+        # add warm_init APIs to the node
+        warm_init_node.warm_init_begin = types.MethodType(warm_init_begin, warm_init_node)
+        warm_init_node.warm_init_end = types.MethodType(warm_init_end, warm_init_node)
+        warm_init_node._commands = {}
+        warm_init_node._commands["warm_init_begin"] = getattr(warm_init_node, "warm_init_begin")
+        warm_init_node._commands["warm_init_end"] = getattr(warm_init_node, "warm_init_end")
+
