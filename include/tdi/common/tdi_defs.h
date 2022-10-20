@@ -20,9 +20,9 @@
 #ifndef _TDI_DEFS_H
 #define _TDI_DEFS_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -324,6 +324,7 @@ DECLARE_HANDLE(tdi_learn_hdl);
 DECLARE_HANDLE(tdi_learn_info_hdl);
 DECLARE_HANDLE(tdi_learn_field_info_hdl);
 DECLARE_HANDLE(tdi_operations_hdl);
+DECLARE_HANDLE(tdi_dev_config_hdl);
 
 /**
  * @brief learn_data_hdl and table_data_hdl are the same,

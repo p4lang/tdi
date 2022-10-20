@@ -1769,7 +1769,6 @@ class TdiTable:
             raise TdiTableError("Error: attributes supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
         logging.debug("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
         for i in range(len(attributes_arr)):
-            print("Attribute = ", i)
             self.supported_commands += self.attributes_type_cls.attributes_dict[attributes_arr[i]]
 
     def set_supported_operations_to_supported_commands(self):
