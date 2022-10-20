@@ -15,8 +15,7 @@
  */
 #include "tdi_dummy_init.h"
 
-tdi_status_t tdi_module_init(const tdi_mgr_type_e *arr, const size_t arr_size) {
-  std::vector<tdi_mgr_type_e> mgr_type_vec(arr, arr + arr_size);
+tdi_status_t tdi_module_init(void *target_options) {
   // Need to call tdi::tna::dummy::Init::tdiModuleInit() instead
-  return tdi::Init::tdiModuleInit(mgr_type_vec);
+  return tdi::tna::dummy::Init::tdiModuleInit(target_options);
 }

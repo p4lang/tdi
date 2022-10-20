@@ -56,7 +56,6 @@ tdi_status_t Device::deviceConfigGet(
 
 tdi_status_t Device::createSession(
     std::shared_ptr<tdi::Session> * /*session*/) const {
-  //  *session = std::make_shared<tdi::Session>(this->mgr_type_list_);
   return TDI_NOT_SUPPORTED;
 }
 
@@ -141,9 +140,7 @@ tdi_status_t DevMgr::deviceWarmInitEnd(const tdi_dev_id_t &device_id) {
   return warm_init_impl->deviceWarmInitEnd(device_id);
 }
 
-tdi_status_t Init::tdiModuleInit(
-    const std::vector<tdi_mgr_type_e> /*mgr_type_list*/) {
-  // Devices need to override Init::tdiModuleInit()
+tdi_status_t Init::tdiModuleInit(void * /*target_options*/) {
   return TDI_SUCCESS;
 }
 
