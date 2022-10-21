@@ -16,8 +16,8 @@
 
 #include <tdi/common/tdi_utils.hpp>
 
-#include "tdi_dummy_init.hpp"
 #include "tdi_dummy_info.hpp"
+#include "tdi_dummy_init.hpp"
 
 namespace tdi {
 namespace tna {
@@ -26,10 +26,10 @@ namespace dummy {
 Device::Device(const tdi_dev_id_t &device_id,
                const tdi_arch_type_e &arch_type,
                const std::vector<tdi::ProgramConfig> &device_config,
-               const std::vector<tdi_mgr_type_e> mgr_type_list,
+               void * /*target_options*/,
                void *cookie)
     : tdi::tna::Device(
-          device_id, arch_type, device_config, mgr_type_list, cookie) {
+          device_id, arch_type, device_config, cookie) {
   // Parse tdi json for every program
   for (const auto &program_config : device_config) {
     if (tdi_info_map_.find(program_config.prog_name_) != tdi_info_map_.end()) {
@@ -54,14 +54,13 @@ Device::Device(const tdi_dev_id_t &device_id,
   }
 }
 
-tdi_status_t Init::tdiModuleInit(
-    const std::vector<tdi_mgr_type_e> mgr_type_list) {
+tdi_status_t Init::tdiModuleInit(void *target_options) {
   auto &dev_mgr_obj = DevMgr::getInstance();
   LOG_DBG("%s:%d TDI Device Add called", __func__, __LINE__);
   tdi::ProgramConfig program_cfg("dummy_tna", {}, {});
 
   return dev_mgr_obj.deviceAdd<tdi::tna::dummy::Device>(
-      0, TDI_ARCH_TYPE_TNA, {program_cfg}, mgr_type_list, nullptr);
+      0, TDI_ARCH_TYPE_TNA, {program_cfg}, target_options, nullptr);
 }
 
 }  // namespace dummy

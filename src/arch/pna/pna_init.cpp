@@ -28,7 +28,6 @@ namespace tdi {
 namespace pna {
 
 tdi_status_t Device::createSession(std::shared_ptr<tdi::Session> * /*session*/) const {
-//  *session = std::make_shared<tdi::Session>(this->mgr_type_list_);
   return TDI_NOT_SUPPORTED;
 }
 
