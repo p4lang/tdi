@@ -51,7 +51,7 @@ class Device : public tdi::tna::Device {
   Device(const tdi_dev_id_t &device_id,
          const tdi_arch_type_e &arch_type,
          const std::vector<tdi::ProgramConfig> &device_config,
-         const std::vector<tdi_mgr_type_e> mgr_type_list,
+         void *target_options,
          void *cookie);
 
   virtual tdi_status_t createSession(
@@ -82,12 +82,10 @@ class Init : public tdi::Init {
    * managers. By default, no mgr initialization is skipped if empty vector is
    * passed
    *
-   * @param[in] mgr_type_list vector of mgrs to skip initializing. If
-   * empty, don't skip anything
+   * @param[in] target_options
    * @return Status of the API call
    */
-  static tdi_status_t tdiModuleInit(
-      const std::vector<tdi_mgr_type_e> mgr_type_list);
+  static tdi_status_t tdiModuleInit(void *target_options);
 };  // Init
 
 }  // namespace dummy

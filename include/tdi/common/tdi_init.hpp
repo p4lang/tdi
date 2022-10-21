@@ -49,12 +49,10 @@ class Device {
   Device(const tdi_dev_id_t &device_id,
          const tdi_arch_type_e &arch_type,
          const std::vector<tdi::ProgramConfig> &device_config,
-         const std::vector<tdi_mgr_type_e> mgr_type_list,
          void *cookie)
       : device_id_(device_id),
         arch_type_(arch_type),
         device_config_(device_config),
-        mgr_type_list_(mgr_type_list),
         cookie_(cookie){};
 
   virtual ~Device(){};
@@ -95,7 +93,6 @@ class Device {
   const tdi_dev_id_t device_id_;
   const tdi_arch_type_e arch_type_;
   const std::vector<tdi::ProgramConfig> device_config_;
-  const std::vector<tdi_mgr_type_e> mgr_type_list_;
   const void *cookie_;
   std::map<std::string, std::unique_ptr<const TdiInfo>> tdi_info_map_;
 };
@@ -173,9 +170,13 @@ class DevMgr {
   /**
    * @brief Device Add function which creates a Device object and maintains it
    *
-   * @param[in] device_id
+   * @param[in] device_id Device ID
+   * @param[in] arch_type P4 architecture type
+   * @param[in] device_config Vector of program configs which defines a Device config
+   * @param[in] target_options Target-specific extra options if the target requires to
+   *              pass any more info during deviceAdd
    * @param[in] cookie User defined cookie which platforms can use to
-   * send any additional information they want to help with inititalization
+   *              send any additional information they want to help with inititalization
    *
    * @return Status of API call
    */
@@ -183,7 +184,7 @@ class DevMgr {
   tdi_status_t deviceAdd(const tdi_dev_id_t &device_id,
                          const tdi_arch_type_e &arch_type,
                          const std::vector<tdi::ProgramConfig> &device_config,
-                         const std::vector<tdi_mgr_type_e> mgr_type_list,
+                         void *target_options,
                          void *cookie) {
     if (this->dev_map_.find(device_id) != this->dev_map_.end()) {
       LOG_ERROR("%s:%d Device obj exists for dev : %d",
@@ -193,7 +194,7 @@ class DevMgr {
       return TDI_ALREADY_EXISTS;
     }
     auto dev = std::unique_ptr<tdi::Device>(
-        new T(device_id, arch_type, device_config, mgr_type_list, cookie));
+        new T(device_id, arch_type, device_config, target_options, cookie));
     this->dev_map_[device_id] = std::move(dev);
     return TDI_SUCCESS;
   }
@@ -233,12 +234,12 @@ class Init {
    * managers. By default, no mgr initialization is skipped if empty vector is
    * passed
    *
-   * @param[in] mgr_type_list vector of mgrs to skip initializing. If
-   * empty, don't skip anything
+   * @param[in] target_options Target-specific args if the target needs to initialize
+   *          TDI with certain parameters for example, by only initializing
+   *          certain backend managers.
    * @return Status of the API call
    */
-  static tdi_status_t tdiModuleInit(
-      const std::vector<tdi_mgr_type_e> mgr_type_list);
+  static tdi_status_t tdiModuleInit(void *target_options);
 };  // Init
 
 }  // namespace tdi
