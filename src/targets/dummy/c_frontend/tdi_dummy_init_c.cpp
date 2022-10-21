@@ -16,6 +16,5 @@
 #include "tdi_dummy_init.h"
 
 tdi_status_t tdi_module_init(void *target_options) {
-  // Need to call tdi::tna::dummy::Init::tdiModuleInit() instead
   return tdi::tna::dummy::Init::tdiModuleInit(target_options);
 }
