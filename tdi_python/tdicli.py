@@ -202,7 +202,6 @@ class CIntfTdi:
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
             return -1
-        self._dev_tgt = self.create_devTgt(self._dev_id)
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
@@ -292,11 +291,7 @@ class CIntfTdi:
     def get_device(self):
         return self._device
 
-    def get_target(self):
-        return self._target
-
     def get_dev_tgt(self):
-        #return byref(self._dev_tgt)
         return self._target
 
     def get_flags(self):

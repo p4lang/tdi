@@ -1335,7 +1335,7 @@ class TdiTable:
                 self._cintf.get_driver().tdi_flags_delete(flags_handle)
             return -1
 
-        sts = c_func(self._handle, self._cintf.get_session(), self._cintf.get_target(), self._cintf.get_flags(), key_handle, data_handle)
+        sts = c_func(self._handle, self._cintf.get_session(), self._cintf.get_dev_tgt(), self._cintf.get_flags(), key_handle, data_handle)
         self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
         self._cintf.get_driver().tdi_flags_delete(flags_handle)
@@ -1536,7 +1536,7 @@ class TdiTable:
                     return -1
             sts = self._cintf.tdi_table_entry_get(self._handle,
                     self._cintf.get_session(),
-                    self._cintf.get_target(),
+                    self._cintf.get_dev_tgt(),
                     key_handle, data_handle,
                     flags_handle)
 
