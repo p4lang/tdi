@@ -43,9 +43,9 @@ from netaddr import EUI as mac
 import logging
 
 _tdi_context = {}
-promp_node = None
 tdi = None
 ipython_app = None
+tdi_session = None
 
 class CIntfTdi:
     target_type_cls = TargetType
@@ -196,12 +196,7 @@ class CIntfTdi:
             if info == -1:
                 return -1
             self.infos[name] = info
-        self._session = self.sess_type()
         self._flags = self.flags_type()
-        sts = self._driver.tdi_session_create(self._device, byref(self._session))
-        if not sts == 0:
-            print("Error, unable to create TDI Runtime session")
-            return -1
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
         sts = self._driver.tdi_target_create(self._device, byref(self._target))
@@ -213,47 +208,44 @@ class CIntfTdi:
         pdb.set_trace()
 
     def _complete_operations(self):
-        sts = self._driver.tdi_session_complete_operations(self._session)
+        sts = self._driver.tdi_session_complete_operations(tdi_session)
         if sts != 0:
             raise Exception("Error: complete_operations failed")
 
     def _begin_batch(self):
-        sts = self._driver.tdi_begin_batch(self._session)
+        sts = self._driver.tdi_begin_batch(tdi_session)
         if sts != 0:
             raise Exception("Error: begin_batch failed")
 
     def _end_batch(self):
-        sts = self._driver.tdi_end_batch(self._session)
+        sts = self._driver.tdi_end_batch(tdi_session)
         if sts != 0:
             raise Exception("Error: end_batch failed")
 
     def _flush_batch(self, synchronous=True):
-        sts = self._driver.tdi_flush_batch(self._session, c_bool(synchronous))
+        sts = self._driver.tdi_flush_batch(tdi_session, c_bool(synchronous))
         if sts != 0:
             raise Exception("Error: flush_batch failed")
 
     def _begin_transaction(self, atomic=True):
-        sts = self._driver.tdi_begin_transaction(self._session, c_bool(atomic))
+        sts = self._driver.tdi_begin_transaction(tdi_session, c_bool(atomic))
         if sts != 0:
             raise Exception("Error: begin_transaction failed")
 
     def _verify_transaction(self):
-        sts = self._driver.tdi_verify_transaction(self._session)
+        sts = self._driver.tdi_verify_transaction(tdi_session)
         if sts != 0:
             raise Exception("Error: verify_transaction failed")
 
     def _commit_transaction(self, synchronous=True):
-        sts = self._driver.tdi_commit_transaction(self._session, c_bool(synchronous))
+        sts = self._driver.tdi_commit_transaction(tdi_session, c_bool(synchronous))
         if sts != 0:
             raise Exception("Error: commit_transaction failed")
 
     def _abort_transaction(self):
-        sts = self._driver.tdi_abort_transaction(self._session)
+        sts = self._driver.tdi_abort_transaction(tdi_session)
         if sts != 0:
             raise Exception("Error: abort_transaction failed")
-
-    def _cleanup_session(self):
-        self._driver.tdi_session_destroy(self._session)
 
     def err_str(self, sts):
         estr = c_char_p()
@@ -286,7 +278,7 @@ class CIntfTdi:
         return self._dev_id
 
     def get_session(self):
-        return self._session
+        return tdi_session
 
     def get_device(self):
         return self._device
@@ -2147,6 +2139,25 @@ def unload_ipython_extension(ipython):
         ipython.input_transformers_cleanup.remove(tdi_input_transform)
     pass
 
+def destroy_tdi_python_session():
+    sts = self._driver.tdi_session_destroy(tdi_session)
+    if not sts == 0:
+        print("ERROR: destroying session")
+        self._driver.dev_config_deallocate(self.dev_config)
+        return -1
+    return 0
+
+def create_tdi_python_session():
+    global tdi_session
+    tdi_session = tdi._cintf.sess_type()
+    sts = tdi._cintf._driver.tdi_session_create(tdi._cintf._device, byref(tdi_session))
+    if not sts == 0:
+        print("Error, unable to create TDI Runtime session")
+        return -1
+    setattr(sys.modules['__main__'], "tdi_session", tdi_session)
+    return 0
+
+
 def tdi_exit_handler():
     unload_ipython_extension(ipython_app.shell)
     for name in _tdi_context['cur_context']:
@@ -2154,8 +2165,7 @@ def tdi_exit_handler():
     delattr(sys.modules['__main__'], "_tdi_context")
     delattr(sys.modules['__main__'], "set_tdi_parent_context")
     delattr(sys.modules['__main__'], "tdi")
-    if tdi._cintf is not None:
-        tdi._cintf._cleanup_session()
+
     sys.stdin = sys.__stdin__
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
@@ -2224,6 +2234,9 @@ class TdiCli:
             ipython_reinitialize_io()
             ipython_app.initialize()
             setattr(sys.modules['__main__'], "ipython_app", ipython_app)
+            sts = create_tdi_python_session()
+            if sts != 0:
+                return sts
 
         else:
 
@@ -2231,6 +2244,7 @@ class TdiCli:
             # for ability use new shell from another terminal
             ipython_reinitialize_io()
             load_ipython_extension(ipython_app.shell)
+            tdi_session = getattr(sys.modules['__main__'], "tdi_session")
             if udf is not None:
                 ipython_app.exec_files = exec_files_list
                 ipython_app._run_exec_files()
