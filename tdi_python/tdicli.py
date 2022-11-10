@@ -2193,6 +2193,7 @@ class TdiCli:
         threading.current_thread().__class__.__name__ = "tdi"
 
         global ipython_app
+        global tdi_session
 
         # save udf in storage, this part of code can be executed by two ways:
         # - using ipython_app.initialize by ipython internally
@@ -2205,6 +2206,14 @@ class TdiCli:
 
         if hasattr(sys.modules['__main__'], "ipython_app"):
             ipython_app = getattr(sys.modules['__main__'], "ipython_app")
+
+        if hasattr(sys.modules['__main__'], "tdi_session"):
+            tdi_session = getattr(sys.modules['__main__'], "tdi_session")
+        else:
+            sts = create_tdi_python_session()
+            if sts != 0:
+                return sts
+
         if ipython_app is None:
             print("Devices found : ", dev_id_list)
             c = Config()
@@ -2234,9 +2243,6 @@ class TdiCli:
             ipython_reinitialize_io()
             ipython_app.initialize()
             setattr(sys.modules['__main__'], "ipython_app", ipython_app)
-            sts = create_tdi_python_session()
-            if sts != 0:
-                return sts
 
         else:
 
@@ -2244,7 +2250,6 @@ class TdiCli:
             # for ability use new shell from another terminal
             ipython_reinitialize_io()
             load_ipython_extension(ipython_app.shell)
-            tdi_session = getattr(sys.modules['__main__'], "tdi_session")
             if udf is not None:
                 ipython_app.exec_files = exec_files_list
                 ipython_app._run_exec_files()
