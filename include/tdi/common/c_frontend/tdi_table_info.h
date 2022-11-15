@@ -20,11 +20,11 @@
 #ifndef _TDI_TABLE_INFO_H
 #define _TDI_TABLE_INFO_H
 
-#include <tdi/common/tdi_defs.h>
+#include <tdi/common/c_frontend/tdi_attributes.h>
+#include <tdi/common/c_frontend/tdi_operations.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
-#include <tdi/common/c_frontend/tdi_operations.h>
-#include <tdi/common/c_frontend/tdi_attributes.h>
+#include <tdi/common/tdi_defs.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -773,6 +773,32 @@ tdi_status_t tdi_table_num_api_supported(
 tdi_status_t tdi_table_api_supported(const tdi_table_info_hdl *table_info_hdl,
                                      tdi_table_api_type_e *apis,
                                      uint32_t *num_returned);
+
+/**
+ * @brief Get size of array of allowed choices for string
+ *
+ * @param[in] table_hdl Table object
+ * @param[in] field_id Field ID
+ * @param[out] num Array size
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_key_field_num_allowed_choices_get(
+    const tdi_table_info_hdl *table_hdl, const tdi_id_t field_id, uint32_t *num);
+
+/**
+ * @brief Get array of allowed choices for string
+ *
+ * @param[in] table_hdl Table object
+ * @param[in] field_id Field ID
+ * @param[out] choices Array of char ptrs. The array of ptrs needs to
+ * be allocated by user based upon the size from num API
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_key_field_allowed_choices_get(const tdi_table_info_hdl *table_hdl,
+                                               const tdi_id_t field_id,
+                                               const char *choices[]);
 
 /**
  * @brief Get size of list of all the allowed values that a particular field can

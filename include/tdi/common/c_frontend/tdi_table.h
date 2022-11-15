@@ -396,32 +396,6 @@ tdi_status_t tdi_table_key_reset(const tdi_table_hdl *table_hdl,
  */
 tdi_status_t tdi_table_key_deallocate(tdi_table_key_hdl *key_hdl);
 
-/**
- * @brief Get size of array of allowed choices for string
- *
- * @param[in] table_hdl Table object
- * @param[in] field_id Field ID
- * @param[out] num Array size
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_key_field_num_allowed_choices_get(
-    const tdi_table_hdl *table_hdl, const tdi_id_t field_id, uint32_t *num);
-
-/**
- * @brief Get array of allowed choices for string
- *
- * @param[in] table_hdl Table object
- * @param[in] field_id Field ID
- * @param[out] choices Array of char ptrs. The array of ptrs needs to
- * be allocated by user based upon the size from num API
- *
- * @return Status of the API call
- */
-tdi_status_t tdi_key_field_allowed_choices_get(const tdi_table_hdl *table_hdl,
-                                               const tdi_id_t field_id,
-                                               const char *choices[]);
-
 /******************** Data APIs *******************/
 
 /**
