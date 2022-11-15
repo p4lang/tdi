@@ -152,6 +152,7 @@ tdi_status_t tdi_key_field_get_value_string_size(
   std::string str;
   tdi::KeyFieldValueExact<std::string> keyFieldValue(str);
   tdi_status_t status = key->getValue(field_id, &keyFieldValue);
+  str = keyFieldValue.value_;
   *str_size = str.size();
   return status;
 }
@@ -163,6 +164,7 @@ tdi_status_t tdi_key_field_get_value_string(const tdi_table_key_hdl *key_hdl,
   std::string str(value);
   tdi::KeyFieldValueExact<std::string> keyFieldValue(str);
   tdi_status_t status = key->getValue(field_id, &keyFieldValue);
+  str = keyFieldValue.value_;
   strncpy(value, str.c_str(), str.size());
   return status;
 }
