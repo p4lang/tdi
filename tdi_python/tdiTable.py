@@ -1832,6 +1832,9 @@ class TdiTable:
                 if "dump" not in self.supported_commands:
                     self.supported_commands.append("dump")
 
+        if "add" not in self.supported_commands:
+            self.supported_commands.remove("add_from_json")
+
     def _attr_deallocate(self, attr_hdl):
         sts = self._cintf.get_driver().tdi_attributes_deallocate(attr_hdl)
         if not sts == 0:
