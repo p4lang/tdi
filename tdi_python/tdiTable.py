@@ -94,7 +94,7 @@ class TdiTable:
         # TODO: Need to find a better way of doing this
         #
         self.modify_table_names(table_name)
-        self.supported_commands = ["info", "add_from_json", "entry", "string_choices"]
+        self.supported_commands = ["info", "entry", "string_choices"]
         self.set_supported_attributes_to_supported_commands()
         self.set_supported_operations_to_supported_commands()
         self.set_supported_apis_to_supported_commands()
@@ -1815,6 +1815,9 @@ class TdiTable:
             elif apis_dic[api_arr[i]] == "get_first":
                 if "dump" not in self.supported_commands:
                     self.supported_commands.append("dump")
+
+        if "add" in self.supported_commands:
+            self.supported_commands.append("add_from_json")
 
     def _attr_deallocate(self, attr_hdl):
         sts = self._cintf.get_driver().tdi_attributes_deallocate(attr_hdl)
