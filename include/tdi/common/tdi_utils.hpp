@@ -282,8 +282,6 @@ static inline tdi_status_t keyFieldSafeGet(
                 __LINE__,
                 table->tableInfoGet()->nameGet().c_str(),
                 field_id
-                // KeyFieldTypeStr.at((*key_field)->dataTypeGet()),
-                // KeyFieldTypeStr.at(key_field_type_req)
       );
       return TDI_INVALID_ARG;
     }
@@ -299,7 +297,7 @@ static inline tdi_status_t keyFieldSafeGet(
     return TDI_SUCCESS;
   }
 
-  // Template classes must be defined whole in headers
+  // To be used with DataFieldInfo and KeyFieldInfo classes.
   template <class T>
   static tdi_status_t boundsCheck(const tdi::Table &table,
                                   const T &field,
@@ -353,6 +351,7 @@ static inline tdi_status_t keyFieldSafeGet(
     return TDI_SUCCESS;
   }
 
+  // To be used with DataFieldInfo and KeyFieldInfo classes.
   template <class T>
   static tdi_status_t fieldTypeCompatibilityCheck(const tdi::Table &table,
                                                   const T &field,
@@ -392,6 +391,7 @@ static inline tdi_status_t keyFieldSafeGet(
     return TDI_SUCCESS;
   }
 
+  // To be used with DataFieldInfo and KeyFieldInfo classes.
   template <class T>
   static void toHostOrderData(const T &field,
                               const uint8_t *value_ptr,
@@ -401,6 +401,7 @@ static inline tdi_status_t keyFieldSafeGet(
     TdiEndiannessHandler::toHostOrder(size, value_ptr, out_data);
   }
 
+  // To be used with DataFieldInfo and KeyFieldInfo classes.
   template <class T>
   static void toNetworkOrderData(const T &field,
                                  const uint64_t &in_data,
@@ -412,6 +413,43 @@ static inline tdi_status_t keyFieldSafeGet(
 
 };  // class TableFieldUtils
 
+  //Explicit Instantiation of template functions for DataFieldInfo and KeyFieldInfo classes.
+  template void TableFieldUtils::toNetworkOrderData(const tdi::DataFieldInfo &field,
+		  const uint64_t &in_data,
+		  uint8_t *out_data);
+  template void TableFieldUtils::toNetworkOrderData(const tdi::KeyFieldInfo &field,
+		  const uint64_t &in_data,
+		  uint8_t *out_data);
+
+
+  template void TableFieldUtils::toHostOrderData(const tdi::DataFieldInfo &field,
+                              const uint8_t *value_ptr,
+                              uint64_t *out_data);
+  template void TableFieldUtils::toHostOrderData(const tdi::KeyFieldInfo &field,
+                              const uint8_t *value_ptr,
+                              uint64_t *out_data);
+
+  template tdi_status_t TableFieldUtils::fieldTypeCompatibilityCheck(const tdi::Table &table,
+                                                  const tdi::DataFieldInfo &field,
+                                                  const uint64_t * /*value*/,
+                                                  const uint8_t *value_ptr,
+                                                  const size_t &size);
+  template tdi_status_t TableFieldUtils::fieldTypeCompatibilityCheck(const tdi::Table &table,
+                                                  const tdi::KeyFieldInfo &field,
+                                                  const uint64_t * /*value*/,
+                                                  const uint8_t *value_ptr,
+                                                  const size_t &size);
+
+  template tdi_status_t TableFieldUtils::boundsCheck(const tdi::Table &table,
+                                  const tdi::DataFieldInfo &field,
+                                  const uint64_t &value,
+                                  const uint8_t *value_ptr,
+                                  const size_t &s);
+  template tdi_status_t TableFieldUtils::boundsCheck(const tdi::Table &table,
+                                  const tdi::KeyFieldInfo &field,
+                                  const uint64_t &value,
+                                  const uint8_t *value_ptr,
+                                  const size_t &s);
 }  // namespace utils
 }  // namespace tdi
 
