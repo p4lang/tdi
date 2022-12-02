@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "tdi/common/tdi_table.hpp"
 #include <algorithm>
 
 #include <tdi/common/tdi_table_data.hpp>
@@ -174,8 +175,13 @@ tdi_status_t TableData::reset(const tdi_id_t &action_id,
 tdi_status_t TableData::activeFieldsSet(const std::vector<tdi_id_t> &fields) {
   this->removed_one_ofs_ = {};
   this->active_fields_s_ = {};
+
+  // Setting all fields as active when the fields passed are empty
   if (fields.empty()) {
+    const auto all_fields = this->table_->tableInfoGet()->dataFieldIdListGet();
+    std::set<tdi_id_t> all_fields_s(all_fields.begin(), all_fields.end());
     this->all_fields_set_ = true;
+    this->active_fields_s_ = all_fields_s;
   } else {
     this->all_fields_set_ = false;
     std::copy(fields.begin(),
