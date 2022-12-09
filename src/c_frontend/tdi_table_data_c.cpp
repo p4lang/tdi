@@ -36,6 +36,13 @@ tdi_status_t tdi_data_field_set_value(tdi_table_data_hdl *data_hdl,
   return data_field->setValue(field_id, val);
 }
 
+tdi_status_t tdi_data_field_set_value_int64(tdi_table_data_hdl *data_hdl,
+                                       const tdi_id_t field_id,
+                                       const int64_t val) {
+  auto data_field = reinterpret_cast<tdi::TableData *>(data_hdl);
+  return data_field->setValue(field_id, val);
+}
+
 tdi_status_t tdi_data_field_set_float(tdi_table_data_hdl *data_hdl,
                                        const tdi_id_t field_id,
                                        const float val) {
@@ -120,6 +127,13 @@ tdi_status_t tdi_data_field_set_string(tdi_table_data_hdl *data_hdl,
 tdi_status_t tdi_data_field_get_value(const tdi_table_data_hdl *data_hdl,
                                        const tdi_id_t field_id,
                                        uint64_t *val) {
+  auto data_field = reinterpret_cast<const tdi::TableData *>(data_hdl);
+  return data_field->getValue(field_id, val);
+}
+
+tdi_status_t tdi_data_field_get_value_int64(const tdi_table_data_hdl *data_hdl,
+                                       const tdi_id_t field_id,
+                                       int64_t *val) {
   auto data_field = reinterpret_cast<const tdi::TableData *>(data_hdl);
   return data_field->getValue(field_id, val);
 }

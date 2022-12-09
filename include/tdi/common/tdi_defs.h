@@ -111,6 +111,7 @@ enum tdi_field_data_type_e {
   TDI_FIELD_DATA_TYPE_BOOL = 7,
   TDI_FIELD_DATA_TYPE_STRING_ARR = 8,
   TDI_FIELD_DATA_TYPE_UNKNOWN = 9,
+  TDI_FIELD_DATA_TYPE_INT64 = 10,
 };
 typedef enum tdi_field_data_type_e tdi_field_data_type_e;
 

@@ -443,7 +443,7 @@ class TdiTable:
             #         raise TdiTableError("Error: Table {}'s method {} has Key {} is mandatory field of type {} with size {} that cannot be None.".format(
             #             self.table.name, method_name, arg_name, arg_data_type, arg_size), self.table, -1)
             if ((self.category == "key" and arg_key_type == "EXACT" and arg_data_type in ["UINT64", "BYTE_STREAM"])
-                or (self.category == "data" and arg_data_type in ["UINT64", "BYTE_STREAM", "BOOL"])):
+                or (self.category == "data" and arg_data_type in ["UINT64", "BYTE_STREAM", "BOOL", "INT64"])):
                 return self._parse_int(value)
             elif self.category == "key" and arg_key_type == "EXACT" and arg_data_type == "STRING":
                 return self._parse_string(value)
@@ -514,7 +514,7 @@ class TdiTable:
             if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
                                            (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
                 return self._deparse_int_arr(value)
-            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM"])):
+            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM", "INT64"])):
                 return self._deparse_int(value)
             elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["TERNARY", "RANGE", "LPM"]:
                 p0 = self._deparse_int(value[0])
@@ -542,6 +542,8 @@ class TdiTable:
         def _stringify_int(self, value):
             if self.ipv4addr:
                 return '{}'.format(ip(value))
+            if value < 0:
+                return '{}'.format(value)
             format_str = '0x{{:0{}X}}'.format(self.size // 4)
             if self.name.decode('ascii') in ["$MATCH_PRIORITY", "$COUNTER_SPEC_BYTES", "$COUNTER_SPEC_PKTS"]:
                 format_str = "{}"
@@ -591,7 +593,7 @@ class TdiTable:
             if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
                                            (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
                 return self._stringify_int_arr(value)
-            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM"])):
+            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM", "INT64"])):
                 return self._stringify_int(value)
             elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["TERNARY", "RANGE", "LPM"]:
                 p0 = self._stringify_int(value[0])
@@ -1070,6 +1072,9 @@ class TdiTable:
                 else:
                     value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                     sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
+            if self.data_type_cls.data_type_str(info.data_type) == "INT64":
+                value = c_int64(content[name])
+                sts = self._cintf.get_driver().tdi_data_field_set_value_int64(data_handle, info.id, value)
             if self.data_type_cls.data_type_str(info.data_type) == "INT_ARR":
                 arrlen = len(content[name])
                 arrtype = c_uint * arrlen
@@ -1198,6 +1203,11 @@ class TdiTable:
                     value, bytes_ = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
                     content[name] = self.from_c_byte_arr(value, info.size)
+            if self.data_type_cls.data_type_str(info.data_type) == "INT64":
+                if not info.is_ptr:
+                    value = c_int64(0)
+                    sts = self._cintf.get_driver().tdi_data_field_get_value_int64(data_handle, info.id, byref(value))
+                    content[name] = value.value
             if self.data_type_cls.data_type_str(info.data_type) == "FLOAT":
                 if not info.is_ptr:
                     value = c_float(0)

@@ -52,6 +52,12 @@ tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
 }
 
 tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
+                                 const int64_t & /*value*/) {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t TableData::setValue(const tdi_id_t & /*field_id*/,
                                  const float & /*value*/) {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
@@ -105,6 +111,13 @@ tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
+
+tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
+                                 int64_t * /*value*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
 tdi_status_t TableData::getValue(const tdi_id_t & /*field_id*/,
                                  float * /*value*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
