@@ -528,14 +528,7 @@ class TDINode(TDIContext):
         self._children = []
         self._commands = {}
         self._commands["dump"] = getattr(self, "dump")
-        # mask the clear method here to avoid the current missing implementation of clear method
-        # self._commands["clear"] = getattr(self, "clear")
         self._commands["info"] = getattr(self, "info")
-        self._commands["enable"] = getattr(self, "enable")
-        #self._commands["tdi_info"] = getattr(self, "tdi_info")
-    def enable(self):
-        # This call will stay the same (call old c_frontend libdriver.so) not call libtdi.so
-        self._cintf.get_driver().bf_rt_enable_pipeline(self._cintf.get_dev_id())
 
     def dump(self, table=False, from_hw=False, return_ents=False, print_zero=True):
         for child in self._children:
