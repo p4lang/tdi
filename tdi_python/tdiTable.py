@@ -975,7 +975,6 @@ class TdiTable:
                     sts = self._cintf.get_driver().tdi_key_field_set_value_optional_ptr(key_handle, info.id, v, is_valid, b)
             if not sts == 0:
                 raise TdiTableError("CLI Error: set key field failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return sts
         return 0
 
     def _get_key_fields(self, key_handle):
@@ -1132,7 +1131,6 @@ class TdiTable:
             """
             if not sts == 0:
                 raise TdiTableError("CLI Error: set data field failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return sts
         return 0
 
     """
@@ -1156,14 +1154,12 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_data_field_get_value_data_field_array_size(data_handle, field_id, byref(f_size))
         if not sts == 0:
             raise TdiTableError("CLI Error: get data field array size failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
 
         arr_df = self._cintf.handle_type * f_size.value
         data_handles = arr_df()
         sts = self._cintf.get_driver().tdi_data_field_get_value_data_field_array(data_handle, field_id, byref(data_handles))
         if not sts == 0:
             raise TdiTableError("CLI Error: get data field array failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
 
         for data_h in data_handles:
             content.append(self._process_data_fields(info._cont_data_fields, data_h, True))
@@ -1285,7 +1281,6 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
 
         sts = self._set_key_fields(key_content, key_handle)
         if not sts == 0:
@@ -1315,7 +1310,6 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_flags_create(flags_value, byref(flags_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: flags create failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
         '''
         sts = self._set_flags_fields(flags_value, flags_handle)
         if not sts == 0:
@@ -1472,7 +1466,6 @@ class TdiTable:
     def del_entry(self, key_content, entry_handle=None):
         if entry_handle != None and "get_by_handle" not in self.supported_commands:
             raise TdiTableError("{} Error: deleting entry by handle not supported.".format(self.name), self, -1)
-            return -1
 
         key_handle = None
         #entry_tgt = byref(self._cintf.BfDevTgt(0, 0, 0, 0))
@@ -1482,7 +1475,6 @@ class TdiTable:
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
             if sts != 0:
                 raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return -1
             sts = self._cintf.tdi_table_entry_key_get(self._handle,
                                                   self._cintf.get_session(),
                                                   self._cintf.get_dev_tgt(),
@@ -1491,7 +1483,6 @@ class TdiTable:
                                                   key_handle)
             if sts != 0:
                 raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-                return -1
         else:
             key_handle = self._make_call_keys(key_content)
             if key_handle == -1:
@@ -1508,10 +1499,8 @@ class TdiTable:
     def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
-            return -1
         if entry_handle != None and "get_by_handle" not in self.supported_commands:
             raise TdiTableError("{} Error: getting entry by handle not supported.".format(self.name), self, -1)
-            return -1
 
         data_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_table_data_allocate(self._handle, byref(data_handle))
@@ -1579,7 +1568,6 @@ class TdiTable:
     def get_entry_handle(self, key_content, from_hw=False, print_entry=True, key_handle=None):
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
-            return -1
         if key_handle is None:
             key_handle = self._make_call_keys(key_content)
             if key_handle == -1:
@@ -1644,12 +1632,10 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         data_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_table_data_allocate(self._handle, byref(data_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: table data allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         return key_handle, data_handle
 
     def _deallocate_hdls(self, key_hdls, data_hdls):
@@ -1679,7 +1665,6 @@ class TdiTable:
             return -1, -1
         if not sts == 0:
             raise TdiTableError("Error: entry_get_first failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         return key_handle, data_handle
 
     def get_next(self, prev_key, n=20, from_hw=False):
@@ -1715,7 +1700,6 @@ class TdiTable:
             # Once we are done reading all the entries from the table, tdi will
             # return an TDI_OBJECT_NOT_FOUND error
             raise TdiTableError("Error: entry_get_next {} failed on table {}. [{}]".format(n, self.name, self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         key_ret = []
         data_ret = []
         for idx in range(0, num_returned.value):
@@ -1958,7 +1942,6 @@ class TdiTable:
             self._cintf._end_batch()
         if not sts == 0:
             raise TdiTableError("Error: Table clear failed on table {}. [{}]".format(self.name, sts), self, sts)
-            return
 
     def dump(self, entry_handler, from_hw=False, print_ents=True, print_zero=True):
         if "get_first" not in self.supported_commands:

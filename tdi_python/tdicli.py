@@ -1444,8 +1444,8 @@ def {}(self, {} ttl_reset=True):
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code.str = '''
+        if code_str is None:
+            code_str = '''
 def {}(self, {} mod_flag=0):
     """ Incremental Add/Delete items in the fields that are array for the matched entry in {} table.
 
@@ -1645,8 +1645,8 @@ def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, fro
         method_name = "get_key"
         if method_name not in self._c_tbl.supported_commands:
             return
-        if code_str == None:
-            code = '''
+        if code_str is None:
+            code_str = '''
 def {}(self, handle, return_ent=True, print_ent=True, from_hw=False):
     """Get entry key from {} table by entry handle.
 
