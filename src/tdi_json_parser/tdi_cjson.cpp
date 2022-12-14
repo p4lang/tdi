@@ -63,6 +63,8 @@ Cjson::Cjson(const Cjson &other) {
   this->cjson_mem_tracker = other.cjson_mem_tracker;
 }
 Cjson &Cjson::operator=(const Cjson &other) {
+  if(&other == this)
+    return *this;
   this->root = other.root;
   this->cjson_mem_tracker = other.cjson_mem_tracker;
   return *this;

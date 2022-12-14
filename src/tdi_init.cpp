@@ -102,8 +102,8 @@ tdi_status_t DevMgr::deviceIdListGet(
     return TDI_INVALID_ARG;
   }
   for (const auto &pair : this->dev_map_) {
-    if ((*device_id_list).find(pair.first) == (*device_id_list).end()) {
-      (*device_id_list).insert(pair.first);
+    if ((*device_id_list).find(pair.first.first) == (*device_id_list).end()) {
+      (*device_id_list).insert(pair.first.first);
     }
   }
   return TDI_SUCCESS;
