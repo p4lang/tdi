@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include <memory>
-#include <string>
-#include <map>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 /* tdi_includes */
@@ -63,6 +63,9 @@ Cjson::Cjson(const Cjson &other) {
   this->cjson_mem_tracker = other.cjson_mem_tracker;
 }
 Cjson &Cjson::operator=(const Cjson &other) {
+  if (this == &other) {
+	return *this;
+  }
   this->root = other.root;
   this->cjson_mem_tracker = other.cjson_mem_tracker;
   return *this;
