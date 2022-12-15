@@ -52,7 +52,7 @@ std::vector<tdi_id_t> TableInfo::keyFieldIdListGet() const {
 
 const KeyFieldInfo *TableInfo::keyFieldGet(const std::string &name) const {
   if (name_key_map_.find(name) == name_key_map_.end()) {
-    LOG_ERROR("%s:%d %s Field \"%s\" not found in key field list",
+    LOG_WARN("%s:%d %s Field \"%s\" not found in key field list",
               __func__,
               __LINE__,
               nameGet().c_str(),
@@ -64,7 +64,7 @@ const KeyFieldInfo *TableInfo::keyFieldGet(const std::string &name) const {
 
 const KeyFieldInfo *TableInfo::keyFieldGet(const tdi_id_t &field_id) const {
   if (table_key_map_.find(field_id) == table_key_map_.end()) {
-    LOG_ERROR("%s:%d %s Field \"%d\" not found in key field list",
+    LOG_WARN("%s:%d %s Field \"%d\" not found in key field list",
               __func__,
               __LINE__,
               nameGet().c_str(),
@@ -79,7 +79,7 @@ std::vector<tdi_id_t> TableInfo::dataFieldIdListGet(
   std::vector<tdi_id_t> id_vec;
   if (action_id) {
     if (table_action_map_.find(action_id) == table_action_map_.end()) {
-      LOG_ERROR("%s:%d %s Action Id %d Not Found",
+      LOG_WARN("%s:%d %s Action Id %d Not Found",
                 __func__,
                 __LINE__,
                 nameGet().c_str(),
@@ -128,7 +128,7 @@ const DataFieldInfo *TableInfo::dataFieldGet(const std::string &name,
   if (name_data_map_.find(name) != name_data_map_.end()) {
     return name_data_map_.at(name);
   }
-  LOG_ERROR("%s:%d %s Field \"%s\" not found in data field list",
+  LOG_WARN("%s:%d %s Field \"%s\" not found in data field list",
             __func__,
             __LINE__,
             nameGet().c_str(),
@@ -153,7 +153,7 @@ const DataFieldInfo *TableInfo::dataFieldGet(const tdi_id_t &field_id,
   if (table_data_map_.find(field_id) != table_data_map_.end()) {
     return table_data_map_.at(field_id).get();
   }
-  LOG_ERROR("%s:%d %s Field \"%d\" not found in data field list",
+  LOG_WARN("%s:%d %s Field \"%d\" not found in data field list",
             __func__,
             __LINE__,
             nameGet().c_str(),
@@ -169,7 +169,7 @@ const ActionInfo *TableInfo::actionGet(const std::string &name) const {
   if (name_action_map_.find(name) != name_action_map_.end()) {
     return name_action_map_.at(name);
   }
-  LOG_ERROR("%s:%d %s Action  \"%s\" not found",
+  LOG_WARN("%s:%d %s Action  \"%s\" not found",
             __func__,
             __LINE__,
             nameGet().c_str(),
@@ -181,7 +181,7 @@ const ActionInfo *TableInfo::actionGet(const tdi_id_t &action_id) const {
   if (table_action_map_.find(action_id) != table_action_map_.end()) {
     return table_action_map_.at(action_id).get();
   }
-  LOG_ERROR("%s:%d %s Action  \"%d\" not found",
+  LOG_WARN("%s:%d %s Action  \"%d\" not found",
             __func__,
             __LINE__,
             nameGet().c_str(),
