@@ -52,6 +52,16 @@ class TableAttributes {
                         uint64_t * /*value*/) const {
     return TDI_NOT_SUPPORTED;
   };
+  virtual tdi_status_t setValue(const tdi_attributes_field_type_e &/*type*/,
+                        const uint8_t * /*value*/,
+                        const size_t & /*size_bytes*/) {
+    return TDI_NOT_SUPPORTED;
+  };
+  virtual tdi_status_t getValue(const tdi_attributes_field_type_e &/*type*/,
+                        const size_t & /*size_bytes*/,
+                        uint8_t * /*value*/) const {
+    return TDI_NOT_SUPPORTED;
+  };
   const tdi_attributes_type_e &attributeTypeGet() const { return attr_type_; };
   const Table* tableGet() const { return table_; };
 

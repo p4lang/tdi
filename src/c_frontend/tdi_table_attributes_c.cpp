@@ -39,3 +39,18 @@ tdi_status_t tdi_attributes_get_value(const tdi_attributes_hdl *attributes_hdl,
   return attributes_field->getValue(type, value);
 }
 
+tdi_status_t tdi_attributes_set_value_ptr(tdi_attributes_hdl *attributes_hdl,
+                                      tdi_attributes_field_type_e type,
+                                           const uint8_t *val,
+                                           const size_t s) {
+  auto attributes_field = reinterpret_cast<tdi::TableAttributes *>(attributes_hdl);
+  return attributes_field->setValue(type, val, s);
+}
+
+tdi_status_t tdi_attributes_get_value_ptr(const tdi_attributes_hdl *attributes_hdl,
+                                      tdi_attributes_field_type_e type,
+                                           const size_t size,
+                                           uint8_t *val) {
+  auto attributes_field = reinterpret_cast<const tdi::TableAttributes *>(attributes_hdl);
+  return attributes_field->getValue(type, size, val);
+}
