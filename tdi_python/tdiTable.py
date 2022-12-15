@@ -1764,7 +1764,6 @@ class TdiTable:
         logging.debug("For Table={} attributes_arr ==={}".format(self.name, str(attributes_arr[0:])));
         for i in range(len(attributes_arr)):
             self.supported_commands += self.attributes_type_cls.attributes_dict[attributes_arr[i]]
-        print(self.supported_commands)
 
     def set_supported_operations_to_supported_commands(self):
         num_opers = c_uint(0)

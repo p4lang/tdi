@@ -722,7 +722,7 @@ class TDILeaf(TDIContext):
             try:
                 self._children[cmd] = getattr(self,cmd)
             except:
-                print("CLI log: Command {} is not ready or available".format(cmd))
+                logging.debug("CLI log: Command {} is not ready or available".format(cmd))
                 pass
         self._set_docstring()
         # if self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type()) in self._c_tbl.unimplemented_tables:
@@ -894,24 +894,8 @@ class TDILeaf(TDIContext):
             print("Input must be string produced by dump command for this table.")
 
 
-    def _create_attributes(self, key_fields, data_fields={}):
-        method_name= "dynamic_key_mask_set"
-        param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
-
-        code = '''
-def {}(self, {} ):
-    """Add dynamic mask attribute to {} .
-
-    Parameters:
-    {}
-    """
-    parsed_keys, parsed_data = self._c_tbl.parse_str_input("{}", {}, {})
-    if parsed_keys == -1:
+    def _create_attributes(self, key_fields={}, data_fields={}):
         return
-    self._c_tbl.dynamic_key_mask_set(parsed_keys)
-        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
-        add_method = self._set_dynamic_method(code, method_name)
-        self._children[method_name] = getattr(self, method_name)
 
     def _create_operations(self):
         method_name = "operation_register_sync"
