@@ -28,8 +28,8 @@
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_table.hpp>
 #include <tdi/common/tdi_attributes.hpp>
-#include <tdi/common/tdi_data.hpp>
-#include <tdi/common/tdi_key.hpp>
+#include <tdi/common/tdi_table_data.hpp>
+#include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_operations.hpp>
 
 #endif  //_TDI_HPP
