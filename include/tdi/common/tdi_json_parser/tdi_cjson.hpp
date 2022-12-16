@@ -16,11 +16,11 @@
 #ifndef _TDI_CJSON_HPP
 #define _TDI_CJSON_HPP
 
-#include <memory>
-#include <string>
-#include <map>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 /* tdi_includes */
@@ -59,7 +59,7 @@ class Cjson {
   std::string getCjsonKey() const;
   void addObject(const std::string &name, const Cjson &item);
   bool exists() const { return root; };
-  uint32_t array_size();
+  uint32_t array_size() const;
   operator int() const;
   operator unsigned int() const;
   operator std::string() const;
