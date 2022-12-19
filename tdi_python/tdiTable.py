@@ -511,8 +511,7 @@ class TdiTable:
             return [value[i] for i in range(len(value))]
 
         def deparse_output(self, value):
-            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
-                                           (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
+            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"]):
                 return self._deparse_int_arr(value)
             elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM", "INT64"])):
                 return self._deparse_int(value)
@@ -590,8 +589,13 @@ class TdiTable:
         def stringify_output(self, value):
             if isinstance(value, str):
                 return value
-            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
-                                           (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
+ 
+            # target specific handling
+            output = self.table.stringify_output_target_specific(self, value)
+            if output is not None:
+                return output
+
+            if self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"]:
                 return self._stringify_int_arr(value)
             elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM", "INT64"])):
                 return self._stringify_int(value)
@@ -1165,6 +1169,18 @@ class TdiTable:
             content.append(self._process_data_fields(info._cont_data_fields, data_h, True))
         return content
 
+
+    '''
+        Certain fields might need target specific handling.
+        Targets can override this method to handle such cases.
+        Targets should return True/None if a data field is handled in that code so that they can be skipped here.
+    '''
+    def stringify_output_target_specific(self, data_field, value):
+        return None
+
+    def _process_target_specific_data_field(self, data_fields, data_handle, force=False):
+        return False
+
     def _process_data_fields(self, data_fields, data_handle, force=False):
         content = {}
         for name, info in data_fields.items():
@@ -1175,21 +1191,15 @@ class TdiTable:
             if not is_active and not force:
                 continue
 
+            # target specific handling
+            processed = self._process_target_specific_data_field(info, data_handle, content)
+            if processed is True:
+                continue
+
             if self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
-                if ('$bfrt_field_class', 'register_data') in info.annotations:
-                    size = c_uint(0)
-                    sts = self._cintf.get_driver().tdi_data_field_get_value_u64_array_size(data_handle, info.id, byref(size))
-                    if sts == 0:
-                        arrtype = c_ulonglong * size.value
-                        value = arrtype()
-                        sts = self._cintf.get_driver().tdi_data_field_get_value_u64_array(data_handle, info.id, value)
-                        content[name] = []
-                        for i in range(0, size.value):
-                            content[name].append(value[i])
-                else:
-                    value, bytes_ = self.fill_c_byte_arr(0, info.size)
-                    sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
-                    content[name] = self.from_c_byte_arr(value, info.size)
+                value, bytes_ = self.fill_c_byte_arr(0, info.size)
+                sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
+                content[name] = self.from_c_byte_arr(value, info.size)
             if self.data_type_cls.data_type_str(info.data_type) == "UINT64":
                 if not info.is_ptr:
                     value = c_ulonglong(0)
