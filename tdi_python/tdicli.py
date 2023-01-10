@@ -1042,11 +1042,11 @@ Available Commands:
 
     def _init_string_choices(self):
         if len(self._c_tbl.string_choices) > 0:
-            string_choices = {}
+            self.string_choices = {}
             for name, choices in self._c_tbl.string_choices.items():
-                string_choices[name] = []
-                string_choices[name].extend(choices)
-            self._children["string_choices"] = string_choices
+                self.string_choices[name] = []
+                self.string_choices[name].extend(choices)
+            self._children["string_choices"] = self.string_choices
 
     """
     The following functions create appropriate add, modify, delete, get, dump
