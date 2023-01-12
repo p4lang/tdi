@@ -591,7 +591,7 @@ class TdiTable:
                 return value
  
             # target specific handling
-            output = self.table.stringify_output_target_specific(self, value)
+            output = self.table._stringify_output_target_specific(self, value)
             if output is not None:
                 return output
 
@@ -1175,10 +1175,10 @@ class TdiTable:
         Targets can override this method to handle such cases.
         Targets should return True/None if a data field is handled in that code so that they can be skipped here.
     '''
-    def stringify_output_target_specific(self, data_field, value):
+    def _stringify_output_target_specific(self, data_field, value):
         return None
 
-    def _process_target_specific_data_field(self, data_fields, data_handle, force=False):
+    def _process_target_specific_data_field(self, data_field, data_handle, content):
         return False
 
     def _process_data_fields(self, data_fields, data_handle, force=False):
