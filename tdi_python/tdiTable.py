@@ -443,7 +443,7 @@ class TdiTable:
             #         raise TdiTableError("Error: Table {}'s method {} has Key {} is mandatory field of type {} with size {} that cannot be None.".format(
             #             self.table.name, method_name, arg_name, arg_data_type, arg_size), self.table, -1)
             if ((self.category == "key" and arg_key_type == "EXACT" and arg_data_type in ["UINT64", "BYTE_STREAM"])
-                or (self.category == "data" and arg_data_type in ["UINT64", "BYTE_STREAM", "BOOL"])):
+                or (self.category == "data" and arg_data_type in ["UINT64", "BYTE_STREAM", "BOOL", "INT64"])):
                 return self._parse_int(value)
             elif self.category == "key" and arg_key_type == "EXACT" and arg_data_type == "STRING":
                 return self._parse_string(value)
@@ -511,10 +511,9 @@ class TdiTable:
             return [value[i] for i in range(len(value))]
 
         def deparse_output(self, value):
-            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
-                                           (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
+            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"]):
                 return self._deparse_int_arr(value)
-            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM"])):
+            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM", "INT64"])):
                 return self._deparse_int(value)
             elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["TERNARY", "RANGE", "LPM"]:
                 p0 = self._deparse_int(value[0])
@@ -542,6 +541,8 @@ class TdiTable:
         def _stringify_int(self, value):
             if self.ipv4addr:
                 return '{}'.format(ip(value))
+            if value < 0:
+                return '{}'.format(value)
             format_str = '0x{{:0{}X}}'.format(self.size // 4)
             if self.name.decode('ascii') in ["$MATCH_PRIORITY", "$COUNTER_SPEC_BYTES", "$COUNTER_SPEC_PKTS"]:
                 format_str = "{}"
@@ -588,10 +589,15 @@ class TdiTable:
         def stringify_output(self, value):
             if isinstance(value, str):
                 return value
-            if self.category == "data" and (self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"] or
-                                           (self.table.data_type_cls.data_type_str(self.data_type) == "BYTE_STREAM" and ('$bfrt_field_class', 'register_data') in self.annotations)):
+ 
+            # target specific handling
+            output = self.table._stringify_output_target_specific(self, value)
+            if output is not None:
+                return output
+
+            if self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["INT_ARR", "BOOL_ARR"]:
                 return self._stringify_int_arr(value)
-            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM"])):
+            elif ((self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) == "EXACT") or (self.category == "data" and self.table.data_type_cls.data_type_str(self.data_type) in ["UINT64", "BYTE_STREAM", "INT64"])):
                 return self._stringify_int(value)
             elif self.category == "key" and self.table.key_match_type_cls.key_match_type_str(self.type) in ["TERNARY", "RANGE", "LPM"]:
                 p0 = self._stringify_int(value[0])
@@ -973,7 +979,6 @@ class TdiTable:
                     sts = self._cintf.get_driver().tdi_key_field_set_value_optional_ptr(key_handle, info.id, v, is_valid, b)
             if not sts == 0:
                 raise TdiTableError("CLI Error: set key field failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return sts
         return 0
 
     def _get_key_fields(self, key_handle):
@@ -1070,6 +1075,9 @@ class TdiTable:
                 else:
                     value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
                     sts = self._cintf.get_driver().tdi_data_field_set_value_ptr(data_handle, info.id, value, bytes_)
+            if self.data_type_cls.data_type_str(info.data_type) == "INT64":
+                value = c_int64(content[name])
+                sts = self._cintf.get_driver().tdi_data_field_set_value_int64(data_handle, info.id, value)
             if self.data_type_cls.data_type_str(info.data_type) == "INT_ARR":
                 arrlen = len(content[name])
                 arrtype = c_uint * arrlen
@@ -1127,7 +1135,6 @@ class TdiTable:
             """
             if not sts == 0:
                 raise TdiTableError("CLI Error: set data field failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return sts
         return 0
 
     """
@@ -1151,18 +1158,28 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_data_field_get_value_data_field_array_size(data_handle, field_id, byref(f_size))
         if not sts == 0:
             raise TdiTableError("CLI Error: get data field array size failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
 
         arr_df = self._cintf.handle_type * f_size.value
         data_handles = arr_df()
         sts = self._cintf.get_driver().tdi_data_field_get_value_data_field_array(data_handle, field_id, byref(data_handles))
         if not sts == 0:
             raise TdiTableError("CLI Error: get data field array failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
 
         for data_h in data_handles:
             content.append(self._process_data_fields(info._cont_data_fields, data_h, True))
         return content
+
+
+    '''
+        Certain fields might need target specific handling.
+        Targets can override this method to handle such cases.
+        Targets should return True/None if a data field is handled in that code so that they can be skipped here.
+    '''
+    def _stringify_output_target_specific(self, data_field, value):
+        return None
+
+    def _process_target_specific_data_field(self, data_field, data_handle, content):
+        return False
 
     def _process_data_fields(self, data_fields, data_handle, force=False):
         content = {}
@@ -1174,21 +1191,15 @@ class TdiTable:
             if not is_active and not force:
                 continue
 
+            # target specific handling
+            processed = self._process_target_specific_data_field(info, data_handle, content)
+            if processed is True:
+                continue
+
             if self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
-                if ('$bfrt_field_class', 'register_data') in info.annotations:
-                    size = c_uint(0)
-                    sts = self._cintf.get_driver().tdi_data_field_get_value_u64_array_size(data_handle, info.id, byref(size))
-                    if sts == 0:
-                        arrtype = c_ulonglong * size.value
-                        value = arrtype()
-                        sts = self._cintf.get_driver().tdi_data_field_get_value_u64_array(data_handle, info.id, value)
-                        content[name] = []
-                        for i in range(0, size.value):
-                            content[name].append(value[i])
-                else:
-                    value, bytes_ = self.fill_c_byte_arr(0, info.size)
-                    sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
-                    content[name] = self.from_c_byte_arr(value, info.size)
+                value, bytes_ = self.fill_c_byte_arr(0, info.size)
+                sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
+                content[name] = self.from_c_byte_arr(value, info.size)
             if self.data_type_cls.data_type_str(info.data_type) == "UINT64":
                 if not info.is_ptr:
                     value = c_ulonglong(0)
@@ -1198,6 +1209,11 @@ class TdiTable:
                     value, bytes_ = self.fill_c_byte_arr(0, info.size)
                     sts = self._cintf.get_driver().tdi_data_field_get_value_ptr(data_handle, info.id, bytes_, value)
                     content[name] = self.from_c_byte_arr(value, info.size)
+            if self.data_type_cls.data_type_str(info.data_type) == "INT64":
+                if not info.is_ptr:
+                    value = c_int64(0)
+                    sts = self._cintf.get_driver().tdi_data_field_get_value_int64(data_handle, info.id, byref(value))
+                    content[name] = value.value
             if self.data_type_cls.data_type_str(info.data_type) == "FLOAT":
                 if not info.is_ptr:
                     value = c_float(0)
@@ -1275,7 +1291,6 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
 
         sts = self._set_key_fields(key_content, key_handle)
         if not sts == 0:
@@ -1305,7 +1320,6 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_flags_create(flags_value, byref(flags_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: flags create failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1
         '''
         sts = self._set_flags_fields(flags_value, flags_handle)
         if not sts == 0:
@@ -1462,7 +1476,6 @@ class TdiTable:
     def del_entry(self, key_content, entry_handle=None):
         if entry_handle != None and "get_by_handle" not in self.supported_commands:
             raise TdiTableError("{} Error: deleting entry by handle not supported.".format(self.name), self, -1)
-            return -1
 
         key_handle = None
         #entry_tgt = byref(self._cintf.BfDevTgt(0, 0, 0, 0))
@@ -1472,7 +1485,6 @@ class TdiTable:
             sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
             if sts != 0:
                 raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-                return -1
             sts = self._cintf.tdi_table_entry_key_get(self._handle,
                                                   self._cintf.get_session(),
                                                   self._cintf.get_dev_tgt(),
@@ -1481,7 +1493,6 @@ class TdiTable:
                                                   key_handle)
             if sts != 0:
                 raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-                return -1
         else:
             key_handle = self._make_call_keys(key_content)
             if key_handle == -1:
@@ -1498,10 +1509,8 @@ class TdiTable:
     def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
-            return -1
         if entry_handle != None and "get_by_handle" not in self.supported_commands:
             raise TdiTableError("{} Error: getting entry by handle not supported.".format(self.name), self, -1)
-            return -1
 
         data_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_table_data_allocate(self._handle, byref(data_handle))
@@ -1569,7 +1578,6 @@ class TdiTable:
     def get_entry_handle(self, key_content, from_hw=False, print_entry=True, key_handle=None):
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
-            return -1
         if key_handle is None:
             key_handle = self._make_call_keys(key_content)
             if key_handle == -1:
@@ -1634,12 +1642,10 @@ class TdiTable:
         sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         data_handle = self._cintf.handle_type()
         sts = self._cintf.get_driver().tdi_table_data_allocate(self._handle, byref(data_handle))
         if not sts == 0:
             raise TdiTableError("CLI Error: table data allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         return key_handle, data_handle
 
     def _deallocate_hdls(self, key_hdls, data_hdls):
@@ -1669,7 +1675,6 @@ class TdiTable:
             return -1, -1
         if not sts == 0:
             raise TdiTableError("Error: entry_get_first failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         return key_handle, data_handle
 
     def get_next(self, prev_key, n=20, from_hw=False):
@@ -1705,7 +1710,6 @@ class TdiTable:
             # Once we are done reading all the entries from the table, tdi will
             # return an TDI_OBJECT_NOT_FOUND error
             raise TdiTableError("Error: entry_get_next {} failed on table {}. [{}]".format(n, self.name, self._cintf.err_str(sts)), self, sts)
-            return -1, -1
         key_ret = []
         data_ret = []
         for idx in range(0, num_returned.value):
@@ -1948,7 +1952,6 @@ class TdiTable:
             self._cintf._end_batch()
         if not sts == 0:
             raise TdiTableError("Error: Table clear failed on table {}. [{}]".format(self.name, sts), self, sts)
-            return
 
     def dump(self, entry_handler, from_hw=False, print_ents=True, print_zero=True):
         if "get_first" not in self.supported_commands:

@@ -52,6 +52,12 @@ tdi_field_data_type_e dataTypeStrToEnum(const std::string &type,
       return TDI_FIELD_DATA_TYPE_STRING;
     else
       return TDI_FIELD_DATA_TYPE_STRING_ARR;
+  } else if (type == "int64" || type == "int32" || type == "int16" ||
+             type == "int8") {
+    if (!repeated)
+      return TDI_FIELD_DATA_TYPE_INT64;
+    else
+      return TDI_FIELD_DATA_TYPE_INT_ARR;
   }
   return TDI_FIELD_DATA_TYPE_UNKNOWN;
 }
@@ -128,6 +134,14 @@ void TdiInfoParser::parseFieldWidth(const tdi::Cjson &node,
   } else if (type_str == "uint16") {
     width = 16;
   } else if (type_str == "uint8") {
+    width = 8;
+  } else if (type_str == "int64") {
+    width = 64;
+  } else if (type_str == "int32") {
+    width = 32;
+  } else if (type_str == "int16") {
+    width = 16;
+  } else if (type_str == "int8") {
     width = 8;
   } else if (type_str == "bool") {
     width = 1;

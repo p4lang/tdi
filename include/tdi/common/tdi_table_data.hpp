@@ -140,6 +140,17 @@ class TableData {
                                 const std::vector<std::string> &arr);
 
   /**
+   * @brief Set value. Only valid on fields with int type.
+   *
+   * @param[in] field_id Field ID
+   * @param[in] value   int Value.
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t setValue(const tdi_id_t &field_id,
+                                const int64_t &value);
+
+  /**
    * @brief Set value. Valid only on fields with float type
    *
    * @param[in] field_id Field ID
@@ -258,6 +269,17 @@ class TableData {
    */
   virtual tdi_status_t getValue(const tdi_id_t &field_id,
                                 std::vector<std::string> *arr) const;
+
+  /**
+   * @brief Get value. Valid on fields with int type.
+   *
+   * @param[in] field_id Field ID
+   * @param[out] value Pointer to the value to be filled in.
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t getValue(const tdi_id_t &field_id,
+                                int64_t *value) const;
 
   /**
    * @brief Get value. Valid on fields of float type

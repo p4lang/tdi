@@ -42,6 +42,20 @@ tdi_status_t tdi_data_field_set_value(tdi_table_data_hdl *data_hdl,
                                        const uint64_t val);
 
 /**
+ * @brief Set value. Only valid on fields with int type
+ *
+ * @param[in] data_hdl   Data object handle
+ * @param[in] field_id   Field ID
+ * @param[in] val        int value
+ *
+ * @return Status of the API call
+ */
+
+tdi_status_t tdi_data_field_set_value_int64(tdi_table_data_hdl *data_hdl,
+                                       const tdi_id_t field_id,
+                                       const int64_t val);
+
+/**
  * @brief Set value. Valid only on fields with float type
  *
  * @param[in] data_hdl  Data object handle
@@ -172,6 +186,19 @@ tdi_status_t tdi_data_field_set_string(tdi_table_data_hdl *data_hdl,
 tdi_status_t tdi_data_field_get_value(const tdi_table_data_hdl *data_hdl,
                                        const tdi_id_t field_id,
                                        uint64_t *val);
+
+/**
+ * @brief Get value. Only valid on fields with int type
+ *
+ * @param[in] data_hdl          Data object handle
+ * @param[in] field_id          Field ID
+ * @param[out] val              Pointer to the value to be filled in.
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_data_field_get_value_int64(const tdi_table_data_hdl *data_hdl,
+                                       const tdi_id_t field_id,
+                                       int64_t *val);
 
 /**
  * @brief Get value. Valid on fields of all sizes

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include <memory>
-#include <string>
-#include <map>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 /* tdi_includes */
@@ -104,7 +104,7 @@ void Cjson::addObject(const std::string &name, const Cjson &item) {
   cJSON_AddItemReferenceToObject(this->root, name.c_str(), item.root);
 }
 
-uint32_t Cjson::array_size() { return cJSON_GetArraySize(root); }
+uint32_t Cjson::array_size() const { return cJSON_GetArraySize(root); }
 
 Cjson::operator int() const {
   if (root && (root->type == cJSON_Number)) {

@@ -520,14 +520,7 @@ class TDINode(TDIContext):
         self._children = []
         self._commands = {}
         self._commands["dump"] = getattr(self, "dump")
-        # mask the clear method here to avoid the current missing implementation of clear method
-        # self._commands["clear"] = getattr(self, "clear")
         self._commands["info"] = getattr(self, "info")
-        self._commands["enable"] = getattr(self, "enable")
-        #self._commands["tdi_info"] = getattr(self, "tdi_info")
-    def enable(self):
-        # This call will stay the same (call old c_frontend libdriver.so) not call libtdi.so
-        self._cintf.get_driver().bf_rt_enable_pipeline(self._cintf.get_dev_id())
 
     def dump(self, table=False, from_hw=False, return_ents=False, print_zero=True):
         for child in self._children:
@@ -721,8 +714,8 @@ class TDILeaf(TDIContext):
             try:
                 self._children[cmd] = getattr(self,cmd)
             except:
+                logging.debug("CLI log: Command {} is not ready or available".format(cmd))
                 pass
-                # print("CLI log: Command {} is not ready or available".format(cmd))
         self._set_docstring()
         # if self._c_tbl.table_type_cls.table_type_str(self._c_tbl.get_type()) in self._c_tbl.unimplemented_tables:
         #     print("CLI Err: Unimplemented Command Object {}".format(self._name))
@@ -893,26 +886,8 @@ class TDILeaf(TDIContext):
             print("Input must be string produced by dump command for this table.")
 
 
-    def _create_attributes(self, key_fields, data_fields={}):
-        method_name = "dynamic_key_mask_set"
-        if method_name not in self._c_tbl.supported_commands:
-            return
-        param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
-
-        code = '''
-def {}(self, {} ):
-    """Add dynamic mask attribute to {} .
-
-    Parameters:
-    {}
-    """
-    parsed_keys, parsed_data = self._c_tbl.parse_str_input("{}", {}, {})
-    if parsed_keys == -1:
+    def _create_attributes(self, key_fields={}, data_fields={}):
         return
-    self._c_tbl.dyn_key_mask_set(parsed_keys)
-        '''.format(method_name, param_str, self._name, param_docstring, method_name, parse_key_call, parse_data_call)
-        add_method = self._set_dynamic_method(code, method_name)
-        self._children[method_name] = getattr(self, method_name)
 
     def _create_operations(self):
         method_name = "operation_register_sync"
@@ -1059,11 +1034,11 @@ Available Commands:
 
     def _init_string_choices(self):
         if len(self._c_tbl.string_choices) > 0:
-            string_choices = {}
+            self.string_choices = {}
             for name, choices in self._c_tbl.string_choices.items():
-                string_choices[name] = []
-                string_choices[name].extend(choices)
-            self._children["string_choices"] = string_choices
+                self.string_choices[name] = []
+                self.string_choices[name].extend(choices)
+            self._children["string_choices"] = self.string_choices
 
     """
     The following functions create appropriate add, modify, delete, get, dump
@@ -1100,6 +1075,7 @@ Available Commands:
         if not self._c_tbl.has_const_default_action:
             self._create_reset_default()
         self._create_get_default()
+        self._create_attributes(key_fields)
         self._create_operations()
         self._create_get_key()
 
@@ -1443,8 +1419,8 @@ def {}(self, {} ttl_reset=True):
 
         param_str, param_docstring, parse_key_call, parse_data_call, param_list = self._make_core_method_strs(method_name, key_fields, data_fields)
 
-        if code_str == None:
-            code.str = '''
+        if code_str is None:
+            code_str = '''
 def {}(self, {} mod_flag=0):
     """ Incremental Add/Delete items in the fields that are array for the matched entry in {} table.
 
@@ -1644,8 +1620,8 @@ def {}(self, {} regex=False, return_ents=True, print_ents=True, table=False, fro
         method_name = "get_key"
         if method_name not in self._c_tbl.supported_commands:
             return
-        if code_str == None:
-            code = '''
+        if code_str is None:
+            code_str = '''
 def {}(self, handle, return_ent=True, print_ent=True, from_hw=False):
     """Get entry key from {} table by entry handle.
 

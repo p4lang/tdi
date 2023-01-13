@@ -126,7 +126,8 @@ class DataType:
         TDI_FIELD_DATA_TYPE_STRING = 6
         TDI_FIELD_DATA_TYPE_BOOL = 7
         TDI_FIELD_DATA_TYPE_STRING_ARR = 8
-        TDI_FIELD_DATA_TYPE_UNKNOWN = 9
+        TDI_FIELD_DATA_TYPE_INT64 = 9
+        TDI_FIELD_DATA_TYPE_UNKNOWN = 10
 
     data_type_dict = {
             DataTypeEnum.TDI_FIELD_DATA_TYPE_INT_ARR.value: "INT_ARR",
@@ -137,7 +138,8 @@ class DataType:
             DataTypeEnum.TDI_FIELD_DATA_TYPE_CONTAINER.value: "CONTAINER",
             DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING.value: "STRING",
             DataTypeEnum.TDI_FIELD_DATA_TYPE_BOOL.value: "BOOL",
-            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING_ARR.value: "STR_ARR"
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_STRING_ARR.value: "STR_ARR",
+            DataTypeEnum.TDI_FIELD_DATA_TYPE_INT64.value: "INT64"
     }
 
     @classmethod
