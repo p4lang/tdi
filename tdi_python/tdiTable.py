@@ -1563,6 +1563,9 @@ class TdiTable:
             action = self.action_id_name_map[self._action_from_data(data_handle)]
 
         entry = TableEntry(self, self._get_key_fields(key_handle), self._get_data_fields(data_handle, action), action)
+        # If the key was passed from outside, don't deallocate here since it is the caller's
+        # responsibility to do so. This is required in case of callbacks where the key is freed
+        # by TDI function itself
         if not is_key_set:
             self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
