@@ -1507,6 +1507,8 @@ class TdiTable:
             raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
     def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
+        is_key_set = False if key_handle==None else True
+
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
         if entry_handle != None and "get_by_handle" not in self.supported_commands:
@@ -1552,7 +1554,8 @@ class TdiTable:
         if not sts == 0:
             if not (sts == 6 and not print_entry):
                 print("Error: table_entry_get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
-            self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
+            if not is_key_set:
+                self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
             self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
             self._cintf.get_driver().tdi_flags_delete(flags_handle)
             return -1
@@ -1570,7 +1573,11 @@ class TdiTable:
             action = self.action_id_name_map[self._action_from_data(data_handle)]
 
         entry = TableEntry(self, self._get_key_fields(key_handle), self._get_data_fields(data_handle, action), action)
-        self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
+        # If the key was passed from outside, don't deallocate here since it is the caller's
+        # responsibility to do so. This is required in case of callbacks where the key is freed
+        # by TDI function itself
+        if not is_key_set:
+            self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
         self._cintf.get_driver().tdi_table_data_deallocate(data_handle)
         self._cintf.get_driver().tdi_flags_delete(flags_handle)
         return entry
