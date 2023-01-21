@@ -2196,9 +2196,6 @@ class TdiCli:
 
         if hasattr(sys.modules['__main__'], "ipython_app"):
             ipython_app = getattr(sys.modules['__main__'], "ipython_app")
-
-
-
         if ipython_app is None:
             print("Devices found : ", dev_id_list)
             c = Config()
