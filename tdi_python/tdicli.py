@@ -52,6 +52,9 @@ tdi = None
 ipython_app = None
 tdi_session_dict = {}
 
+# regular global variables
+sess_type = POINTER(c_uint)
+
 class CIntfTdi:
     target_type_cls = TargetType
 
@@ -179,7 +182,6 @@ class CIntfTdi:
         self.handle_type = POINTER(self.TdiHandle)
         self.handle_key_type = POINTER(self.TdiHandle)
         self.handle_target_type = POINTER(self.TdiHandle)
-        self.sess_type = POINTER(c_uint)
         self.annotation_type = self.TdiAnnotation
 
         self.flags_type = POINTER(c_uint)
@@ -191,9 +193,9 @@ class CIntfTdi:
 
         self.tdi_tbl_operations_cb_type = CFUNCTYPE(None, POINTER(self.TdiDevTgt), c_void_p)
 
-        self.learn_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), self.sess_type, POINTER(self.handle_type), c_uint, self.handle_type, c_void_p)
+        self.learn_cb_type = CFUNCTYPE(c_int, POINTER(self.TdiDevTgt), sess_type, POINTER(self.handle_type), c_uint, self.handle_type, c_void_p)
         self.port_status_notif_cb_type = CFUNCTYPE(c_int, self.handle_target_type, self.handle_key_type, c_bool, c_void_p)
-        self.selector_table_update_cb_type = CFUNCTYPE(None, self.sess_type, POINTER(self.TdiDevTgt), c_void_p, c_uint, c_uint, c_int, c_bool)
+        self.selector_table_update_cb_type = CFUNCTYPE(None, sess_type, POINTER(self.TdiDevTgt), c_void_p, c_uint, c_uint, c_int, c_bool)
         self.infos = {}
         for name in p4_names:
             print(name.decode('ascii'))
@@ -204,7 +206,7 @@ class CIntfTdi:
         self._flags = self.flags_type()
         self.target_type = POINTER(c_uint)
         self._target = self.target_type()
-        sts = self._driver.tdi_target_create(self._device, byref(self._target))
+        sts = self._driver.tdi_target_create(self.get_device(), byref(self._target))
 
         if not sts == 0:
             print("Error, unable to create TDI Runtime session")
@@ -2120,22 +2122,21 @@ def unload_ipython_extension(ipython):
         ipython.input_transformers_cleanup.remove(tdi_input_transform)
     pass
 
-def destroy_tdi_python_session(dev_id, dev_node):
+def destroy_tdi_python_session(dev_id, driver_intf):
     if dev_id not in tdi_session_dict:
         return 0
-    sts = dev_node._cintf._driver.tdi_session_destroy(tdi_session_dict[dev_id])
+    sts = driver_intf.tdi_session_destroy(tdi_session_dict[dev_id])
     if not sts == 0:
         print("ERROR: destroying session for device:", dev_id)
-        if hasattr(dev_node, "dev_config") and dev_node.dev_config:
-            dev_node._cintf._driver.dev_config_deallocate(dev_node.dev_config)
         return -1
+    del tdi_session_dict[dev_id]
     return 0
 
-def create_tdi_python_session(dev_id, dev_node):
+def create_tdi_python_session(dev_id, driver_intf, device_hdl):
     if dev_id in tdi_session_dict:
         return 0
-    tdi_session_dict[dev_id] = dev_node._cintf.sess_type()
-    sts = dev_node._cintf._driver.tdi_session_create(dev_node._cintf._device, byref(tdi_session_dict[dev_id]))
+    tdi_session_dict[dev_id] = sess_type()
+    sts = driver_intf.tdi_session_create(device_hdl, byref(tdi_session_dict[dev_id]))
     if not sts == 0:
         print("Error, unable to create TDI Runtime session")
         return -1
@@ -2299,7 +2300,7 @@ class TdiCli:
                     print("ERROR: Can't create object tree for tdi_python.", file = sys.stderr)
                     return -1
 
-            sts = create_tdi_python_session(dev_id, dev_node)
+            sts = create_tdi_python_session(dev_id, dev_node._cintf._driver, dev_node._cintf.get_device())
             if sts != 0:
                 return sts
 
