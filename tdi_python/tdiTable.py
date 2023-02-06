@@ -1506,9 +1506,10 @@ class TdiTable:
         if sts != 0:
             raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
-    def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
+    def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None, dev_tgt=None):
         is_key_set = False if key_handle==None else True
-
+        if dev_tgt == None:
+            dev_tgt = self._cintf.get_dev_tgt()
         if key_content != None and key_handle != None:
             raise TdiTableError("{} Error: only one of key_content and key_handle can be passed.".format(self.name), self, -1)
         if entry_handle != None and "get_by_handle" not in self.supported_commands:
@@ -1535,7 +1536,7 @@ class TdiTable:
             sts = self._cintf.tdi_table_entry_get_by_handle(
                     self._handle,
                     self._cintf.get_session(),
-                    self._cintf.get_dev_tgt(),
+                    dev_tgt,
                     entry_handle,
                     key_handle, data_handle,
                     flags_handle)
@@ -1547,7 +1548,7 @@ class TdiTable:
                     return -1
             sts = self._cintf.tdi_table_entry_get(self._handle,
                     self._cintf.get_session(),
-                    self._cintf.get_dev_tgt(),
+                    dev_tgt,
                     key_handle, data_handle,
                     flags_handle)
 
