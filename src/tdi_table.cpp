@@ -15,6 +15,7 @@
  */
 #include <algorithm>
 #include <tdi/common/tdi_table.hpp>
+#include <tdi/common/tdi_notifications.hpp>
 
 // local includes
 #include <tdi/common/tdi_utils.hpp>
@@ -346,6 +347,20 @@ tdi_status_t Table::tableAttributesGet(
     TableAttributes * /*tableAttributes*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationRegister(tdi::Target &,//target,
+				const tdi_id_t &,//notification_id,
+				tdiNotificationCallback &,//callback,
+				void * /*cookie*/) {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationDeregister(tdi::Target &,//target,
+                                           const tdi_id_t & /*notification_id*/) const{
+   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+   return TDI_NOT_SUPPORTED;
 }
 
 tdi_status_t Table::operationsAllocate(
