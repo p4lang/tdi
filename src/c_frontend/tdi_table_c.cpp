@@ -86,6 +86,18 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                          *reinterpret_cast<const tdi::TableKey *>(key));
 }
 
+tdi_status_t tdi_table_entry_reset(const tdi_table_hdl *table_hdl,
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *target,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key) {
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+  return table->entryReset(*reinterpret_cast<const tdi::Session *>(session),
+                         *reinterpret_cast<const tdi::Target *>(target),
+                         *reinterpret_cast<const tdi::Flags *>(flags),
+                         *reinterpret_cast<const tdi::TableKey *>(key));
+}
+
 tdi_status_t tdi_table_clear(const tdi_table_hdl *table_hdl,
                              const tdi_session_hdl *session,
                              const tdi_target_hdl *target,

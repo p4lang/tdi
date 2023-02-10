@@ -57,6 +57,17 @@ tdi_status_t Table::entryDel(const Session & /*session*/,
   return TDI_NOT_SUPPORTED;
 }
 
+tdi_status_t Table::entryReset(const Session & /*session*/,
+                             const Target & /*dev_tgt*/,
+                             const Flags & /*flags*/,
+                             const TableKey & /*key*/) const {
+  LOG_ERROR("%s:%d %s ERROR : Table entry Reset not supported",
+            __func__,
+            __LINE__,
+            tableInfoGet()->nameGet().c_str());
+  return TDI_NOT_SUPPORTED;
+}
+
 tdi_status_t Table::clear(const Session & /*session*/,
                           const Target & /*dev_tgt*/,
                           const Flags & /*flags*/) const {

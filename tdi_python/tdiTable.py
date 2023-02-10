@@ -1506,7 +1506,40 @@ class TdiTable:
         if sts != 0:
             raise TdiTableError("Error: table_entry_delete failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
 
-    def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None, dev_tgt=None):
+    def reset_entry(self, key_content, entry_handle=None):
+        if entry_handle != None and "get_by_handle" not in self.supported_commands:
+            raise TdiTableError("{} Error: reseting entry by handle not supported.".format(self.name), self, -1)
+
+        key_handle = None
+        #entry_tgt = byref(self._cintf.BfDevTgt(0, 0, 0, 0))
+        entry_tgt = self._cintf.get_dev_tgt()
+        if entry_handle != None:
+            key_handle = self._cintf.handle_type()
+            sts = self._cintf.get_driver().tdi_table_key_allocate(self._handle, byref(key_handle))
+            if sts != 0:
+                raise TdiTableError("CLI Error: table key allocate failed. [{}].".format(self._cintf.err_str(sts)), self, sts)
+            sts = self._cintf.tdi_table_entry_key_get(self._handle,
+                                                  self._cintf.get_session(),
+                                                  self._cintf.get_dev_tgt(),
+                                                  entry_handle,
+                                                  entry_tgt,
+                                                  key_handle)
+            if sts != 0:
+                raise TdiTableError("Error: table_entry_reset failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+        else:
+            key_handle = self._make_call_keys(key_content)
+            if key_handle == -1:
+                return -1
+            entry_tgt = self._cintf.get_dev_tgt()
+        sts = self._cintf.tdi_table_entry_reset(self._handle,
+                                                self._cintf.get_session(),
+                                                entry_tgt,
+                                                key_handle)
+        self._cintf.get_driver().tdi_table_key_deallocate(key_handle)
+        if sts != 0:
+            raise TdiTableError("Error: table_entry_reset failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+
+    def get_entry(self, key_content, from_hw=False, print_entry=True, key_handle=None, entry_handle=None):
         is_key_set = False if key_handle==None else True
         if dev_tgt == None:
             dev_tgt = self._cintf.get_dev_tgt()

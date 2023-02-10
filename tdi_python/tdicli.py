@@ -141,6 +141,11 @@ class CIntfTdi:
             return self._driver.tdi_table_entry_del(tbl_hdl, session, dev_tgt, flags, key)
         setattr(self, 'tdi_table_entry_del', tdi_table_entry_del)
 
+        def tdi_table_entry_reset(tbl_hdl, session, dev_tgt, key):
+            flags = self.get_flags()
+            return self._driver.tdi_table_entry_reset(tbl_hdl, session, dev_tgt, flags, key)
+        setattr(self, 'tdi_table_entry_reset', tdi_table_entry_reset)
+
         def tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data):
             return self._driver.tdi_table_entry_add(tbl_hdl, session, dev_tgt, flags, key, data)
         setattr(self, 'tdi_table_entry_add', tdi_table_entry_add)
