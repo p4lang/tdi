@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 #include <algorithm>
-#include <tdi/common/tdi_table.hpp>
 #include <tdi/common/tdi_notifications.hpp>
+#include <tdi/common/tdi_table.hpp>
 
 // local includes
 #include <tdi/common/tdi_utils.hpp>

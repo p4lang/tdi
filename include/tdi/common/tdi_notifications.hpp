@@ -20,13 +20,13 @@
 #ifndef _TDI_TABLE_NOTIFICATIONS_HPP
 #define _TDI_TABLE_NOTIFICATIONS_HPP
 
-#include <string>
 #include <cstring>
-#include <vector>
+#include <functional>
 #include <map>
 #include <memory>
+#include <string>
 #include <unordered_map>
-#include <functional>
+#include <vector>
 
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_session.hpp>
