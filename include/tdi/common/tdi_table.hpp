@@ -28,8 +28,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/tdi_defs.h>
+#include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_operations.hpp>

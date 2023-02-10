@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <tdi/common/tdi_defs.h>
+#include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_table_data.hpp>
 
