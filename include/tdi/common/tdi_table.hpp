@@ -116,6 +116,21 @@ class Table {
                                 const tdi::TableKey &key) const;
 
   /**
+   * @brief Delete an entry of the table
+   *
+   * @param[in] session Session Object
+   * @param[in] dev_tgt Device target
+   * @param[in] flags Call flags
+   * @param[in] key Entry Key
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t entryReset(const tdi::Session &session,
+                                const tdi::Target &dev_tgt,
+                                const tdi::Flags &flags,
+                                const tdi::TableKey &key) const;
+
+  /**
    * @brief Clear a table. Delete all entries. This API also resets default
    * entry if present and is not const default. If table has always present
    * entries like Counter table, then this table resets all the entries

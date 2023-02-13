@@ -105,6 +105,23 @@ tdi_status_t tdi_table_entry_del(const tdi_table_hdl *table_hdl,
                                  const tdi_table_key_hdl *key);
 
 /**
+ * @brief Reset an entry of the table
+ *
+ * @param[in] table_hdl Table object
+ * @param[in] session Session Object
+ * @param[in] dev_tgt Device target
+ * @param[in] flags Call flags
+ * @param[in] key Entry Key
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_table_entry_reset(const tdi_table_hdl *table_hdl,
+                                 const tdi_session_hdl *session,
+                                 const tdi_target_hdl *dev_tgt,
+                                 const tdi_flags_hdl *flags,
+                                 const tdi_table_key_hdl *key);
+
+/**
  * @brief Clear a table. Delete all entries. This API also resets default
  * entry if present and is not const default. If table has always present
  * entries like Counter table, then this table resets all the entries
