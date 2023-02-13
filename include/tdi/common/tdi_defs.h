@@ -89,8 +89,10 @@ enum tdi_table_api_type_e {
   TDI_TABLE_API_TYPE_KEY_GET = 15,
   /** Get entry handle from key. */
   TDI_TABLE_API_TYPE_HANDLE_GET = 16,
+  /** Reset. Reset an entry to its default state*/
+  TDI_TABLE_API_TYPE_RESET = 17,
   /** Invalid not supported API. */
-  TDI_TABLE_API_TYPE_INVALID_API = 17
+  TDI_TABLE_API_TYPE_INVALID_API = 18
 };
 // The same name can be used with or without enum keyword. Advantage of being
 // compatible with C++
