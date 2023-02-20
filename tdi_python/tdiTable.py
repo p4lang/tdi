@@ -713,6 +713,7 @@ class TdiTable:
             return sts
         for field_id in field_ids:
             field_name = c_char_p()
+            logging.debug("field_id={} field_name={}".format(field_id, field_name))
             sts = self._cintf.get_driver().tdi_key_field_name_get(self._info_handle, field_id, byref(field_name))
             if not sts == 0:
                 print("CLI Error: get key field name for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
@@ -931,15 +932,19 @@ class TdiTable:
             sts = -1
             if name not in content.keys():
                 continue
+            logging.debug("info:info.type {}, info.data_type {} \n"
+                          "info.is_ptr {}".format(self.key_match_type_cls.key_match_type_str(info.type),
+                              self.data_type_cls.data_type_str(info.data_type), info.is_ptr))
             if self.key_match_type_cls.key_match_type_str(info.type) == "EXACT":
                 if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                     value = c_char_p(content[name].encode('ascii'))
                     sts = self._cintf.get_driver().tdi_key_field_set_value_string(key_handle, info.id, value)
-                elif not info.is_ptr:
+                elif not info.is_ptr and not self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
                     value = c_ulonglong(content[name])
                     sts = self._cintf.get_driver().tdi_key_field_set_value(key_handle, info.id, value)
                 else:
                     value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
+                    logging.debug("value={} bytes_ {}".format(bytes(value).hex(),bytes_))
                     sts = self._cintf.get_driver().tdi_key_field_set_value_ptr(key_handle, info.id, value, bytes_)
             elif self.key_match_type_cls.key_match_type_str(info.type) == "TERNARY":
                 if not info.is_ptr:
@@ -993,7 +998,7 @@ class TdiTable:
                         value = create_string_buffer(size.value)
                         sts = self._cintf.get_driver().tdi_key_field_get_value_string(key_handle, info.id, value)
                         content[name] = value.value.decode('ascii')
-                elif not info.is_ptr:
+                elif not info.is_ptr and not self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
                     value = c_ulonglong(0)
                     sts = self._cintf.get_driver().tdi_key_field_get_value(key_handle, info.id, byref(value))
                     content[name] = value.value
