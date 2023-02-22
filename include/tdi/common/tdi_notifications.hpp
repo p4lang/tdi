@@ -37,6 +37,10 @@ namespace tdi {
 
 class Table;
 
+/**
+ * @brief Contains Parmaters info of Notification
+ * get and set the value with a field_id
+ */
 class NotificationOutParams {
 public:
     virtual ~NotificationOutParams() = default;
@@ -72,10 +76,14 @@ public:
     tdi_id_t notification_id_;
 };
 
+/**
+ * @brief Contains TDI Notification callback function 
+ *  
+ */
 typedef std::function<void(std::unique_ptr<tdi::TableKey> key,
                            std::unique_ptr<tdi::TableData> data,
                            std::unique_ptr<tdi::NotificationOutParams> params,
                            void *cookie)> tdiNotificationCallback;
 }  // tdi
 
-#endif  // _TDI_TABLE_OPERATIONS_HPP
+#endif  // _TDI_TABLE_NOTIFICATIONS_HPP
