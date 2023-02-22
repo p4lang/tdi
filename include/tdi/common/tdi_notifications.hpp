@@ -78,7 +78,6 @@ public:
 
 /**
  * @brief Contains TDI Notification callback function 
- *  
  */
 typedef std::function<void(std::unique_ptr<tdi::TableKey> key,
                            std::unique_ptr<tdi::TableData> data,
