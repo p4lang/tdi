@@ -872,7 +872,6 @@ class TableInfo {
   const std::set<tdi_operations_type_e> operations_type_set_;
   const std::set<tdi_attributes_type_e> attributes_type_set_;
   const std::set<Annotation> annotations_{};
-  const std::set<tdi_notifications_type_e> notifications_type_set_;
 
   mutable std::unique_ptr<TableContextInfo> table_context_info_;
   friend class TdiInfoParser;
