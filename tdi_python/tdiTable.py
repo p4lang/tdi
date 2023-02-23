@@ -939,7 +939,7 @@ class TdiTable:
                 if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                     value = c_char_p(content[name].encode('ascii'))
                     sts = self._cintf.get_driver().tdi_key_field_set_value_string(key_handle, info.id, value)
-                elif not info.is_ptr and not self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
+                elif not info.is_ptr:
                     value = c_ulonglong(content[name])
                     sts = self._cintf.get_driver().tdi_key_field_set_value(key_handle, info.id, value)
                 else:
@@ -998,7 +998,7 @@ class TdiTable:
                         value = create_string_buffer(size.value)
                         sts = self._cintf.get_driver().tdi_key_field_get_value_string(key_handle, info.id, value)
                         content[name] = value.value.decode('ascii')
-                elif not info.is_ptr and not self.data_type_cls.data_type_str(info.data_type) == "BYTE_STREAM":
+                elif not info.is_ptr:
                     value = c_ulonglong(0)
                     sts = self._cintf.get_driver().tdi_key_field_get_value(key_handle, info.id, byref(value))
                     content[name] = value.value

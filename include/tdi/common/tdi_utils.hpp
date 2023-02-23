@@ -285,9 +285,11 @@ static inline tdi_status_t keyFieldSafeGet(
       );
       return TDI_INVALID_ARG;
     }
-    if ((*key_field)->isPtrGet() && field_value->size_ < 64) {
+    /* If field size less than or equal to 8 and is_ptr is true,
+     * should not use byte arrays */
+    if ((*key_field)->isPtrGet() && field_value->size_ <= 8) {
       LOG_ERROR(
-          "%s:%d Field size is greater than 64 bits. Please use byte arrays in "
+          "%s:%d Field size is greater than 64 bits. Please don't use byte arrays in "
           "the KeyFieldValue for field %d",
           __func__,
           __LINE__,
