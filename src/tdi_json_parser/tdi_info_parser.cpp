@@ -219,7 +219,7 @@ std::unique_ptr<KeyFieldInfo> TdiInfoParser::parseKeyField(
                               default_fl_value,
                               default_str_value,
                               checkIsFieldSlice(table_key_cjson),
-                              false,
+                              width>64,
                               false);
   if (tmp == nullptr) {
     LOG_ERROR("%s:%d Error forming key_field %d",

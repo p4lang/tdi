@@ -713,6 +713,7 @@ class TdiTable:
             return sts
         for field_id in field_ids:
             field_name = c_char_p()
+            logging.debug("field_id={} field_name={}".format(field_id, field_name))
             sts = self._cintf.get_driver().tdi_key_field_name_get(self._info_handle, field_id, byref(field_name))
             if not sts == 0:
                 print("CLI Error: get key field name for {} failed. [{}]".format(self.name, self._cintf.err_str(sts)))
@@ -931,6 +932,9 @@ class TdiTable:
             sts = -1
             if name not in content.keys():
                 continue
+            logging.debug("info:info.type {}, info.data_type {} \n"
+                          "info.is_ptr {}".format(self.key_match_type_cls.key_match_type_str(info.type),
+                              self.data_type_cls.data_type_str(info.data_type), info.is_ptr))
             if self.key_match_type_cls.key_match_type_str(info.type) == "EXACT":
                 if self.data_type_cls.data_type_str(info.data_type) == "STRING":
                     value = c_char_p(content[name].encode('ascii'))
@@ -940,6 +944,7 @@ class TdiTable:
                     sts = self._cintf.get_driver().tdi_key_field_set_value(key_handle, info.id, value)
                 else:
                     value, bytes_ = self.fill_c_byte_arr(content[name], info.size)
+                    logging.debug("value={} bytes_ {}".format(bytes(value).hex(),bytes_))
                     sts = self._cintf.get_driver().tdi_key_field_set_value_ptr(key_handle, info.id, value, bytes_)
             elif self.key_match_type_cls.key_match_type_str(info.type) == "TERNARY":
                 if not info.is_ptr:
