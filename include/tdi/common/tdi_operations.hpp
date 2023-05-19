@@ -36,15 +36,24 @@ namespace tdi {
 class Table;
 
 class TableOperations {
-public:
-    virtual ~TableOperations() = default;
-    TableOperations(const Table* table, const tdi_operations_type_e &oper_type)
-        : table_(table), oper_type_(oper_type){};
-    tdi_status_t setValue(tdi_operations_field_type_e  /*type*/, const uint64_t & /*value*/) { return TDI_NOT_SUPPORTED; };
-    tdi_status_t getValue(tdi_operations_field_type_e  /*type*/, uint64_t * /*value*/) {return TDI_NOT_SUPPORTED;};
-private:
-    const Table* table_;
-    tdi_operations_type_e oper_type_;
+ public:
+  virtual ~TableOperations() = default;
+  TableOperations(const Table *table, const tdi_operations_type_e &oper_type)
+      : table_(table), oper_type_(oper_type){};
+  virtual tdi_status_t setValue(const tdi_operations_field_type_e &/*oper_type*/,
+                        const uint64_t & /*value*/) {
+    return TDI_NOT_SUPPORTED;
+  };
+  virtual tdi_status_t getValue(const tdi_operations_field_type_e &/*oper_type*/,
+                        uint64_t * /*value*/) const {
+    return TDI_NOT_SUPPORTED;
+  };
+  const tdi_operations_type_e &operationTypeGet() const { return oper_type_; };
+  const Table *tableGet() const { return table_; };
+
+ private:
+  const Table *table_;
+  tdi_operations_type_e oper_type_;
 };
 
 }  // tdi

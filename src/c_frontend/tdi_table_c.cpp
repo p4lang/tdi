@@ -536,7 +536,7 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
 tdi_status_t tdi_table_operations_execute(const tdi_table_hdl *table_hdl,
                                           const tdi_operations_hdl *tbl_ops) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return (table->tableOperationsExecute(
+  return (table->operationsExecute(
       reinterpret_cast<const tdi::TableOperations *>(tbl_ops)));
 }
 #endif

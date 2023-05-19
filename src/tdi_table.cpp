@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <algorithm>
-#include <tdi/common/tdi_notifications.hpp>
+//#include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_table.hpp>
 
 // local includes
@@ -349,6 +349,7 @@ tdi_status_t Table::tableAttributesGet(
   return TDI_NOT_SUPPORTED;
 }
 
+#if 0
 tdi_status_t Table::notificationRegister(tdi::Target &,//target,
 				const tdi_id_t &,//notification_id,
 				tdiNotificationCallback &,//callback,
@@ -362,6 +363,7 @@ tdi_status_t Table::notificationDeregister(tdi::Target &,//target,
    LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
    return TDI_NOT_SUPPORTED;
 }
+#endif
 
 tdi_status_t Table::operationsAllocate(
     const tdi_operations_type_e &op_type,
@@ -381,7 +383,8 @@ tdi_status_t Table::operationsAllocate(
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::tableOperationsExecute(
+tdi_status_t Table::operationsExecute(
+    const tdi::Target & /*dev_tgt*/,
     const tdi::TableOperations & /*tableOperations*/) const {
   return TDI_NOT_SUPPORTED;
 }

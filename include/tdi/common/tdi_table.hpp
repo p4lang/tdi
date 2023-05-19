@@ -31,7 +31,7 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
-#include <tdi/common/tdi_notifications.hpp>
+//#include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_operations.hpp>
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_table_data.hpp>
@@ -633,7 +633,8 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableOperationsExecute(
+  virtual tdi_status_t operationsExecute(
+      const tdi::Target &dev_tgt,
       const tdi::TableOperations &tableOperations) const;
   /** @} */  // End of group Operations
   const TableInfo *tableInfoGet() const { return table_info_; }
@@ -653,14 +654,22 @@ class Table {
 
   const TdiInfo *tdiInfoGet() const { return tdi_info_; };
 
-  virtual tdi_status_t notificationRegister(tdi::Target &target,
+#if 0
+tdi_status_t notificationRegistrationParamsAllocate(
+      std::unique_ptr<NotificationRegistrationParams> *registration_params);
+
+tdi_status_t notificationCallbackParamsAllocate(
+      std::unique_ptr<NotificationCallbackParams> *callback_params);
+
+  virtual tdi_status_t notificationRegister(const tdi::Target &target,
                                             const tdi_id_t &notification_id,
-                                            tdiNotificationCallback &callback,
-                                            void *cookie);
+                                            const tdiNotificationCallback &callback,
+                                            const tdi:: NotificationRegistrationParams &in_params,
+                                            const void *cookie);
 
-  virtual tdi_status_t notificationDeregister(tdi::Target &target,
+  virtual tdi_status_t notificationDeregister(const tdi::Target &target,
                                               const tdi_id_t &notification_id) const;
-
+#endif
  protected:
   // Targets can choose to use any ctor to create tables. The 2nd one
   // assists with setting table APIs during runtime rather than

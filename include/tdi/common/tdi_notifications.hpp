@@ -35,45 +35,62 @@
 
 namespace tdi {
 
-class Table;
-
 /**
- * @brief Contains Parmaters info of Notification
- * get and set the value with a field_id
+ * @brief Contains input paramaters for notification register
  */
-class NotificationOutParams {
-public:
-    virtual ~NotificationOutParams() = default;
-    NotificationOutParams(const Table* table, const tdi_id_t &tdi_id_type)
-        : table_(table), notification_id_(tdi_id_type){};
 
-    virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
-                                  const uint64_t & /*value*/) const {
-      return TDI_NOT_SUPPORTED;
-    };
-    virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
-	                              uint64_t * /*value*/)  const {
-      return TDI_NOT_SUPPORTED;
-    };
+class NotificationRegistrationParams {
+ public:
+  virtual ~NotificationRegistrationParams() = default;
 
-    virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
-                                  const std::vector<uint8_t> & /*value*/) const {
-      return TDI_NOT_SUPPORTED; 
-	};
-    virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
-                                  std::vector<uint8_t> * /*value*/) const {
-      return TDI_NOT_SUPPORTED;
-	};
+  NotificationRegistrationParams(const Table *table)
+      : table_(table){};
 
-    virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
-                                  uint8_t*const* /*value*/,
-                                  size_t * /*size*/) const {
-      return TDI_NOT_SUPPORTED;
-    };
+  virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
+                                const uint64_t & /*value*/) {
+    return TDI_NOT_SUPPORTED;
+  }
+
+  virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
+                                uint64_t * /*value*/) const {
+    return TDI_NOT_SUPPORTED;
+  }
 
  private:
-    const Table* table_; 
-    tdi_id_t notification_id_;
+ //TODO:  these might not be needed
+  const Table *table_;
+};
+
+/**
+ * @brief Contains paramaters info of Notification
+ * get and set the value with a field_id
+ */
+class NotificationCallbackParams {
+ public:
+  virtual ~NotificationCallbackParams() = default;
+  NotificationCallbackParams(const Table *table) : table_(table){};
+
+  virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
+                                const uint64_t & /*value*/) {
+    return TDI_NOT_SUPPORTED;
+  }
+
+  virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
+                                const std::vector<uint64_t> & /*value*/) {
+    return TDI_NOT_SUPPORTED;
+  }
+  virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
+                                uint64_t * /*value*/) const {
+    return TDI_NOT_SUPPORTED;
+  }
+
+  virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
+                                std::vector<uint64_t> * /*value*/) const {
+    return TDI_NOT_SUPPORTED;
+  }
+
+ private:
+  const Table *table_;
 };
 
 /**
@@ -81,7 +98,7 @@ public:
  */
 typedef std::function<void(std::unique_ptr<tdi::TableKey> key,
                            std::unique_ptr<tdi::TableData> data,
-                           std::unique_ptr<tdi::NotificationOutParams> params,
+                           std::unique_ptr<tdi::NotificationCallbackParams> params,
                            void *cookie)> tdiNotificationCallback;
 }  // tdi
 
