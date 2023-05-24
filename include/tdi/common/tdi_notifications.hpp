@@ -35,16 +35,41 @@
 
 namespace tdi {
 
+class Table;
 /**
  * @brief Contains input paramaters for notification register
  */
 
+class NotificationParams {
+ public:
+  virtual ~NotificationParams() = default;
+
+  NotificationParams(const Table *table, tdi_id_t notification_id)
+      : table_(table), notification_id_(notification_id){};
+
+  virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
+                                const uint64_t & /*value*/) {
+    return TDI_NOT_SUPPORTED;
+  }
+
+  virtual tdi_status_t getValue(const tdi_id_t & /*field_id*/,
+                                uint64_t * /*value*/) const {
+    return TDI_NOT_SUPPORTED;
+  }
+
+  const tdi_id_t &notificationIdGet() const { return notification_id_; };
+  const Table *table_;
+ private:
+  tdi_id_t notification_id_{0};
+};
+
+#if 0
 class NotificationRegistrationParams {
  public:
   virtual ~NotificationRegistrationParams() = default;
 
-  NotificationRegistrationParams(const Table *table)
-      : table_(table){};
+  NotificationRegistrationParams(const Table *table, tdi_id_t notification_id)
+      : table_(table), notification_id_(notification_id){};
 
   virtual tdi_status_t setValue(const tdi_id_t & /*field_id*/,
                                 const uint64_t & /*value*/) {
@@ -57,7 +82,7 @@ class NotificationRegistrationParams {
   }
 
  private:
- //TODO:  these might not be needed
+  tdi_id_t notification_id_{0};
   const Table *table_;
 };
 
@@ -92,13 +117,14 @@ class NotificationCallbackParams {
  private:
   const Table *table_;
 };
+#endif
 
 /**
  * @brief Contains TDI Notification callback function 
  */
 typedef std::function<void(std::unique_ptr<tdi::TableKey> key,
                            std::unique_ptr<tdi::TableData> data,
-                           std::unique_ptr<tdi::NotificationCallbackParams> params,
+                           std::unique_ptr<tdi::NotificationParams> params,
                            void *cookie)> tdiNotificationCallback;
 }  // tdi
 

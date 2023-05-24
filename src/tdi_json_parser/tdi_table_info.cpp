@@ -198,6 +198,13 @@ std::vector<tdi_id_t> TableInfo::actionIdListGet() const {
   return id_vec;
 }
 
+  const NotificationRegistrationParamsInfo *TableInfo::notificationRegistrationParamGet(const tdi_id_t &/*field_id*/,
+                                    const tdi_id_t &/*notitication_id*/) const {
+
+//implement this
+return nullptr;
+                                    }
+
 #if 0
 tdi_status_t Table::getDataField(const tdi_id_t &field_id,
                                  const TableDataField **field) const {

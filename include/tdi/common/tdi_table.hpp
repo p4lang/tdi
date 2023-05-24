@@ -31,7 +31,7 @@
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
-//#include <tdi/common/tdi_notifications.hpp>
+#include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_operations.hpp>
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_table_data.hpp>
@@ -654,18 +654,25 @@ class Table {
 
   const TdiInfo *tdiInfoGet() const { return tdi_info_; };
 
-#if 0
+#if 1
 tdi_status_t notificationRegistrationParamsAllocate(
-      std::unique_ptr<NotificationRegistrationParams> *registration_params);
+      const tdi_id_t &notification_id, std::unique_ptr<NotificationParams> *registration_params);
 
 tdi_status_t notificationCallbackParamsAllocate(
-      std::unique_ptr<NotificationCallbackParams> *callback_params);
+      std::unique_ptr<NotificationParams> *callback_params);
+
+
+// tdi_status_t notificationRegistrationParamsAllocate(
+//       std::unique_ptr<NotificationRegistrationParams> *registration_params);
+
+// tdi_status_t notificationCallbackParamsAllocate(
+//       std::unique_ptr<NotificationCallbackParams> *callback_params);
 
   virtual tdi_status_t notificationRegister(const tdi::Target &target,
                                             const tdi_id_t &notification_id,
                                             const tdiNotificationCallback &callback,
-                                            const tdi:: NotificationRegistrationParams &in_params,
-                                            const void *cookie);
+                                            const tdi::NotificationParams &in_params,
+                                            void *cookie) const;
 
   virtual tdi_status_t notificationDeregister(const tdi::Target &target,
                                               const tdi_id_t &notification_id) const;

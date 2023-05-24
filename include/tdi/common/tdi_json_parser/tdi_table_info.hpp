@@ -39,6 +39,13 @@ class KeyFieldInfo;
 class DataFieldInfo;
 class Cjson;
 class TdiInfoMapper;
+class NotificationRegistrationParamsInfo {
+ public:
+  tdi_id_t field_id_{0};
+  const size_t size_bits_{0};
+  const tdi_id_t &idGet() const { return field_id_; };
+  const size_t &sizeGet() const { return size_bits_; };
+};
 
 // Classes that need to be overridden by targets in order for them to
 // target-specific information in the info
@@ -753,6 +760,9 @@ class TableInfo {
    * @return Status of the API call
    */
   const ActionInfo *actionGet(const tdi_id_t &action_id) const;
+
+  const NotificationRegistrationParamsInfo *notificationRegistrationParamGet(const tdi_id_t &field_id,
+                                    const tdi_id_t &notitication_id) const;
 
   /**
    * @brief Set tableContextInfo object.
