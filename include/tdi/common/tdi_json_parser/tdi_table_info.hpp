@@ -43,8 +43,10 @@ class NotificationRegistrationParamsInfo {
  public:
   tdi_id_t field_id_{0};
   const size_t size_bits_{0};
+  const tdi_field_data_type_e data_type_{static_cast<tdi_field_data_type_e>(0)};
   const tdi_id_t &idGet() const { return field_id_; };
   const size_t &sizeGet() const { return size_bits_; };
+  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
 };
 
 // Classes that need to be overridden by targets in order for them to

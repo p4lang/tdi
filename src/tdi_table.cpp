@@ -349,9 +349,23 @@ tdi_status_t Table::tableAttributesGet(
   return TDI_NOT_SUPPORTED;
 }
 
+tdi_status_t Table::notificationRegistrationParamsAllocate(
+    const tdi_id_t & /*notification_id*/,
+    std::unique_ptr<NotificationParams> * /*registration_params*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationCallbackParamsAllocate(
+    const tdi_id_t & /*notification_id*/,
+    std::unique_ptr<NotificationParams> * /*registration_params*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
 tdi_status_t Table::notificationRegister(const tdi::Target & /*target*/,
                                   const tdi_id_t & /*notification_id*/,
-                                  const tdiNotificationCallback & /*callback*/,
+                                  const tdiNotificationCallback & /*callback_fn*/,
                                   const tdi::NotificationParams & /*in_params*/,
                                   void * /*cookie*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
@@ -359,8 +373,9 @@ tdi_status_t Table::notificationRegister(const tdi::Target & /*target*/,
 }
 
 tdi_status_t Table::notificationDeregister(
-    const tdi::Target & /*target*/,
-    const tdi_id_t & /*notification_id*/) const {
+    const tdi::Target &/*target*/,
+    const tdi_id_t &/*notification_id*/,
+    const tdi::NotificationParams &/*registration_params*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
