@@ -363,10 +363,14 @@ std::unique_ptr<ActionInfo> TdiInfoParser::parseAction(
 // To parse Notification params fields in a table
 std::unique_ptr<NotificationParamInfo> TdiInfoParser::parseNotificationParams(
     const tdi::Cjson &notification_param_json) {
-  tdi_id_t id = static_cast<tdi_id_t>(notification_param_json[tdi_json::TABLE_NOTIFICATIONS_ID]);
-  std::string name = notification_param_json[tdi_json::TABLE_NOTIFICATIONS_NAME];
-  bool mandatory = notification_param_json[tdi_json::TABLE_NOTIFICATIONS_MANDATORY];
-  bool repeated = notification_param_json[tdi_json::TABLE_NOTIFICATIONS_REPEATED];
+  tdi_id_t id = static_cast<tdi_id_t>(
+      notification_param_json[tdi_json::TABLE_NOTIFICATIONS_ID]);
+  std::string name =
+      notification_param_json[tdi_json::TABLE_NOTIFICATIONS_NAME];
+  bool mandatory =
+      notification_param_json[tdi_json::TABLE_NOTIFICATIONS_MANDATORY];
+  bool repeated =
+      notification_param_json[tdi_json::TABLE_NOTIFICATIONS_REPEATED];
   tdi_field_data_type_e field_data_type;
   size_t width;
   uint64_t default_value;
@@ -384,17 +388,19 @@ std::unique_ptr<NotificationParamInfo> TdiInfoParser::parseNotificationParams(
 
   // create notification_params structure and fill it
   std::unique_ptr<NotificationParamInfo> notification_params(
-       new NotificationParamInfo(id,
-                              name,
-                              repeated,
-                              width,
-                              field_data_type,
-                              mandatory,
-                              choices,
-                              parseAnnotations(notification_param_json[tdi_json::TABLE_NOTIFICATIONS_ANNOTATIONS]),
-                              default_value,
-                              default_fl_value,
-                              default_str_value));
+      new NotificationParamInfo(
+          id,
+          name,
+          repeated,
+          width,
+          field_data_type,
+          mandatory,
+          choices,
+          parseAnnotations(notification_param_json
+                               [tdi_json::TABLE_NOTIFICATIONS_ANNOTATIONS]),
+          default_value,
+          default_fl_value,
+          default_str_value));
 
   return notification_params;
 }
@@ -407,35 +413,44 @@ std::unique_ptr<NotificationInfo> TdiInfoParser::parseNotificationInfo(
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields;
 
   // Get registration params fields
-  std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>> registration_params_fields;
+  std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+      registration_params_fields;
 
-  tdi::Cjson registration_params_cjson = notification_json[tdi_json::TABLE_NOTIFICATIONS_REGISTRATION_PARAMS];
-  for (const auto &registration_data : registration_params_cjson.getCjsonChildVec()) {
+  tdi::Cjson registration_params_cjson =
+      notification_json[tdi_json::TABLE_NOTIFICATIONS_REGISTRATION_PARAMS];
+  for (const auto &registration_data :
+       registration_params_cjson.getCjsonChildVec()) {
     auto notification_param = parseNotificationParams(*registration_data);
-    if (registration_params_fields.find(notification_param->idGet()) != registration_params_fields.end()) {
+    if (registration_params_fields.find(notification_param->idGet()) !=
+        registration_params_fields.end()) {
       LOG_ERROR("%s:%d ID \"%u\" Exists for registration params ",
                 __func__,
                 __LINE__,
                 notification_param->idGet());
       continue;
     }
-    registration_params_fields[notification_param->idGet()] = std::move(notification_param);
+    registration_params_fields[notification_param->idGet()] =
+        std::move(notification_param);
   }
 
   // Get callback params fields
-  std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>> callback_params_fields;
+  std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+      callback_params_fields;
 
-  tdi::Cjson callback_params_cjson = notification_json[tdi_json::TABLE_NOTIFICATIONS_CALLBACK_PARAMS];
+  tdi::Cjson callback_params_cjson =
+      notification_json[tdi_json::TABLE_NOTIFICATIONS_CALLBACK_PARAMS];
   for (const auto &callback_data : callback_params_cjson.getCjsonChildVec()) {
     auto notification_param = parseNotificationParams(*callback_data);
-    if (callback_params_fields.find(notification_param->idGet()) != callback_params_fields.end()) {
+    if (callback_params_fields.find(notification_param->idGet()) !=
+        callback_params_fields.end()) {
       LOG_ERROR("%s:%d ID \"%u\" Exists for callback params ",
                 __func__,
                 __LINE__,
                 notification_param->idGet());
       continue;
     }
-    callback_params_fields[notification_param->idGet()] = std::move(notification_param);
+    callback_params_fields[notification_param->idGet()] =
+        std::move(notification_param);
   }
   std::unique_ptr<NotificationInfo> notification_info(
       new NotificationInfo(id,

@@ -654,7 +654,6 @@ class Table {
 
   const TdiInfo *tdiInfoGet() const { return tdi_info_; };
 
-#if 1
   virtual tdi_status_t notificationRegistrationParamsAllocate(
       const tdi_id_t &notification_id,
       std::unique_ptr<NotificationParams> *registration_params) const;
@@ -662,13 +661,6 @@ class Table {
   virtual tdi_status_t notificationCallbackParamsAllocate(
       const tdi_id_t &notification_id,
       std::unique_ptr<NotificationParams> *registration_params) const;
-
-  // tdi_status_t notificationRegistrationParamsAllocate(
-  //       std::unique_ptr<NotificationRegistrationParams>
-  //       *registration_params);
-
-  // tdi_status_t notificationCallbackParamsAllocate(
-  //       std::unique_ptr<NotificationCallbackParams> *callback_params);
 
   virtual tdi_status_t notificationRegister(
       const tdi::Target &target,
@@ -681,7 +673,7 @@ class Table {
       const tdi::Target &target,
       const tdi_id_t &notification_id,
       const tdi::NotificationParams &registration_params) const;
-#endif
+
  protected:
   // Targets can choose to use any ctor to create tables. The 2nd one
   // assists with setting table APIs during runtime rather than
