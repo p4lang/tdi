@@ -360,6 +360,92 @@ std::unique_ptr<ActionInfo> TdiInfoParser::parseAction(
   return action_info;
 }
 
+// To parse Notification params fields in a table
+std::unique_ptr<NotificationParamInfo> TdiInfoParser::parseNotificationParams(
+    const tdi::Cjson &notification_param_json) {
+  tdi_id_t id = static_cast<tdi_id_t>(notification_param_json[tdi_json::TABLE_NOTIFICATIONS_ID]);
+  std::string name = notification_param_json[tdi_json::TABLE_NOTIFICATIONS_NAME];
+  bool mandatory = notification_param_json[tdi_json::TABLE_NOTIFICATIONS_MANDATORY];
+  bool repeated = notification_param_json[tdi_json::TABLE_NOTIFICATIONS_REPEATED];
+  tdi_field_data_type_e field_data_type;
+  size_t width;
+  uint64_t default_value;
+  float default_fl_value;
+  std::string default_str_value;
+  std::vector<std::string> choices;
+  std::string data_type;
+  parseFieldWidth(notification_param_json,
+                  field_data_type,
+                  width,
+                  default_value,
+                  default_fl_value,
+                  default_str_value,
+                  choices);
+
+  // create notification_params structure and fill it
+  std::unique_ptr<NotificationParamInfo> notification_params(
+       new NotificationParamInfo(id,
+                              name,
+                              repeated,
+                              width,
+                              field_data_type,
+                              mandatory,
+                              choices,
+                              parseAnnotations(notification_param_json[tdi_json::TABLE_NOTIFICATIONS_ANNOTATIONS]),
+                              default_value,
+                              default_fl_value,
+                              default_str_value));
+
+  return notification_params;
+}
+
+// To parse Notification fields in a table
+std::unique_ptr<NotificationInfo> TdiInfoParser::parseNotificationInfo(
+    const tdi::Cjson &notification_json) {
+  std::string name = notification_json[tdi_json::TABLE_NOTIFICATIONS_NAME];
+  tdi_id_t id = notification_json[tdi_json::TABLE_NOTIFICATIONS_ID];
+  std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> data_fields;
+
+  // Get registration params fields
+  std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>> registration_params_fields;
+
+  tdi::Cjson registration_params_cjson = notification_json[tdi_json::TABLE_NOTIFICATIONS_REGISTRATION_PARAMS];
+  for (const auto &registration_data : registration_params_cjson.getCjsonChildVec()) {
+    auto notification_param = parseNotificationParams(*registration_data);
+    if (registration_params_fields.find(notification_param->idGet()) != registration_params_fields.end()) {
+      LOG_ERROR("%s:%d ID \"%u\" Exists for registration params ",
+                __func__,
+                __LINE__,
+                notification_param->idGet());
+      continue;
+    }
+    registration_params_fields[notification_param->idGet()] = std::move(notification_param);
+  }
+
+  // Get callback params fields
+  std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>> callback_params_fields;
+
+  tdi::Cjson callback_params_cjson = notification_json[tdi_json::TABLE_NOTIFICATIONS_CALLBACK_PARAMS];
+  for (const auto &callback_data : callback_params_cjson.getCjsonChildVec()) {
+    auto notification_param = parseNotificationParams(*callback_data);
+    if (callback_params_fields.find(notification_param->idGet()) != callback_params_fields.end()) {
+      LOG_ERROR("%s:%d ID \"%u\" Exists for callback params ",
+                __func__,
+                __LINE__,
+                notification_param->idGet());
+      continue;
+    }
+    callback_params_fields[notification_param->idGet()] = std::move(notification_param);
+  }
+  std::unique_ptr<NotificationInfo> notification_info(
+      new NotificationInfo(id,
+                           name,
+                           std::move(registration_params_fields),
+                           std::move(callback_params_fields),
+                           parseAnnotations(notification_json["annotations"])));
+  return notification_info;
+}
+
 std::unique_ptr<tdi::LearnInfo> TdiInfoParser::parseLearn(
     const tdi::Cjson &learn_tdi) {
   tdi_id_t learn_id = learn_tdi[tdi_json::LEARN_ID];
@@ -423,6 +509,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
   std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map;
   std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map;
   std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map;
+  std::map<tdi_id_t, std::unique_ptr<NotificationInfo>> table_notifications_map;
   std::set<tdi_id_t> depends_on_set;
   SupportedApis table_apis;
   std::set<tdi_operations_type_e> operations_type_set;
@@ -528,6 +615,25 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
     }
   }
 
+  ///////////////////////////
+  // getting notifications //
+  ///////////////////////////
+  tdi::Cjson table_notifications_cjson = table_tdi[tdi_json::TABLE_NOTIFICATIONS];
+  for (const auto &notifications : table_notifications_cjson.getCjsonChildVec()) {
+    auto notification_info = parseNotificationInfo(*notifications);
+    auto elem = table_notifications_map.find(notification_info->idGet());
+    if (elem == table_notifications_map.end()) {
+      table_notifications_map[notification_info->idGet()] = (std::move(notification_info));
+    } else {
+      // Action id is repeating. Log an error message
+      LOG_ERROR("%s:%d Notification ID %d is repeating",
+                __func__,
+                __LINE__,
+                notification_info->idGet());
+      return nullptr;
+    }
+  }
+
   //////////////////////////
   // create tableInfo     //
   //////////////////////////
@@ -541,6 +647,7 @@ std::unique_ptr<tdi::TableInfo> TdiInfoParser::parseTable(
                     std::move(table_key_map),
                     std::move(table_data_map),
                     std::move(table_action_map),
+                    std::move(table_notifications_map),
                     depends_on_set,
                     std::move(table_apis),
                     operations_type_set,

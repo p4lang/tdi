@@ -76,6 +76,15 @@ const std::string LEARN_ID = "id";
 const std::string LEARN_ANNOTATIONS = "annotations";
 const std::string LEARN_FIELDS = "fields";
 
+const std::string TABLE_NOTIFICATIONS = "notifications";
+const std::string TABLE_NOTIFICATIONS_ID = "id";
+const std::string TABLE_NOTIFICATIONS_NAME = "name";
+const std::string TABLE_NOTIFICATIONS_REPEATED = "repeated";
+const std::string TABLE_NOTIFICATIONS_MANDATORY = "mandatory";
+const std::string TABLE_NOTIFICATIONS_ANNOTATIONS = "annotations";
+const std::string TABLE_NOTIFICATIONS_REGISTRATION_PARAMS = "registration_params";
+const std::string TABLE_NOTIFICATIONS_CALLBACK_PARAMS = "callback_params";
+
 }  // namespace tdi_json
 
 // Forward declarations
@@ -104,6 +113,8 @@ class TdiInfoParser {
   std::unique_ptr<DataFieldInfo> parseDataField(const tdi::Cjson &data_json,
                                                 const uint64_t &oneof_index);
   std::unique_ptr<ActionInfo> parseAction(const tdi::Cjson &action_json);
+  std::unique_ptr<NotificationInfo> parseNotificationInfo(const tdi::Cjson &notification_json);
+  std::unique_ptr<NotificationParamInfo> parseNotificationParams(const tdi::Cjson &notification_param_json);
   std::set<tdi::Annotation> parseAnnotations(
       const tdi::Cjson &annotation_cjson);
   void parseFieldWidth(const tdi::Cjson &node,
