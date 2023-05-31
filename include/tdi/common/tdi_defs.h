@@ -328,6 +328,7 @@ DECLARE_HANDLE(tdi_learn_info_hdl);
 DECLARE_HANDLE(tdi_learn_field_info_hdl);
 DECLARE_HANDLE(tdi_operations_hdl);
 DECLARE_HANDLE(tdi_dev_config_hdl);
+DECLARE_HANDLE(tdi_notification_param_hdl);
 
 /**
  * @brief learn_data_hdl and table_data_hdl are the same,

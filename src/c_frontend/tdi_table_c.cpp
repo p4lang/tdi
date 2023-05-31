@@ -532,11 +532,43 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
       reinterpret_cast<tdi::TableAttributes *>(tbl_attr));
 }
 
-#ifdef _TDI_FROM_BFRT
 tdi_status_t tdi_table_operations_execute(const tdi_table_hdl *table_hdl,
+                                          const tdi_target_hdl *target,
                                           const tdi_operations_hdl *tbl_ops) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
   return (table->operationsExecute(
-      reinterpret_cast<const tdi::TableOperations *>(tbl_ops)));
+      *reinterpret_cast<const tdi::Target *>(target),
+      *reinterpret_cast<const tdi::TableOperations *>(tbl_ops)));
 }
+
+// notification APIs
+tdi_status_t tdi_notification_registration_params_allocate(
+    const tdi_table_hdl *table_hdl,
+    const tdi_id_t notification_id,
+    tdi_notification_param_hdl **tbl_notification_hdl) {
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+  std::unique_ptr<tdi::NotificationParams> notification_params;
+  auto status = table->notificationRegistrationParamsAllocate(
+      notification_id, &notification_params);
+  *tbl_notification_hdl = reinterpret_cast<tdi_notification_param_hdl *>(
+      notification_params.release());
+  return status;
+}
+
+
+#if 0
+tdi_status_t tdi_notification_register(
+    const tdi_table_hdl *table_hdl,
+    const tdi_id_t notification_id,
+    const tdi_notification_param_hdl *tbl_notification_hdl,
+    ) {
+
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+
+      table->notificationRegisterCFrontend(notification_id,
+      reinterpret_cast<tdi::NotificationParams *>(tbl_notification_hdl));
+      rx_registration_params, callback_fn, cookie);
+
+    }
 #endif
+// tdi_status_t tdi_notification_callback_allocate()
