@@ -363,11 +363,22 @@ tdi_status_t Table::notificationCallbackParamsAllocate(
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::notificationRegister(const tdi::Target & /*target*/,
-                                  const tdi_id_t & /*notification_id*/,
-                                  const tdiNotificationCallback & /*callback_fn*/,
-                                  const tdi::NotificationParams & /*in_params*/,
-                                  void * /*cookie*/) const {
+tdi_status_t Table::notificationRegister(
+    const tdi::Target & /*target*/,
+    const tdi_id_t & /*notification_id*/,
+    const tdiNotificationCallback & /*callback_fn*/,
+    const tdi::NotificationParams & /*in_params*/,
+    void * /*cookie*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationRegisterC(
+    const tdi::Target & /*target*/,
+    const tdi_id_t & /*notification_id*/,
+    const tdi_notification_callback & /*callback_fn*/,
+    const tdi::NotificationParams & /*in_params*/,
+    void * /*cookie*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }

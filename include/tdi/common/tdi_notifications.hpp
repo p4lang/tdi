@@ -72,7 +72,7 @@ class NotificationParams {
 };
 
 /**
- * @brief Contains TDI Notification callback function
+ * @brief TDI Notification cpp callback function
  */
 typedef std::function<void(std::unique_ptr<tdi::TableKey> key,
                            std::unique_ptr<tdi::TableData> data,
@@ -80,5 +80,20 @@ typedef std::function<void(std::unique_ptr<tdi::TableKey> key,
                            void *cookie)>
     tdiNotificationCallback;
 }  // namespace tdi
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+/**
+ * @brief TDI Notification c callback function
+ */
+typedef void (*tdi_notification_callback)(
+    const tdi_table_key_hdl *key,
+    const tdi_table_data_hdl *data,
+    const tdi_notification_param_hdl *params,
+    void *cookie);
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // _TDI_NOTIFICATIONS_HPP

@@ -669,6 +669,13 @@ class Table {
       const tdi::NotificationParams &registration_params,
       void *cookie) const;
 
+  virtual tdi_status_t notificationRegisterC(
+      const tdi::Target &target,
+      const tdi_id_t &notification_id,
+      const tdi_notification_callback &callback_fn,
+      const tdi::NotificationParams &registration_params,
+      void *cookie) const;
+
   virtual tdi_status_t notificationDeregister(
       const tdi::Target &target,
       const tdi_id_t &notification_id,
