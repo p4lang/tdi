@@ -97,7 +97,9 @@ class TdiTable:
         self.supported_commands = ["info", "entry", "string_choices"]
         self.set_supported_attributes_to_supported_commands()
         self.set_supported_operations_to_supported_commands()
+        self.set_supported_notifications_to_supported_commands()
         self.set_supported_apis_to_supported_commands()
+        print("table: ", self.name, "supported: ", self.supported_commands)
         if not self.table_ready:
             return
         #
@@ -1802,11 +1804,40 @@ class TdiTable:
         keys_list = self.operations_type_cls.operations_dict.keys()
 
         # TODO: Enable this when operations are supported
-        '''
         for i in range(len(operations_arr)):
             if operations_arr[i] in keys_list:
                 self.supported_commands.append(self.operations_type_cls.operations_dict[operations_arr[i]])
-        '''
+
+    def set_supported_notifications_to_supported_commands(self):
+        num_notifs = c_uint(0)
+        sts = self._cintf.get_driver().tdi_table_num_notifications_supported(self._info_handle, byref(num_notifs))
+        if sts != 0:
+            raise TdiTableError("Error: num notifications supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+
+        arr_type = c_char_p * num_notifs.value
+        notifs_arr = arr_type()
+        sts = self._cintf.get_driver().tdi_table_notifications_supported(self._info_handle, byref(notifs_arr), byref(num_notifs))
+
+        for notif in notifs_arr:
+            self.supported_commands += [notif.decode('ascii')] #self.attributes_type_cls.attributes_dict[notifs_arr[i]]
+
+        print("supported_commands: ", self.supported_commands)
+        # num_opers = c_uint(0)
+        # sts = self._cintf.get_driver().tdi_table_num_notifications_supported(self._info_handle, byref(num_opers))
+        # if sts != 0:
+        #     raise TdiTableError("Error: num notifications supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+        # arr_type = c_uint * num_opers.value
+        # operations_arr = arr_type()
+        # sts = self._cintf.get_driver().tdi_table_operations_supported(self._info_handle, byref(operations_arr), byref(num_opers))
+        # if sts != 0:
+        #     raise TdiTableError("Error: operations supported get failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)), self, sts)
+        # logging.debug("For Table={} operations_arr ==={}".format(self.name, str(operations_arr[0:])));
+        # keys_list = self.operations_type_cls.operations_dict.keys()
+
+        # TODO: Enable this when operations are supported
+        # for i in range(len(operations_arr)):
+        #     if operations_arr[i] in keys_list:
+        #         self.supported_commands.append(self.operations_type_cls.operations_dict[operations_arr[i]])
 
     def set_supported_apis_to_supported_commands(self):
         num_api = c_uint(0)
@@ -1877,7 +1908,7 @@ class TdiTable:
 
     def _table_operation_set(self, callback, operation):
         ops_hdl = self._cintf.handle_type()
-        sts = self._cintf.get_driver().tdi_table_operations_allocate(self._handle, operation, byref(ops_hdl))
+        sts = self._cintf.get_driver().tdi_operations_allocate(self._handle, operation, byref(ops_hdl))
         if not sts == 0:
             print("table_operations_allocate failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
             return -1
@@ -1893,7 +1924,7 @@ class TdiTable:
             self._cintf.get_driver().tdi_table_operations_deallocate(ops_hdl)
             return -1
 
-        sts = self._cintf.get_driver().tdi_table_operations_execute(self._handle, ops_hdl)
+        sts = self._cintf.get_driver().tdi_operations_execute(self._handle, ops_hdl)
         if not sts == 0:
             print("table_operations_execute failed on table {}. [{}]".format(self.name, self._cintf.err_str(sts)))
         sts1 = self._cintf.get_driver().tdi_table_operations_deallocate(ops_hdl)

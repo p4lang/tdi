@@ -899,6 +899,16 @@ tdi_status_t tdi_table_operations_supported(
     tdi_operations_type_e *operations,
     uint32_t *num_returned);
 
+
+tdi_status_t tdi_table_num_notifications_supported(
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num);
+
+tdi_status_t tdi_table_notifications_supported(
+    const tdi_table_info_hdl *table_info_hdl,
+    // tdi_notifications_type_e *notifications,
+    const char *notifications[],
+    uint32_t *num_returned);
+ 
 /**
  * @brief Get size of list of tables that the given table is dependent on
  *

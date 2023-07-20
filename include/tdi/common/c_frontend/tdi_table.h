@@ -22,9 +22,11 @@
 
 #include <tdi/common/c_frontend/tdi_attributes.h>
 #include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/c_frontend/tdi_notifications.h>
 #include <tdi/common/c_frontend/tdi_table_data.h>
 #include <tdi/common/c_frontend/tdi_table_key.h>
 #include <tdi/common/tdi_defs.h>
+// #include <tdi/common/tdi_notifications.hpp>
 
 #ifdef __cplusplus
 extern "C" {
@@ -781,8 +783,30 @@ tdi_status_t tdi_operations_deallocate(tdi_operations_hdl *tbl_op_hdl);
  *
  * @return Status of the API call
  */
-tdi_status_t tdi_table_operations_execute(const tdi_table_hdl *table_hdl,
+tdi_status_t tdi_operations_execute(const tdi_table_hdl *table_hdl,
+                                          const tdi_target_hdl *target,
                                           const tdi_operations_hdl *tbl_ops);
+
+tdi_status_t tdi_notifications_registration_params_allocate(
+    const tdi_table_hdl *table_hdl, const tdi_id_t notification_id,
+    tdi_notification_param_hdl **tbl_notification_hdl);
+
+tdi_status_t tdi_notifications_registration_params_deallocate(
+    tdi_notification_param_hdl *tbl_notification_hdl);
+
+tdi_status_t tdi_notifications_register(
+    const tdi_table_hdl *table_hdl,
+    const tdi_target_hdl *target,
+    const tdi_id_t notification_id,
+    const tdi_notification_callback callback_fn,
+    const tdi_notification_param_hdl *tbl_notification_hdl,
+    void *cookie);
+
+tdi_status_t tdi_notifications_deregister(
+    const tdi_table_hdl *table_hdl,
+    const tdi_target_hdl *target,
+    const tdi_id_t notification_id,
+    const tdi_notification_param_hdl *tbl_notification_hdl);
 
 #ifdef __cplusplus
 }

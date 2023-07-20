@@ -247,6 +247,14 @@ enum tdi_operations_field_type_e {
 };
 typedef enum tdi_operations_field_type_e tdi_operations_field_type_e;
 
+enum tdi_notifications_type_e {
+  TDI_NOTIFICATIONS_TYPE_CORE = 0,
+  TDI_NOTIFICATIONS_TYPE_ARCH = 0x08,
+  TDI_NOTIFICATIONS_TYPE_DEVICE = 0x80,
+};
+typedef enum tdi_notifications_type_e tdi_notifications_type_e;
+
+
 /** Identifies an error code. */
 typedef int tdi_status_t;
 

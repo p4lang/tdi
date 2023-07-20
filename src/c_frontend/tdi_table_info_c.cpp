@@ -22,11 +22,13 @@
 //#include <tdi/common/tdi_table.hpp>
 #include <tdi/common/c_frontend/tdi_attributes.h>
 #include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/c_frontend/tdi_notifications.h>
 #include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 //#include <tdi/common/tdi_table_data.hpp>
 #//include <tdi/common/tdi_table_key.hpp>
 #include <tdi/common/tdi_operations.hpp>
+#include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_utils.hpp>
 
 namespace {
@@ -892,6 +894,37 @@ tdi_status_t tdi_table_operations_supported(
     operations[i] = static_cast<tdi_operations_type_e>(iter);
     i++;
   }
+  *num_returned = i;
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_table_num_notifications_supported(
+    const tdi_table_info_hdl *table_info_hdl, uint32_t *num_notifications) {
+  if (table_info_hdl == nullptr || num_notifications == nullptr) {
+    LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
+  auto &notifications_map = tableInfo->name_notifications_map_;
+  *num_notifications = notifications_map.size();
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_table_notifications_supported(
+    const tdi_table_info_hdl *table_info_hdl, const char *notifications[],
+    uint32_t *num_returned) {
+  if (table_info_hdl == nullptr || num_returned == nullptr ||
+      notifications == nullptr) {
+    LOG_ERROR("%s:%d Invalid arg", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  auto tableInfo = reinterpret_cast<const tdi::TableInfo *>(table_info_hdl);
+  auto &notifications_map = tableInfo->name_notifications_map_;
+  int i = 0;
+  for (const auto &pair : notifications_map) {
+    notifications[i++] = pair.first.c_str();
+  }
+
   *num_returned = i;
   return TDI_SUCCESS;
 }
