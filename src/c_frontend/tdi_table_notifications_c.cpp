@@ -32,17 +32,6 @@ tdi_status_t tdi_notifications_set_value(tdi_notification_param_hdl *notificatio
   return notification_param->setValue(field_id, value);
 }
 
-// tdi_status_t tdi_notification_param_set_value_array(tdi_notification_param_hdl *data_hdl,
-//                                              const tdi_id_t field_id,
-//                                              const uint32_t *val,
-//                                              const uint32_t num_array) {
-//   auto notification_param = reinterpret_cast<tdi::NotificationParam *>(notification_hdl);
-//   // array pointers work as iterators
-//   const auto vec = std::vector<tdi_id_t>(val, val + num_array);
-//   return notification_param->setValue(field_id, vec);
-// }
-
-
 tdi_status_t tdi_notifications_set_value_array(tdi_notification_param_hdl *notifications_hdl,
                                              const tdi_id_t field_id,
                                              const uint32_t *value,
@@ -83,21 +72,3 @@ tdi_status_t tdi_notification_param_get_value_array_size(
   *array_size = vec.size();
   return status;
 }
-
-#if 0 // TODO
-tdi_status_t tdi_notifications_set_value_ptr(tdi_notification_param_hdl *notifications_hdl,
-                                      tdi_notification_param_type_e type,
-                                           const uint8_t *val,
-                                           const size_t s) {
-  auto notification_param = reinterpret_cast<tdi::NotificationParams *>(notifications_hdl);
-  return notification_param->setValue(type, val, s);
-}
-
-tdi_status_t tdi_notifications_get_value_ptr(const tdi_notification_param_hdl *notifications_hdl,
-                                      tdi_notification_param_type_e type,
-                                           const size_t size,
-                                           uint8_t *val) {
-  auto notification_param = reinterpret_cast<const tdi::NotificationParams *>(notifications_hdl);
-  return notification_param->getValue(type, size, val);
-}
-#endif
