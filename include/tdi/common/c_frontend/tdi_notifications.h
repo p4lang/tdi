@@ -38,7 +38,7 @@ tdi_status_t tdi_notifications_set_value(
 tdi_status_t tdi_notifications_set_value_array(
     tdi_notification_param_hdl *notifications_hdl,
     const tdi_id_t field_id,
-    const uint32_t *value,
+    const uint64_t *value,
     const uint32_t array_sz);
 
 tdi_status_t tdi_notifications_get_value(
@@ -46,10 +46,15 @@ tdi_status_t tdi_notifications_get_value(
     const tdi_id_t field_id,
     uint64_t *value);
 
-tdi_status_t tdi_notification_param_get_value_array(
+tdi_status_t tdi_notifications_get_value_array_size(
     const tdi_notification_param_hdl *notification_hdl,
     const tdi_id_t field_id,
-    uint32_t *val);
+    uint32_t *array_size);
+
+tdi_status_t tdi_notifications_get_value_array(
+    const tdi_notification_param_hdl *notification_hdl,
+    const tdi_id_t field_id,
+    uint64_t *val);
 
 #ifdef __cplusplus
 }
