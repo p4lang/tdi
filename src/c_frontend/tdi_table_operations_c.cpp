@@ -39,20 +39,3 @@ tdi_status_t tdi_operations_get_value(const tdi_operations_hdl *operations_hdl,
   return operations_field->getValue(type, value);
 }
 
-#if 0 // TODO
-tdi_status_t tdi_operations_set_value_ptr(tdi_operations_hdl *operations_hdl,
-                                      tdi_operations_field_type_e type,
-                                           const uint8_t *val,
-                                           const size_t s) {
-  auto operations_field = reinterpret_cast<tdi::TableOperations *>(operations_hdl);
-  return operations_field->setValue(type, val, s);
-}
-
-tdi_status_t tdi_operations_get_value_ptr(const tdi_operations_hdl *operations_hdl,
-                                      tdi_operations_field_type_e type,
-                                           const size_t size,
-                                           uint8_t *val) {
-  auto operations_field = reinterpret_cast<const tdi::TableOperations *>(operations_hdl);
-  return operations_field->getValue(type, size, val);
-}
-#endif
