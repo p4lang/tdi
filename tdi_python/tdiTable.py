@@ -99,7 +99,6 @@ class TdiTable:
         self.set_supported_operations_to_supported_commands()
         self.set_supported_notifications_to_supported_commands()
         self.set_supported_apis_to_supported_commands()
-        print("table: ", self.name, "supported: ", self.supported_commands)
         if not self.table_ready:
             return
         #
