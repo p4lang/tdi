@@ -39,6 +39,8 @@ class KeyFieldInfo;
 class DataFieldInfo;
 class Cjson;
 class TdiInfoMapper;
+class NotificationInfo;
+class NotificationParamInfo;
 
 // Classes that need to be overridden by targets in order for them to
 // target-specific information in the info
@@ -539,6 +541,187 @@ class ActionInfo {
   friend class TdiInfoParser;
 };
 
+class NotificationParamInfo {
+ public:
+  /**
+   * @name NotificationParam APIs
+   * @{
+   */
+  /**
+   * @brief Get name of field
+   *
+   * @return Field name
+   */
+  const std::string &nameGet() const { return name_; };
+
+  /**
+   * @brief Get field ID
+   * @return field ID
+   */
+  const tdi_id_t &idGet() const { return field_id_; };
+
+  /**
+   * @brief Get the Data type of a field (INT/BOOL/ENUM/INT_ARR/BOOL_ARR)
+   *
+   * @return Field Type (uint64, float, string etc)
+   */
+  const tdi_field_data_type_e &dataTypeGet() const { return data_type_; };
+
+  /**
+   * @brief Get field size
+   *
+   * @return Field Size in bits
+   */
+  const size_t &sizeGet() const { return size_bits_; };
+
+  /**
+   * @brief Get a list of all the allowed values that a particular field can
+   * have. This API is only for fields with string type. If the returned
+   * vector is empty, it indicates that the allowed choices have not been
+   * published in tdi json
+   *
+   * @return choices Vector of the string values that are
+   * allowed for this field
+   *
+   */
+  const std::vector<std::string> &choicesGet() const { return enum_choices_; };
+  /** @} */  // End of group NotificationParamInfo
+
+ private:
+  NotificationParamInfo(tdi_id_t field_id,
+                        std::string name,
+                        bool repeated,
+                        size_t size_bits,
+                        tdi_field_data_type_e data_type,
+                        bool mandatory,
+                        const std::vector<std::string> &enum_choices,
+                        const std::set<tdi::Annotation> &annotations,
+                        uint64_t default_value,
+                        float default_fl_value,
+                        std::string default_str_value)
+      : field_id_(field_id),
+        name_(name),
+        repeated_(repeated),
+        size_bits_(size_bits),
+        data_type_(data_type),
+        mandatory_(mandatory),
+        enum_choices_(enum_choices),
+        annotations_(annotations),
+        default_value_(default_value),
+        default_fl_value_(default_fl_value),
+        default_str_value_(default_str_value){};
+  const tdi_id_t field_id_;
+  const std::string name_;
+  const bool repeated_;
+  const size_t size_bits_;
+  const tdi_field_data_type_e data_type_;
+  const bool mandatory_;
+  const std::vector<std::string> enum_choices_;
+  const std::set<tdi::Annotation> annotations_;
+  const uint64_t default_value_;
+  const float default_fl_value_;
+  const std::string default_str_value_;
+
+  friend class TdiInfoParser;
+};  // class NotificationParamInfo
+
+// Notification APIs
+class NotificationInfo {
+ public:
+  /**
+   * @name Notification APIs
+   * @{
+   */
+  /**
+   * @brief Get Notification ID
+   * @return Notification ID
+   */
+  const tdi_id_t &idGet() const { return notification_id_; };
+
+  /**
+   * @brief Get Notification Name
+   * @return Notification Name
+   */
+  const std::string &nameGet() const { return name_; };
+
+  /**
+   * @brief Get a set of annotations for this notification
+   *
+   * @return Set of annotations
+   */
+  const std::set<tdi::Annotation> &annotationsGet() const {
+    return annotations_;
+  };
+  /** @} */  // End of group Action IDs
+
+  /**
+   * @brief Get Notification RegistrationParams fields map.
+   *
+   * @return notification's id<->RegistrationParams map
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+      &RegistrationParamsMapGet() const {
+    return registration_params_fields_;
+  };
+
+  /**
+   * @brief Get Notification CallbackParams fields map.
+   *
+   * @return action's id<->CallbackParams map.
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+      &CallbackParamsMapGet() const {
+    return callback_params_fields_;
+  };
+
+  // Map of registration_params_fields with names
+  std::map<std::string, const NotificationParamInfo *>
+      registration_params_fields_names_;
+
+  // Map of callback_params_fields with names
+  std::map<std::string, const NotificationParamInfo *>
+      callback_params_fields_names_;
+
+ private:
+  NotificationInfo(tdi_id_t field_id,
+                   std::string name,
+                   std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+                       registration_params_fields,
+                   std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+                       callback_params_fields,
+                   std::set<tdi::Annotation> annotations)
+      : notification_id_(field_id),
+        name_(name),
+        registration_params_fields_(std::move(registration_params_fields)),
+        callback_params_fields_(std::move(callback_params_fields)),
+        annotations_(annotations) {
+    // update relevant maps
+    for (const auto &kv : registration_params_fields_) {
+      const auto registration_params_field = kv.second.get();
+      registration_params_fields_names_[registration_params_field->nameGet()] =
+          registration_params_field;
+    }
+    for (const auto &kv : callback_params_fields_) {
+      const auto callback_params_field = kv.second.get();
+      callback_params_fields_names_[callback_params_field->nameGet()] =
+          callback_params_field;
+    }
+  };
+
+  const tdi_id_t notification_id_;
+  const std::string name_;
+  // Map of table_params_fields
+  const std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+      registration_params_fields_;
+  const std::map<tdi_id_t, std::unique_ptr<NotificationParamInfo>>
+      callback_params_fields_;
+  const std::set<tdi::Annotation> annotations_;
+  friend class TableInfo;
+  friend class TdiInfoParser;
+};
+
 /**
  * @brief In memory representation of tdi.json Table
  */
@@ -754,6 +937,12 @@ class TableInfo {
    */
   const ActionInfo *actionGet(const tdi_id_t &action_id) const;
 
+  const NotificationParamInfo *notificationRegistrationParamGet(
+      const tdi_id_t &field_id, const tdi_id_t &notitication_id) const;
+
+  const NotificationParamInfo *notificationCallbackParamGet(
+      const tdi_id_t &field_id, const tdi_id_t &notitication_id) const;
+
   /**
    * @brief Set tableContextInfo object.
    *
@@ -808,9 +997,21 @@ class TableInfo {
     return table_action_map_;
   }
 
+  /**
+   * @brief Get table notifications map.
+   *
+   * @return table's id<->notifications map.
+   *
+   */
+  const std::map<tdi_id_t, std::unique_ptr<NotificationInfo>> &tableNotificationsMapGet()
+      const {
+    return table_notification_map_;
+  }
+
   std::map<std::string, const KeyFieldInfo *> name_key_map_;
   std::map<std::string, const DataFieldInfo *> name_data_map_;
   std::map<std::string, const ActionInfo *> name_action_map_;
+  std::map<std::string, const NotificationInfo *> name_notifications_map_;
 
  private:
   TableInfo(tdi_id_t id,
@@ -822,6 +1023,7 @@ class TableInfo {
             std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map,
             std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map,
             std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map,
+            std::map<tdi_id_t, std::unique_ptr<NotificationInfo>> table_notifications_map,
             std::set<tdi_id_t> depends_on_set,
             SupportedApis table_apis,
             std::set<tdi_operations_type_e> operations_type_set,
@@ -836,6 +1038,7 @@ class TableInfo {
         table_key_map_(std::move(table_key_map)),
         table_data_map_(std::move(table_data_map)),
         table_action_map_(std::move(table_action_map)),
+        table_notification_map_(std::move(table_notifications_map)),
         depends_on_set_(depends_on_set),
         table_apis_(std::move(table_apis)),
         operations_type_set_(operations_type_set),
@@ -856,6 +1059,11 @@ class TableInfo {
       const auto data_field = kv.second.get();
       name_data_map_[data_field->nameGet()] = data_field;
     }
+
+    for (const auto &kv : table_notification_map_) {
+      const auto notification = kv.second.get();
+      name_notifications_map_[notification->nameGet()] = notification;
+    }
   };
 
   const tdi_id_t id_;
@@ -867,6 +1075,7 @@ class TableInfo {
   const std::map<tdi_id_t, std::unique_ptr<KeyFieldInfo>> table_key_map_;
   const std::map<tdi_id_t, std::unique_ptr<DataFieldInfo>> table_data_map_;
   const std::map<tdi_id_t, std::unique_ptr<ActionInfo>> table_action_map_;
+  const std::map<tdi_id_t, std::unique_ptr<NotificationInfo>> table_notification_map_;
   const std::set<tdi_id_t> depends_on_set_;
   mutable tdi::SupportedApis table_apis_{};
   const std::set<tdi_operations_type_e> operations_type_set_;

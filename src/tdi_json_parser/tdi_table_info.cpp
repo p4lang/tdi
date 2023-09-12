@@ -198,6 +198,49 @@ std::vector<tdi_id_t> TableInfo::actionIdListGet() const {
   return id_vec;
 }
 
+const NotificationParamInfo *
+TableInfo::notificationRegistrationParamGet(
+    const tdi_id_t &field_id, const tdi_id_t &notification_id) const {
+  if (notification_id && table_notification_map_.find(notification_id) !=
+                             table_notification_map_.end()) {
+    auto notification_info = table_notification_map_.at(notification_id).get();
+    if (notification_info->registration_params_fields_.find(field_id) !=
+        notification_info->registration_params_fields_.end()) {
+      return notification_info->registration_params_fields_.at(field_id).get();
+    }
+  }
+  LOG_WARN(
+      "%s:%d %s Field \"%d\" not found in registration params list of "
+      "notification: %d",
+      __func__,
+      __LINE__,
+      nameGet().c_str(),
+      field_id,
+      notification_id);
+  return nullptr;
+}
+
+const NotificationParamInfo *TableInfo::notificationCallbackParamGet(
+    const tdi_id_t &field_id, const tdi_id_t &notification_id) const {
+  if (notification_id && table_notification_map_.find(notification_id) !=
+                             table_notification_map_.end()) {
+    auto notification_info = table_notification_map_.at(notification_id).get();
+    if (notification_info->callback_params_fields_.find(field_id) !=
+        notification_info->callback_params_fields_.end()) {
+      return notification_info->callback_params_fields_.at(field_id).get();
+    }
+  }
+  LOG_WARN(
+      "%s:%d %s Field \"%d\" not found in callback params list of "
+      "notification: %d",
+      __func__,
+      __LINE__,
+      nameGet().c_str(),
+      field_id,
+      notification_id);
+  return nullptr;
+}
+
 #if 0
 tdi_status_t Table::getDataField(const tdi_id_t &field_id,
                                  const TableDataField **field) const {

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include <algorithm>
-#include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_table.hpp>
 
 // local includes
@@ -349,18 +348,46 @@ tdi_status_t Table::tableAttributesGet(
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::notificationRegister(tdi::Target &,//target,
-				const tdi_id_t &,//notification_id,
-				tdiNotificationCallback &,//callback,
-				void * /*cookie*/) {
+tdi_status_t Table::notificationRegistrationParamsAllocate(
+    const tdi_id_t & /*notification_id*/,
+    std::unique_ptr<NotificationParams> * /*registration_params*/) const {
   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
   return TDI_NOT_SUPPORTED;
 }
 
-tdi_status_t Table::notificationDeregister(tdi::Target &,//target,
-                                           const tdi_id_t & /*notification_id*/) const{
-   LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
-   return TDI_NOT_SUPPORTED;
+tdi_status_t Table::notificationCallbackParamsAllocate(
+    const tdi_id_t & /*notification_id*/,
+    std::unique_ptr<NotificationParams> * /*registration_params*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationRegister(
+    const tdi::Target & /*target*/,
+    const tdi_id_t & /*notification_id*/,
+    const tdiNotificationCallback & /*callback_fn*/,
+    const tdi::NotificationParams & /*in_params*/,
+    void * /*cookie*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationRegisterC(
+    const tdi::Target & /*target*/,
+    const tdi_id_t & /*notification_id*/,
+    const tdi_notification_callback & /*callback_fn*/,
+    const tdi::NotificationParams & /*in_params*/,
+    void * /*cookie*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
+}
+
+tdi_status_t Table::notificationDeregister(
+    const tdi::Target &/*target*/,
+    const tdi_id_t &/*notification_id*/,
+    const tdi::NotificationParams &/*registration_params*/) const {
+  LOG_ERROR("%s:%d Not supported", __func__, __LINE__);
+  return TDI_NOT_SUPPORTED;
 }
 
 tdi_status_t Table::operationsAllocate(
@@ -381,7 +408,8 @@ tdi_status_t Table::operationsAllocate(
   return TDI_SUCCESS;
 }
 
-tdi_status_t Table::tableOperationsExecute(
+tdi_status_t Table::operationsExecute(
+    const tdi::Target & /*dev_tgt*/,
     const tdi::TableOperations & /*tableOperations*/) const {
   return TDI_NOT_SUPPORTED;
 }

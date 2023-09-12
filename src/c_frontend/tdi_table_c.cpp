@@ -18,12 +18,14 @@
 
 #include <tdi/common/c_frontend/tdi_attributes.h>
 #include <tdi/common/c_frontend/tdi_operations.h>
+#include <tdi/common/c_frontend/tdi_notifications.h>
 #include <tdi/common/c_frontend/tdi_table.h>
 #include <tdi/common/tdi_attributes.hpp>
 #include <tdi/common/tdi_defs.h>
 #include <tdi/common/tdi_init.hpp>
 #include <tdi/common/tdi_json_parser/tdi_table_info.hpp>
 #include <tdi/common/tdi_operations.hpp>
+#include <tdi/common/tdi_notifications.hpp>
 #include <tdi/common/tdi_session.hpp>
 #include <tdi/common/tdi_table.hpp>
 #include <tdi/common/tdi_table_data.hpp>
@@ -532,11 +534,65 @@ tdi_status_t tdi_table_attributes_get(const tdi_table_hdl *table_hdl,
       reinterpret_cast<tdi::TableAttributes *>(tbl_attr));
 }
 
-#ifdef _TDI_FROM_BFRT
-tdi_status_t tdi_table_operations_execute(const tdi_table_hdl *table_hdl,
+tdi_status_t tdi_operations_execute(const tdi_table_hdl *table_hdl,
+                                          const tdi_target_hdl *target,
                                           const tdi_operations_hdl *tbl_ops) {
   auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
-  return (table->tableOperationsExecute(
-      reinterpret_cast<const tdi::TableOperations *>(tbl_ops)));
+  return (table->operationsExecute(
+      *reinterpret_cast<const tdi::Target *>(target),
+      *reinterpret_cast<const tdi::TableOperations *>(tbl_ops)));
 }
-#endif
+
+// notification APIs
+tdi_status_t tdi_notifications_registration_params_allocate(
+    const tdi_table_hdl *table_hdl,
+    const tdi_id_t notification_id,
+    tdi_notification_param_hdl **tbl_notification_hdl) {
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+  std::unique_ptr<tdi::NotificationParams> notification_params;
+  auto status = table->notificationRegistrationParamsAllocate(
+      notification_id, &notification_params);
+  *tbl_notification_hdl = reinterpret_cast<tdi_notification_param_hdl *>(
+      notification_params.release());
+  return status;
+}
+
+tdi_status_t tdi_notifications_registration_params_deallocate(tdi_notification_param_hdl *tbl_notification_hdl) {
+  auto notification_params = reinterpret_cast<tdi::NotificationParams *>(tbl_notification_hdl);
+  if (notification_params == nullptr) {
+    LOG_ERROR("%s:%d null param passed", __func__, __LINE__);
+    return TDI_INVALID_ARG;
+  }
+  delete notification_params;
+  return TDI_SUCCESS;
+}
+
+tdi_status_t tdi_notifications_register(
+    const tdi_table_hdl *table_hdl,
+    const tdi_target_hdl *target,
+    const tdi_id_t notification_id,
+    const tdi_notification_callback callback_fn,
+    const tdi_notification_param_hdl *tbl_notification_hdl,
+    void *cookie) {
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+
+  return table->notificationRegisterC(
+      *reinterpret_cast<const tdi::Target *>(target),
+      notification_id,
+      callback_fn,
+      *reinterpret_cast<const tdi::NotificationParams *>(tbl_notification_hdl),
+      cookie);
+}
+
+tdi_status_t tdi_notifications_deregister(
+    const tdi_table_hdl *table_hdl,
+    const tdi_target_hdl *target,
+    const tdi_id_t notification_id,
+    const tdi_notification_param_hdl *tbl_notification_hdl) {
+  auto table = reinterpret_cast<const tdi::Table *>(table_hdl);
+
+  return table->notificationDeregister(
+      *reinterpret_cast<const tdi::Target *>(target),
+      notification_id,
+      *reinterpret_cast<const tdi::NotificationParams *>(tbl_notification_hdl));
+}

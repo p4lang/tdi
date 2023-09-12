@@ -24,11 +24,11 @@
 extern "C" {
 #endif
 
-tdi_status_t tdi_operations_set_value(tdi_operations_hdl operations,
+tdi_status_t tdi_operations_set_value(tdi_operations_hdl *operations,
                                       tdi_operations_field_type_e type,
                                       const uint64_t value);
 
-tdi_status_t tdi_operations_get_value(tdi_operations_hdl operations,
+tdi_status_t tdi_operations_get_value(const tdi_operations_hdl *operations,
                                       tdi_operations_field_type_e type,
                                       uint64_t *value);
 

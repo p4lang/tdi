@@ -633,7 +633,8 @@ class Table {
    *
    * @return Status of the API call
    */
-  virtual tdi_status_t tableOperationsExecute(
+  virtual tdi_status_t operationsExecute(
+      const tdi::Target &dev_tgt,
       const tdi::TableOperations &tableOperations) const;
   /** @} */  // End of group Operations
   const TableInfo *tableInfoGet() const { return table_info_; }
@@ -653,13 +654,32 @@ class Table {
 
   const TdiInfo *tdiInfoGet() const { return tdi_info_; };
 
-  virtual tdi_status_t notificationRegister(tdi::Target &target,
-                                            const tdi_id_t &notification_id,
-                                            tdiNotificationCallback &callback,
-                                            void *cookie);
+  virtual tdi_status_t notificationRegistrationParamsAllocate(
+      const tdi_id_t &notification_id,
+      std::unique_ptr<NotificationParams> *registration_params) const;
 
-  virtual tdi_status_t notificationDeregister(tdi::Target &target,
-                                              const tdi_id_t &notification_id) const;
+  virtual tdi_status_t notificationCallbackParamsAllocate(
+      const tdi_id_t &notification_id,
+      std::unique_ptr<NotificationParams> *registration_params) const;
+
+  virtual tdi_status_t notificationRegister(
+      const tdi::Target &target,
+      const tdi_id_t &notification_id,
+      const tdiNotificationCallback &callback_fn,
+      const tdi::NotificationParams &registration_params,
+      void *cookie) const;
+
+  virtual tdi_status_t notificationRegisterC(
+      const tdi::Target &target,
+      const tdi_id_t &notification_id,
+      const tdi_notification_callback &callback_fn,
+      const tdi::NotificationParams &registration_params,
+      void *cookie) const;
+
+  virtual tdi_status_t notificationDeregister(
+      const tdi::Target &target,
+      const tdi_id_t &notification_id,
+      const tdi::NotificationParams &registration_params) const;
 
  protected:
   // Targets can choose to use any ctor to create tables. The 2nd one
