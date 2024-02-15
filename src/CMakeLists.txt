@@ -14,7 +14,7 @@ set(TDI_SRCS
   #tdi_cjson.cpp
   #tdi_info_impl.cpp
   #tdi_table_info.cpp
-  #tdi_utils.cpp
+  tdi_utils.cpp
 )
 
 set(TDI_C_FRONTEND_SRCS
