@@ -359,7 +359,9 @@ typedef uint32_t tdi_dev_pipe_t;
  * @param[out] err_str Pointer to error string. Doesn't require user to allocate
  *space
  */
-// void tdi_err_str(tdi_status_t sts, const char **err_str);
+void tdi_get_err_str(tdi_status_t sts, const char **err_str) {
+	*err_str = tdi_err_str(sts);
+}
 
 #ifdef __cplusplus
 }
