@@ -256,7 +256,7 @@ class CIntfTdi:
 
     def err_str(self, sts):
         estr = c_char_p()
-        self._driver.bf_rt_err_str(c_int(sts), byref(estr))
+        self._driver.tdi_get_err_str(c_int(sts), byref(estr))
         return estr.value.decode('ascii')
     class TdiHandle(Structure):
         _fields_ = [("unused", c_int)]
