@@ -196,12 +196,25 @@ class TableData {
    * @brief Set value. Valid only on fields with string type
    *
    * @param[in] field_id Field ID
-   * @param[in] value String value
+   * @param[in] str String value
    *
    * @return Status of the API call
    */
   virtual tdi_status_t setValue(const tdi_id_t &field_id,
                                 const std::string &str);
+
+  /**
+   * @brief Set value based on size. Valid only on fields with string type
+   *
+   * @param[in] field_id Field ID
+   * @param[in] str String value
+   * @param[in] s Size of string value
+   *
+   * @return Status of the API call
+   */
+  virtual tdi_status_t setValue(const tdi_id_t &field_id,
+                                const std::string &str,
+                                const size_t &size);
 
   /** @} */  // End of group Set APIs
 
