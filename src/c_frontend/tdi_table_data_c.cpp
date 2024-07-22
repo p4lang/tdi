@@ -124,6 +124,24 @@ tdi_status_t tdi_data_field_set_string(tdi_table_data_hdl *data_hdl,
   return data_field->setValue(field_id, str_val);
 }
 
+tdi_status_t tdi_data_field_set_string_with_size(tdi_table_data_hdl *data_hdl,
+                                                  const tdi_id_t field_id,
+                                                  const char *val,
+                                                  const size_t s) {
+  auto data_field = reinterpret_cast<tdi::TableData *>(data_hdl);
+  std::string str_val = {0};
+  if (s > 0) {
+      /* we don't append directly as the data/value would be appended to NULL,
+       * instead, we want to assign the same value to str_val which val
+       * holds. */
+      str_val = val[0];
+      for (int i = 1; i < (int)s; i++) {
+          str_val += val[i];
+      }
+  }
+  return data_field->setValue(field_id, str_val, s);
+}
+
 tdi_status_t tdi_data_field_get_value(const tdi_table_data_hdl *data_hdl,
                                        const tdi_id_t field_id,
                                        uint64_t *val) {

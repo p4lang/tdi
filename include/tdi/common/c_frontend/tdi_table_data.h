@@ -175,6 +175,21 @@ tdi_status_t tdi_data_field_set_string(tdi_table_data_hdl *data_hdl,
                                         const char *val);
 
 /**
+ * @brief Set value based on size. Valid only on fields with string type
+ *
+ * @param[in] data_hdl          Data object handle
+ * @param[in] field_id          Field ID
+ * @param[in] val               String value
+ * @param[in] s                 Size of string value
+ *
+ * @return Status of the API call
+ */
+tdi_status_t tdi_data_field_set_string_with_size(tdi_table_data_hdl *data_hdl,
+                                                  const tdi_id_t field_id,
+                                                  const char *val,
+                                                  const size_t s);
+
+/**
  * @brief Get value. Only valid on fields of size <= 64 bits
  *
  * @param[in] data_hdl          Data object handle

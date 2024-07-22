@@ -1109,8 +1109,13 @@ class TdiTable:
                 value = c_bool(content[name])
                 sts = self._cintf.get_driver().tdi_data_field_set_bool(data_handle, info.id, value)
             if self.data_type_cls.data_type_str(info.data_type) == "STRING":
-                value = c_char_p(content[name].encode('ascii'))
-                sts = self._cintf.get_driver().tdi_data_field_set_string(data_handle, info.id, value)
+                string = content[name]
+                if string[0:2] == "0x":
+                    bytestr = bytes.fromhex(string[2:])
+                else:
+                    bytestr = string.encode('ascii')
+                value = c_char_p(bytestr)
+                sts = self._cintf.get_driver().tdi_data_field_set_string_with_size(data_handle, info.id, value, len(bytestr))
             """
             if self.data_type_cls.data_type_str(info.data_type) == "CONTAINER":
                 cont_list_len = len(content[name])
