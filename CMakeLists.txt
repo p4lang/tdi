@@ -37,6 +37,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS}")
 
 
 add_subdirectory(src)
+if(STANDALONE)
+  add_subdirectory(cli)
+endif()
 
 #Building tdi doxygen
 find_package(Doxygen)
